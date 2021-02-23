@@ -1,24 +1,38 @@
 0. 초기화
 git init 함수가 작동이 안 될 경우, VS Code 의 Terminal 이 Power Shell 로 설정되어 있기 때문인 경우가 다반수
 Select Defult Shell 을 선택하여 VS Code 의 Terminal 을 Git Bash 로 바꿔준 후 프로그램을 재실행 하면 설정 가능 ! 설정 후 함수 재사용 하면 됨.
+git 작동 방식
+Working tree -> Staging Area -> Repository
+Working tree : 버전으로 만들어지기 전 단계. 파일을 수정하고, 수정된 파일들이 있는 곳
+Staging Area : 버전이 될 파일들을 올려놓는 곳. 버전으로 만들 파일 두개를 Staging Area 에 올려놓으면 git 은 Staging Area 에 있는 두 파일을 하나의 버전으로 만듬.
+Repository : 버전이 저장되는 곳(.git)
 
 1. git init .
 현재 dir 을 git 이 관리하도록 하는 것
 .git 폴더가 생성되는데, 이 폴더에 모든 version 들이 관리되는 것이므로, 절대 삭제 X !
 
 함수 목록
+config : git config --global user.email "you@example.com"
+         git config --global user.name "Your Name"
+         사용자의 이름과 이메일을 등록하는 함수. commit 시 사용자 개인의 commit 으로 넘어감(추측)
+
 status : git status : 가장 많이 사용되는 명령어. git 의 상태를 보여줌.
     No commits yet : 아직 버전이 없음(commits == version)
     Untracked files : 추적되지 않은 파일
-
     Changes to be committed : 버전이 될 파일들의 목록을 보여줌
+
+    Changes not staged for commit : stage 위에 있지 않은 수정사항이 Working tree 에 있다.
+
 
 add : git add FileName[-A] : git 이 FileName 을 관리하도록 함. 버전으로 만들기 위해 Staging Area 에 올릴 때 사용되는 명령어. \
 Working tree 의 수정사항인 FileName 을 버전으로 만들기 위해 Staging Area 로 올림
 
-commit : git commit (-m "commit message") : 버전을 생성하기 위해 제출(commit)함
+commit : git commit (-m "commit message") : 버전을 생성하기 위해 제출(commit)함. 인터페이스 생각보다 복잡하니까 그냥 -m~ 함수 쓰자,,
 
-log : git log : git 의 역사를 보여줌. 버전이 잘 만들어졌는지 확인할 수 있음.
-
+log : git log : git 의 역사를 보여줌. 버전이 잘 만들어졌는지 확인할 수 있음. (q : 나가기)
 
 cat : cat FileName.extension : File 의 내용을 보여줌
+
+reset : git reset [SerialNum(6)] --hard : 이전 버전으로 이동. log 까지 전부 사라짐.(신중함 필요)
+
+revert : git revert [SerialNum(6)] : 이전 버전으로 이동. log 에 행적이 남음(버전이 새로 생김)
