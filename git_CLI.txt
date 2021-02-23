@@ -1,21 +1,30 @@
 0. 초기화
 git init 함수가 작동이 안 될 경우, VS Code 의 Terminal 이 Power Shell 로 설정되어 있기 때문인 경우가 다반수
-Select Defult Shell 을 선택하여 VS Code 의 Terminal 을 Git Bash 로 바꿔준 후 프로그램을 재실행 하면 설정 가능 ! 설정 후 함수 재사용 하면 됨.
+Select Default Shell 을 선택하여 VS Code 의 Terminal 을 Git Bash 로 바꿔준 후 프로그램을 재실행 하면 설정 가능 ! 설정 후 함수 재사용 하면 됨.
 git 작동 방식
 Working tree -> Staging Area -> Repository
 Working tree : 버전으로 만들어지기 전 단계. 파일을 수정하고, 수정된 파일들이 있는 곳
 Staging Area : 버전이 될 파일들을 올려놓는 곳. 버전으로 만들 파일 두개를 Staging Area 에 올려놓으면 git 은 Staging Area 에 있는 두 파일을 하나의 버전으로 만듬.
 Repository : 버전이 저장되는 곳(.git)
 
+commit message format
+추가 : add
+삭제 : del
+함수 : 함수 카테고리(basic function) 함수 종류[함수 이름(git diff) / 함수 이름(git rest --hard), 함수 종류[diff]]
+
 꿀팁
 터미널이 작아서 출력이 모두 안되는 경우, e(한 줄씩), d(한 뭉텅이씩) 를 누르면 하위 내용을 보여줌
+change git text editor
+    검색엔진 : change git default text editor
+    ex. git config --global core.editor "vim" : config : git 의 설정을 바꿈, --global : 현재 저장소가 아닌 컴퓨터 전체, 로그인한 사용자 전체, core.editor : 에디터를, vim : vim editor
 =======================================================================================================================================================
 함수 목록
 일반함수
 ~ : print current directory
 cd : change directory
 ls -al : read list, all
-nano : make file. example. nano hello1.txt
+nano : make file and write. example. nano hello1.txt
+touch : make file
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 git 함수
 git init . : Initialize repository.
@@ -38,10 +47,15 @@ status : git status : working tree status
 add : git add FileName[-A] : add to staging area
                              git 이 FileName 을 관리하도록 함. 버전으로 만들기 위해 Staging Area 에 올릴 때 사용되는 명령어. \
                              Working tree 의 수정사항인 FileName 을 버전으로 만들기 위해 Staging Area 로 올림
+    : git add DirName : DirName 디렉토리 밑에 있는 모든 파일 add
+    : git add . : 현재 디렉토리 밑에 있는 모든 파일 add.
     : git reset HEAD FileName : cancel git add(Staging Area -> Working tree)
+                                FileName 이 생략되면 add 한 모든 파일을 취소한다.
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 commit : git commit (-m "commit message") : create version
                                             버전을 생성하기 위해 제출(commit)함. 인터페이스 생각보다 복잡하니까 그냥 -m~ 함수 쓰자,,
+        : git commit -am "commit message" : run add and commit same time
+                                            add 와 commit 을 한번에 함. 단, add 가 적어도 한번이상 된, 즉 Untracked 된 파일은 안됨 !! -> 실수 방지
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 log : git log : show version
                 git 의 역사를 보여줌. 버전이 잘 만들어졌는지 확인할 수 있음. (q : 나가기)
@@ -63,6 +77,10 @@ reset : git reset [SerialNum(6)] --hard : 이전 버전으로 이동. log 까지
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 revert : git revert [SerialNum(6)] : 이전 버전으로 이동. log 에 행적이 남음(버전이 새로 생김)
 -------------------------------------------------------------------------------------------------------------------------------------------------------
-diff : git diff : show changes
+diff : git diff : show difference
                 : 가장 최근 버전과 달라진 점을 보여줌.
      : reset --hard : 편집했던 내용들을 삭제함.
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+checkout : git checkout [SerialNum] : go to created point[SerialNum]
+                                        HEAD가 commit number 가 가리키는 버전, 즉 해당 버전이 생긴 시점을 가리키도록 한다. -> 해당 버전이 생긴 시점으로 감.
+                                        SerialNum 을 main(master) 로 지정하면 가장 최신, master branch 로 다시 이동한다.
