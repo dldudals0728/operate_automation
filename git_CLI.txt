@@ -1,0 +1,24 @@
+0. 초기화
+git init 함수가 작동이 안 될 경우, VS Code 의 Terminal 이 Power Shell 로 설정되어 있기 때문인 경우가 다반수
+Select Defult Shell 을 선택하여 VS Code 의 Terminal 을 Git Bash 로 바꿔준 후 프로그램을 재실행 하면 설정 가능 ! 설정 후 함수 재사용 하면 됨.
+
+1. git init .
+현재 dir 을 git 이 관리하도록 하는 것
+.git 폴더가 생성되는데, 이 폴더에 모든 version 들이 관리되는 것이므로, 절대 삭제 X !
+
+함수 목록
+status : git status : 가장 많이 사용되는 명령어. git 의 상태를 보여줌.
+    No commits yet : 아직 버전이 없음(commits == version)
+    Untracked files : 추적되지 않은 파일
+
+    Changes to be committed : 버전이 될 파일들의 목록을 보여줌
+
+add : git add FileName[-A] : git 이 FileName 을 관리하도록 함. 버전으로 만들기 위해 Staging Area 에 올릴 때 사용되는 명령어. \
+Working tree 의 수정사항인 FileName 을 버전으로 만들기 위해 Staging Area 로 올림
+
+commit : git commit (-m "commit message") : 버전을 생성하기 위해 제출(commit)함
+
+log : git log : git 의 역사를 보여줌. 버전이 잘 만들어졌는지 확인할 수 있음.
+
+
+cat : cat FileName.extension : File 의 내용을 보여줌
