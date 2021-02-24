@@ -191,7 +191,7 @@ class automation:
             elif self.time == "야간":
                 members = 1
         
-        string_set = "{}기{}" .format(ordinal_num, time)
+        string_set = f"{ordinal_num}기{time}"
         
         if task == "교육수료증명서":
 
@@ -232,7 +232,7 @@ class automation:
                 # 교육수료증명서 호수
                 pyautogui.click(fw_completion.left + 300, fw_completion.top + 320)
                 pyautogui.sleep(1)
-                string = "    2021  년  제  {} 호" .format(automation.ws_members.cell(row=idx, column=2).value)
+                string = f"    2021  년  제  {automation.ws_members.cell(row=idx, column=2).value} 호"
                 pyperclip.copy(string)
                 pyautogui.click()
                 pyautogui.click()
@@ -245,7 +245,8 @@ class automation:
                     pyautogui.hotkey("alt", "right")
 
                 # 이름
-                string = " {} {} {}" .format(automation.ws_members.cell(row=idx, column=18).value[0], automation.ws_members.cell(row=idx, column=18).value[1], automation.ws_members.cell(row=idx, column=18).value[2])
+                string = f" {automation.ws_members.cell(row=idx, column=18).value[0]} {automation.ws_members.cell(row=idx, column=18).value[1]} \
+                    {automation.ws_members.cell(row=idx, column=18).value[2]}"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -254,7 +255,7 @@ class automation:
                     pyautogui.hotkey("alt", "right")
                 
                 # 주소
-                string = " {}" .format(automation.ws_members.cell(row=idx, column=21).value)
+                string = f" {automation.ws_members.cell(row=idx, column=21).value}"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -263,7 +264,7 @@ class automation:
                     pyautogui.hotkey("alt", "right")
 
                 # 주민등록번호
-                string = " {} - {}" .format(automation.ws_members.cell(row=idx, column=20).value[:6], automation.ws_members.cell(row=idx, column=20).value[7:])
+                string = f" {automation.ws_members.cell(row=idx, column=20).value[:6]} - {automation.ws_members.cell(row=idx, column=20).value[7:]}"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -272,7 +273,7 @@ class automation:
                     pyautogui.hotkey("alt", "right")
 
                 # 전화번호
-                string = "{}" .format(automation.ws_members.cell(row=idx, column=19).value)
+                string = f"{automation.ws_members.cell(row=idx, column=19).value}"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -281,7 +282,7 @@ class automation:
                     pyautogui.hotkey("alt", "right")
 
                 # 교육과정명
-                string = " 요양보호사 {}" .format(automation.ws_members.cell(row=idx, column=4).value)
+                string = f" 요양보호사 {automation.ws_members.cell(row=idx, column=4).value}"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -290,10 +291,9 @@ class automation:
                     pyautogui.hotkey("alt", "right")
 
                 # 이론실기 이수기간 / 각 기수별로 기간 선정, 2020 년  11 월  16 일 ∼  21 년  01 월 15 일 형식으로, 끝기간은 년도수 두자리만 표시
-                string = "{} 년  {} 월  {} 일 ∼  {} 년  {} 월 {} 일 " .format(automation.ws_members.cell(row=idx, column=6).value[:4], \
-                    automation.ws_members.cell(row=idx, column=6).value[5:7], automation.ws_members.cell(row=idx, column=6).value[8:], \
-                        automation.ws_members.cell(row=idx, column=7).value[2:4], automation.ws_members.cell(row=idx, column=7).value[5:7], \
-                            automation.ws_members.cell(row=idx, column=7).value[8:])
+                string = f"{automation.ws_members.cell(row=idx, column=6).value[:4]} 년  {automation.ws_members.cell(row=idx, column=6).value[5:7]} 월  \
+                    {automation.ws_members.cell(row=idx, column=6).value[8:]} 일 ∼  {automation.ws_members.cell(row=idx, column=7).value[2:4]} 년  \
+                        {automation.ws_members.cell(row=idx, column=7).value[5:7]} 월 {automation.ws_members.cell(row=idx, column=7).value[8:]} 일 "
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -301,7 +301,7 @@ class automation:
                 pyautogui.hotkey("alt", "right")
 
                 # 이론실기 이수시간
-                string = "        {}  시간" .format(str(int(automation.ws_members.cell(row=idx, column=12).value) + int(automation.ws_members.cell(row=idx, column=13).value)))
+                string = f"        {str(int(automation.ws_members.cell(row=idx, column=12).value) + int(automation.ws_members.cell(row=idx, column=13).value))}  시간"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -310,10 +310,9 @@ class automation:
                     pyautogui.hotkey("alt", "right")
 
                 # 실습기간 / 대체실습 각 기수별 or 실습기간 따로 만들기,  21년 01월 18일 ∼ 21년 03월 13일 형식으로, 년도수 두자리만 표시
-                string = " {}년 {}월 {}일 ∼ {}년 {}월 {}일" .format(automation.ws_members.cell(row=idx, column=9).value[2:4], \
-                    automation.ws_members.cell(row=idx, column=9).value[5:7], automation.ws_members.cell(row=idx, column=9).value[8:], \
-                        automation.ws_members.cell(row=idx, column=10).value[2:4], automation.ws_members.cell(row=idx, column=10).value[5:7], \
-                            automation.ws_members.cell(row=idx, column=10).value[8:])
+                string = f" {automation.ws_members.cell(row=idx, column=9).value[2:4]}년 {automation.ws_members.cell(row=idx, column=9).value[5:7]}월 \
+                    {automation.ws_members.cell(row=idx, column=9).value[8:]}일 ∼ {automation.ws_members.cell(row=idx, column=10).value[2:4]}년 \
+                        {automation.ws_members.cell(row=idx, column=10).value[5:7]}월 {automation.ws_members.cell(row=idx, column=10).value[8:]}일"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -322,7 +321,7 @@ class automation:
 
                 # 대체실습이 종료되면, 각 사람마다 실습시간(각 기관) 이 달라짐. 업데이트 필요
                 # 실습시간
-                string = "        {}  시간" .format(automation.ws_members.cell(row=idx, column=14).value)
+                string = f"        {automation.ws_members.cell(row=idx, column=14).value}  시간"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -331,7 +330,7 @@ class automation:
                     pyautogui.hotkey("alt", "right")
 
                 # 총 실습시간
-                string = "         {}  시간" .format(automation.ws_members.cell(row=idx, column=14).value)
+                string = f"         {automation.ws_members.cell(row=idx, column=14).value}  시간"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -340,7 +339,7 @@ class automation:
                     pyautogui.hotkey("alt", "right")
 
                 # 총 이수시간
-                string = "       {}  시간" .format(automation.ws_members.cell(row=idx, column=11).value)
+                string = f"       {automation.ws_members.cell(row=idx, column=11).value}  시간"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -428,13 +427,17 @@ class automation:
 
                 # 수여일 / 각 인원 대체실습 기준 종료일 바로 다음 월요일 날짜로 지정
                 if automation.ws_members.cell(row=idx, column=8).value == "대체실습 1기":
-                    string = "                               {} 년    {} 월     {} 일" .format(ws_automation.cell(row=3, column=3).value[:4], ws_automation.cell(row=3, column=3).value[5:7], ws_automation.cell(row=3, column=3).value[8:])
+                    string = f"                               {ws_automation.cell(row=3, column=3).value[:4]} 년    {ws_automation.cell(row=3, column=3).value[5:7]} 월     \
+                        {ws_automation.cell(row=3, column=3).value[8:]} 일"
                 elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 2기":
-                    string = "                               {} 년    {} 월     {} 일" .format(ws_automation.cell(row=4, column=3).value[:4], ws_automation.cell(row=4, column=3).value[5:7], ws_automation.cell(row=4, column=3).value[8:])
+                    string = f"                               {ws_automation.cell(row=4, column=3).value[:4]} 년    {ws_automation.cell(row=4, column=3).value[5:7]} 월     \
+                        {ws_automation.cell(row=4, column=3).value[8:]} 일"
                 elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 3기":
-                    string = "                               {} 년    {} 월     {} 일" .format(ws_automation.cell(row=5, column=3).value[:4], ws_automation.cell(row=5, column=3).value[5:7], ws_automation.cell(row=5, column=3).value[8:])
+                    string = f"                               {ws_automation.cell(row=5, column=3).value[:4]} 년    {ws_automation.cell(row=5, column=3).value[5:7]} 월     \
+                        {ws_automation.cell(row=5, column=3).value[8:]} 일"
                 elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 4기":
-                    string = "                               {} 년    {} 월     {} 일" .format(ws_automation.cell(row=6, column=3).value[:4], ws_automation.cell(row=6, column=3).value[5:7], ws_automation.cell(row=6, column=3).value[8:])
+                    string = f"                               {ws_automation.cell(row=6, column=3).value[:4]} 년    {ws_automation.cell(row=6, column=3).value[5:7]} 월     \
+                        {ws_automation.cell(row=6, column=3).value[8:]} 일"
                 pyperclip.copy(string)
                 pyautogui.moveTo(fw_completion.left + 600, fw_completion.top + 765, duration=0.35)
                 # pyautogui.hotkey("ctrl", "a") 로 할 경우, 모든 데이터가 선택되지만, 고쳐야할 줄은 한 줄이기 때문에 click 을 세번 사용하여 한 줄 드래그
@@ -509,8 +512,7 @@ class automation:
                 pyautogui.hotkey("alt", "right")
 
                 # 생년월일
-                string = "{}. {}. {}" .format(automation.ws_members.cell(row=idx, column=20).value[:2], automation.ws_members.cell(row=idx, column=20).value[2:4], \
-                    automation.ws_members.cell(row=idx, column=20).value[4:6])
+                string = f"{automation.ws_members.cell(row=idx, column=20).value[:2]}. {automation.ws_members.cell(row=idx, column=20).value[2:4]}. {automation.ws_members.cell(row=idx, column=20).value[4:6]}"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -529,7 +531,7 @@ class automation:
                 pyautogui.hotkey("alt", "right")
 
                 # 교육과정명
-                string = " 요양보호사 {}" .format(automation.ws_members.cell(row=idx, column=4).value)
+                string = f" 요양보호사 {automation.ws_members.cell(row=idx, column=4).value}"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -702,9 +704,9 @@ class automation:
                 
                 # 대체실습 기간
                 pyautogui.click(fw_training.left + 675, fw_training.top + 785, duration=0.35)
-                string = "{} 년  {} 월  {} 일  ∼    {} 년  {} 월  {} 일" .format(automation.ws_members.cell(row=idx, column = 9).value[:4], automation.ws_members.cell(row=idx, column = 9).value[5:7], \
-                    automation.ws_members.cell(row=idx, column = 9).value[8:], automation.ws_members.cell(row=idx, column = 10).value[:4], automation.ws_members.cell(row=idx, column = 10).value[5:7], \
-                        automation.ws_members.cell(row=idx, column = 10).value[8:])
+                string = f"{automation.ws_members.cell(row=idx, column = 9).value[:4]} 년  {automation.ws_members.cell(row=idx, column = 9).value[5:7]} 월  \
+                    {automation.ws_members.cell(row=idx, column = 9).value[8:]} 일  ∼    {automation.ws_members.cell(row=idx, column = 10).value[:4]} 년  \
+                        {automation.ws_members.cell(row=idx, column = 10).value[5:7]} 월  {automation.ws_members.cell(row=idx, column = 10).value[8:]} 일"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -713,7 +715,7 @@ class automation:
                 # pyautogui.click(fw_training.left + 680, fw_training.top + 825, duration=0.35)
                 pyautogui.hotkey("alt", "right")
                 pyautogui.hotkey("alt", "right")
-                string = "  총     {}  시간" .format(automation.ws_members.cell(row=idx, column=14).value)
+                string = f"  총     {automation.ws_members.cell(row=idx, column=14).value}  시간"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -751,13 +753,17 @@ class automation:
 
                 # 수여일
                 if automation.ws_members.cell(row=idx, column=8).value == "대체실습 1기":
-                    string = "                                      {} 년   {} 월    {} 일" .format(ws_automation.cell(row=3, column=3).value[:4], ws_automation.cell(row=3, column=3).value[5:7], ws_automation.cell(row=3, column=3).value[8:])
+                    string = f"                                      {ws_automation.cell(row=3, column=3).value[:4]} 년   \
+                        {ws_automation.cell(row=3, column=3).value[5:7]} 월    {ws_automation.cell(row=3, column=3).value[8:]} 일"
                 elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 2기":
-                    string = "                                      {} 년   {} 월    {} 일" .format(ws_automation.cell(row=4, column=3).value[:4], ws_automation.cell(row=4, column=3).value[5:7], ws_automation.cell(row=4, column=3).value[8:])
+                    string = f"                                      {ws_automation.cell(row=4, column=3).value[:4]} 년   \
+                        {ws_automation.cell(row=4, column=3).value[5:7]} 월    {ws_automation.cell(row=4, column=3).value[8:]} 일"
                 elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 3기":
-                    string = "                                      {} 년   {} 월    {} 일" .format(ws_automation.cell(row=5, column=3).value[:4], ws_automation.cell(row=5, column=3).value[5:7], ws_automation.cell(row=5, column=3).value[8:])
+                    string = f"                                      {ws_automation.cell(row=5, column=3).value[:4]} 년   \
+                        {ws_automation.cell(row=5, column=3).value[5:7]} 월    {ws_automation.cell(row=5, column=3).value[8:]} 일"
                 elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 4기":
-                    string = "                                      {} 년   {} 월    {} 일" .format(ws_automation.cell(row=6, column=3).value[:4], ws_automation.cell(row=6, column=3).value[5:7], ws_automation.cell(row=6, column=3).value[8:])
+                    string = f"                                      {ws_automation.cell(row=6, column=3).value[:4]} 년   \
+                        {ws_automation.cell(row=6, column=3).value[5:7]} 월    {ws_automation.cell(row=6, column=3).value[8:]} 일"
                 pyperclip.copy(string)
                 pyautogui.scroll(-2000)
                 pyautogui.moveTo(fw_training.left + 705, fw_training.top + 780, duration=0.35)
@@ -943,23 +949,23 @@ class automation:
                     pyautogui.hotkey("alt", "right")
 
                 # 요양보호사 교육기간. 부터
-                string = "{}.{}.{}" .format(automation.ws_members.cell(row=idx, column=6).value[2:4], automation.ws_members.cell(row=idx, column=6).value[5:7], \
-                    automation.ws_members.cell(row=idx, column=6).value[8:])
+                string = f"{automation.ws_members.cell(row=idx, column=6).value[2:4]}.{automation.ws_members.cell(row=idx, column=6).value[5:7]}.\
+                    {automation.ws_members.cell(row=idx, column=6).value[8:]}"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
                 pyautogui.hotkey("alt", "right")
 
                 # 요양보호사 교육기간. 까지
-                string = "{}.{}.{}" .format(automation.ws_members.cell(row=idx, column=7).value[2:4], automation.ws_members.cell(row=idx, column=7).value[5:7], \
-                    automation.ws_members.cell(row=idx, column=7).value[8:])
+                string = f"{automation.ws_members.cell(row=idx, column=7).value[2:4]}.{automation.ws_members.cell(row=idx, column=7).value[5:7]}.\
+                    {automation.ws_members.cell(row=idx, column=7).value[8:]}"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
                 pyautogui.hotkey("alt", "right")
 
                 # 교육과정명
-                string = "요양보호사 {}기 (이론,실기)" .format(automation.ws_members.cell(row=idx, column=5).value[0])
+                string = f"요양보호사 {automation.ws_members.cell(row=idx, column=5).value[0]}기 (이론,실기)"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -975,23 +981,23 @@ class automation:
                 pyautogui.hotkey("alt", "right")
                 
                 # 요양보호사 교육기간(실습). 부터
-                string = "{}.{}.{}" .format(automation.ws_members.cell(row=idx, column=9).value[2:4], automation.ws_members.cell(row=idx, column=9).value[5:7], \
-                    automation.ws_members.cell(row=idx, column=9).value[8:])
+                string = f"{automation.ws_members.cell(row=idx, column=9).value[2:4]}.{automation.ws_members.cell(row=idx, column=9).value[5:7]}.\
+                    {automation.ws_members.cell(row=idx, column=9).value[8:]}"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
                 pyautogui.hotkey("alt", "right")
 
                 # 요양보호사 교육기간(실습). 까지
-                string = "{}.{}.{}" .format(automation.ws_members.cell(row=idx, column=10).value[2:4], automation.ws_members.cell(row=idx, column=10).value[5:7], \
-                    automation.ws_members.cell(row=idx, column=10).value[8:])
+                string = f"{automation.ws_members.cell(row=idx, column=10).value[2:4]}.{automation.ws_members.cell(row=idx, column=10).value[5:7]}.\
+                    {automation.ws_members.cell(row=idx, column=10).value[8:]}"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
                 pyautogui.hotkey("alt", "right")
 
                 # 교육과정명(실습)
-                string = "요양보호사 (대체실습{}기)" .format(automation.ws_members.cell(row=idx, column=8).value[5])
+                string = f"요양보호사 (대체실습{automation.ws_members.cell(row=idx, column=8).value[5]}기)"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -1095,7 +1101,7 @@ class automation:
             pyautogui.doubleClick(fw_epr.left + 330, fw_epr.top + 314, duration=0.35)
         elif time == "야간":
             pyautogui.doubleClick(fw_epr.left + 330, fw_epr.top + 293, duration=0.35)
-        title = "{}기{}{}" .format(str(ordinal_num), time, kind)
+        title = f"{ordinal_num}기{time}{kind}"
         fw_report = pyautogui.getWindowsWithTitle(title)
         while fw_report == []:
             fw_report = pyautogui.getWindowsWithTitle(title)
@@ -1106,7 +1112,7 @@ class automation:
             fw_report.maximize()
         
         # 자동화 셋팅
-        string_set = "{}기{}" .format(ordinal_num, time)
+        string_set = f"{ordinal_num}기{time}"
         # 중앙으로 이동후 스크롤바 위치 표준화
         pyautogui.moveTo(fw_report.center.x, fw_report.center.y, duration=0.35)
         pyautogui.sleep(1)
@@ -1124,9 +1130,9 @@ class automation:
 
             # 과정구분
             if automation.ws_members.cell(row=idx, column=15).value == "일반":
-                string = "{}\n(신규)" .format(automation.ws_members.cell(row=idx, column=15).value)
+                string = f"{automation.ws_members.cell(row=idx, column=15).value}\n(신규)"
             else:
-                string = "{}\n{}" .format(automation.ws_members.cell(row=idx, column=15).value[:3], automation.ws_members.cell(row=idx, column=15).value[3:])
+                string = f"{automation.ws_members.cell(row=idx, column=15).value[:3]}\n{automation.ws_members.cell(row=idx, column=15).value[3:]}"
             pyperclip.copy(string)
             pyautogui.hotkey("ctrl", "a")
             pyautogui.hotkey("ctrl", "v")
@@ -1140,8 +1146,8 @@ class automation:
             pyautogui.hotkey("alt", "right")
 
             # 생년월일
-            string = "{}. {}. {}" .format(automation.ws_members.cell(row=idx, column=20).value[:2], automation.ws_members.cell(row=idx, column=20).value[2:4], \
-                automation.ws_members.cell(row=idx, column=20).value[4:6])
+            string = f"{automation.ws_members.cell(row=idx, column=20).value[:2]}. {automation.ws_members.cell(row=idx, column=20).value[2:4]}. \
+                {automation.ws_members.cell(row=idx, column=20).value[4:6]}"
             pyperclip.copy(string)
             pyautogui.hotkey("ctrl", "a")
             pyautogui.hotkey("ctrl", "v")
@@ -1179,7 +1185,7 @@ class automation:
 
         fw_epr.activate()
 
-        title = "대체실습 {}기 교육{}" .format(ordinal_num, kind)
+        title = f"대체실습 {ordinal_num}기 교육{kind}"
 
         # 파일 경로 이동
         # 대체실습
@@ -1211,7 +1217,7 @@ class automation:
             # [교육생명단] 교육구분 370,395
             pyautogui.click(fw_temporary.top + 8 + 370, fw_temporary.left + 8 + 395, duration=0.35)
             for idx, cell in enumerate(automation.ws_members["H"]):
-                if cell.value != "대체실습 {}기" .format(ordinal_num):
+                if cell.value != f"대체실습 {ordinal_num}기":
                     continue
 
                 # 교육구분
@@ -1230,8 +1236,8 @@ class automation:
                 pyautogui.hotkey("alt", "right")
 
                 # 생년월일
-                string = "{}. {}. {}".format(automation.ws_members.cell(row=idx, column=20).value[:2], automation.ws_members.cell(row=idx, column=20).value[2:4], \
-                    automation.ws_members.cell(row=idx, column=20).value[4:6])
+                string = f"{automation.ws_members.cell(row=idx, column=20).value[:2]}. {automation.ws_members.cell(row=idx, column=20).value[2:4]}. \
+                    {automation.ws_members.cell(row=idx, column=20).value[4:6]}"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -1244,15 +1250,15 @@ class automation:
                 pyautogui.hotkey("alt", "right")
 
                 # 교육기수
-                string = "{} {}반" .format(automation.ws_members.cell(row=idx, column=5).value[:2], automation.ws_members.cell(row=idx, column=5).value[2:4])
+                string = f"{automation.ws_members.cell(row=idx, column=5).value[:2]} {automation.ws_members.cell(row=idx, column=5).value[2:4]}반"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
                 pyautogui.hotkey("alt", "right")
 
                 # 이론, 실기 교육이수일
-                string = "{}.{}.{}" .format(automation.ws_members.cell(row=idx, column=7).value[2:4], automation.ws_members.cell(row=idx, column=7).value[5:7], \
-                    automation.ws_members.cell(row=idx, column=7).value[8:])
+                string = f"{automation.ws_members.cell(row=idx, column=7).value[2:4]}.{automation.ws_members.cell(row=idx, column=7).value[5:7]}.\
+                    {automation.ws_members.cell(row=idx, column=7).value[8:]}"
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
                 pyautogui.hotkey("alt", "right")
@@ -1278,7 +1284,7 @@ class automation:
             # 연번 클릭
             pyautogui.click(fw_temporary.left + 8 + 915, fw_temporary.top + 8 + 600, duration=0.35)
             for idx, cell in enumerate(automation.ws_members["H"], start=1):
-                if cell.value != "대체실습 {}기" .format(ordinal_num):
+                if cell.value != f"대체실습 {ordinal_num}기":
                     continue
 
                 # 연번
@@ -1288,7 +1294,7 @@ class automation:
                 pyautogui.hotkey("alt", "right")
 
                 # 교육과정 명
-                string = "{}반\n{}" .format(automation.ws_members.cell(row=idx, column=5).value[2:4], automation.ws_members.cell(row=idx, column=5).value[:2])
+                string = f"{automation.ws_members.cell(row=idx, column=5).value[2:4]}반\n{automation.ws_members.cell(row=idx, column=5).value[:2]}"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -1328,7 +1334,7 @@ class automation:
                 pyautogui.hotkey("alt", "right")
 
                 # 주민번호
-                string = "{}\n{}" .format(automation.ws_members.cell(row=idx, column=20).value[:6], automation.ws_members.cell(row=idx, column=20).value[6:])
+                string = f"{automation.ws_members.cell(row=idx, column=20).value[:6]}\n{automation.ws_members.cell(row=idx, column=20).value[6:]}"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -1347,7 +1353,8 @@ class automation:
                 pyautogui.hotkey("alt", "right")
 
                 #수료 연월일
-                string = "{}.{}.{}" .format(automation.ws_members.cell(row=idx, column=10).value[2:4], automation.ws_members.cell(row=idx, column=10).value[5:7], automation.ws_members.cell(row=idx, column=10).value[8:])
+                string = f"{automation.ws_members.cell(row=idx, column=10).value[2:4]}.{automation.ws_members.cell(row=idx, column=10).value[5:7]}.\
+                    {automation.ws_members.cell(row=idx, column=10).value[8:]}"
                 pyperclip.copy(string)
                 pyautogui.hotkey("ctrl", "a")
                 pyautogui.hotkey("ctrl", "v")
@@ -1387,7 +1394,7 @@ class automation:
 
         number = 1
 
-        string_set = "{}기{}" .format(ordinal_num, time)
+        string_set = f"{ordinal_num}기{time}"
 
         # 기수 폴더 클릭
         pyautogui.doubleClick(fw_epr.left + 330, fw_epr.top + 230 + ((ordinal_num - 1) * 21), duration=0.35)
@@ -1430,8 +1437,8 @@ class automation:
             pyautogui.hotkey("ctrl", "v")
             pyautogui.hotkey("alt", "right")
 
-            string = "{}. {}. {}" .format(automation.ws_members.cell(row=idx, column=20).value[:2], automation.ws_members.cell(row=idx, column=20).value[2:4], \
-                automation.ws_members.cell(row=idx, column=20).value[4:6])
+            string = f"{automation.ws_members.cell(row=idx, column=20).value[:2]}. {automation.ws_members.cell(row=idx, column=20).value[2:4]}.\
+                 {automation.ws_members.cell(row=idx, column=20).value[4:6]}"
             pyperclip.copy(string)
             pyautogui.hotkey("ctrl", "a")
             pyautogui.hotkey("ctrl", "v")
@@ -1451,11 +1458,11 @@ class automation:
 
     def update_attendance(self, update_num, update_time):
         # how to use ? : update_attendance(4, "야간") 업데이트를 진행할 기수 + 시간
-        name = "{}기{}_출석부(기관장)" .format(update_num, update_time)
-        wb_update = load_workbook("D:\\"+operate_data.ac_name+"\\교육생관리\\출석부_기관장용\\{}.xlsx" .format(name))
+        name = f"{update_num}기{update_time}_출석부(기관장)"
+        wb_update = load_workbook("D:\\"+operate_data.ac_name+f"\\교육생관리\\출석부_기관장용\\{name}.xlsx")
         ws_update = wb_update.active
 
-        string_set = "{}기{}" .format(update_num, update_time)
+        string_set = f"{update_num}기{update_time}"
 
         # 출석부 파일의 시작점과 각 결석일수를 참조하기 위한 초기화 작업
         if update_time == "주간":
@@ -1518,29 +1525,21 @@ class automation:
         startingdate = ws_automation.cell(row=112 + new_path_num, column=2).value
         string_set = f"{new_path_num}기{new_path_time}{startingdate}"
         print(string_set)
-        return
 
         i = 1
-        original_path = "D:\\Master\\mkfile\\Master_{}" .format(file_name)
+        original_path = f"D:\\Master\\mkfile\\{file_name}"
         print("파일을 복사합니다.\n원본파일 :", original_path)
         for idx, cell in enumerate(automation.ws_members["E"], start=1):
             if string_set != cell.value:
                 continue
             if automation.ws_members.cell(row=idx, column=15).value == "일반":
-                path = "D:\\"+operate_data.ac_name+"\\교육생관리\\{}\\{}\\{}. {}\\{}_{}" .format(str(new_path_num) + "기", string_set, i, automation.ws_members.cell(row=idx, column=18).value, \
-                    automation.ws_members.cell(row=idx, column=18).value, file_name)
-
+                path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(new_path_num) + "기"}\\{string_set}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}\\{automation.ws_members.cell(row=idx, column=18).value}_{file_name}"
             elif automation.ws_members.cell(row=idx, column=15).value == "자격증(사복)":
-                path = "D:\\"+operate_data.ac_name+"\\교육생관리\\{}\\{}\\{}. {}_사복\\{}_{}" .format(str(new_path_num) + "기", string_set, i, automation.ws_members.cell(row=idx, column=18).value, \
-                    automation.ws_members.cell(row=idx, column=18).value, file_name)
-
+                path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(new_path_num) + "기"}\\{string_set}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}_사복\\{automation.ws_members.cell(row=idx, column=18).value}_{file_name}"
             elif automation.ws_members.cell(row=idx, column=15).value == "자격증(간조)":
-                path = "D:\\"+operate_data.ac_name+"\\교육생관리\\{}\\{}\\{}. {}_간조\\{}_{}" .format(str(new_path_num) + "기", string_set, i, automation.ws_members.cell(row=idx, column=18).value, \
-                    automation.ws_members.cell(row=idx, column=18).value, file_name)
-
+                path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(new_path_num) + "기"}\\{string_set}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}_간조\\{automation.ws_members.cell(row=idx, column=18).value}_{file_name}"
             elif automation.ws_members.cell(row=idx, column=15).value == "자격증(간호)":
-                path = "D:\\"+operate_data.ac_name+"\\교육생관리\\{}\\{}\\{}. {}_간호\\{}_{}" .format(str(new_path_num) + "기", string_set, i, automation.ws_members.cell(row=idx, column=18).value, \
-                    automation.ws_members.cell(row=idx, column=18).value, file_name)
+                path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(new_path_num) + "기"}\\{string_set}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}_간호\\{automation.ws_members.cell(row=idx, column=18).value}_{file_name}"
             shutil.copyfile(original_path, path)
             print("파일이 복사되었습니다 :", path)
             i += 1
