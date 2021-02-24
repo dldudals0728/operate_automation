@@ -104,6 +104,8 @@ checkout : git checkout [commitID] : go to created point[commitID]
 branch : git branch : show branch(가지)
                         현재 branch 들을 보여줌.
         : git branch BranchName : 이름이 BranchName 인 branch 를 생성함. 여기서 생성된 branch 는 원 branch(현재 선택되어 있는 branch) 의 현 상태를 그대로 가져옴.(평행우주)
+        : git branch -M [new-name] : rename present branch
+        : git branch -m [old-name] [new-name] : rename present branch
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 merge : git merge [BranchName to be merged] : merge branch
                                                 병합 할 분기(main) 인 상태에서 변화를 가져올 branch(병합 할 분기) 를 입력한다.
@@ -112,3 +114,9 @@ merge : git merge [BranchName to be merged] : merge branch
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 rebase : git rebase [BranchName to be rebased] : rebase branch
                                                     분기를 재배치 한다. merge 와 같은 개념이지만, rebase 는 말 그대로 재배치 하여 한 줄로 통합한다.
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+remote : git remote : show remote repository
+                        현 폴더의 원격 저장소를 나타냄.
+         git remote add origin https://github.com/dldudals0728/github_menual.git : 이 github 의 저장소를 이 폴더의 origin 이란 이름의 원격 저장소로 설정하겠다는 의미.
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+push : git push -u origin main : 폴더의 현 branch 에 commit 된 내용들을 origin 이란 이름의 원격 저장소의 main 이란 branch 에 올린다는 의미.
