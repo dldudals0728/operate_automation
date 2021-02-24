@@ -16,7 +16,7 @@ commit message format
 
 How to upload to github
 at the first time
-    git remote add origin [url] : origin : 단축 이름(차후(ex. push)에 url 대신 사용)
+    git remote add origin [url] : origin : 단축 이름(차후(ex. push)에 url 대신 사용) origin 이란 이름의 원격 저장소(remote-repository)로 사용하겠다는 의미
     git branch -M [new-name]
     git push -u origin main
 after
