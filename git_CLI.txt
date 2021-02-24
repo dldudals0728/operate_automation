@@ -16,11 +16,21 @@ commit message format
 
 How to upload to github
 at the first time
-    git remote add origin [url]
+    git remote add origin [url] : origin : 단축 이름(차후(ex. push)에 url 대신 사용)
     git branch -M [new-name]
     git push -u origin main
 after
     git push -u origin main
+
+How to Download from github
+at the first time
+    git clone [url]
+after
+    git pull 
+
+How to Generate new token
+github -> settings -> Developer settings -> Personal access tokens -> Generate new token -> Note(토큰 설명) -> Select scopes -> Generate token
+(체크박스는 repo 만 해도 됨)
 
 꿀팁
 터미널이 작아서 출력이 모두 안되는 경우, 아래 방향키, e(한 줄씩), d(한 뭉텅이씩) 를 누르면 하위 내용을 보여줌
@@ -45,9 +55,10 @@ git init . : Initialize repository.
              현재 dir 을 git 이 관리하도록 하는 것.
              .git 폴더가 생성되는데, 이 폴더에 모든 version 들이 관리되는 것이므로, 절대 삭제 X !
 -------------------------------------------------------------------------------------------------------------------------------------------------------
-config : git config --global user.email "you@example.com"
-         git config --global user.name "Your Name"
-         사용자의 이름과 이메일을 등록하는 함수. commit 시 사용자 개인의 commit 으로 넘어감(추측)
+config : git config --global user.name "Your Name" : git account name
+        : git config --global user.email "you@example.com" : git account email
+        사용자의 이름과 이메일을 등록하는 함수. commit 시 사용자 개인의 commit 으로 넘어감(추측)
+        이 함수를 다시 사용하여 "Your Name" 과 "you@example.com" 을 다르게 작성하면 git account Name 과 email 을 바꿀 수 있다.
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 status : git status : working tree status
                         가장 많이 사용되는 명령어. git 의 상태를 보여줌.
@@ -108,12 +119,18 @@ checkout : git checkout [commitID] : go to created point[commitID]
                                         HEAD가 commitID 가 가리키는 버전, 즉 해당 버전이 생긴 시점을 가리키도록 한다. -> 해당 버전이 생긴 시점으로 감.
                                         commitID 를 main(master) 로 지정하면 가장 최신, master branch 로 다시 이동한다.
                                         commitID 가 아닌 BranchName 을 작성하면 BranchName branch 로 넘어감
+         : git checkout -b [BranchName] : git branch [BranchName] + git checkout [BranchName]
+         : git checkout -b [Local-new-branch] [remote-repository]/[remote-branch] : 로컬에 [Local-new-branch] 를 만들어서 원격의 [remote-repository] 의 \
+                                                                                    [remote-branch] 를 받아와서 그 branch 로 넘어감
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 branch : git branch : show branch(가지)
                         현재 branch 들을 보여줌.
         : git branch BranchName : 이름이 BranchName 인 branch 를 생성함. 여기서 생성된 branch 는 원 branch(현재 선택되어 있는 branch) 의 현 상태를 그대로 가져옴.(평행우주)
+        : git branch -d BranchName : delete BranchName
         : git branch -M [new-name] : rename present branch
         : git branch -m [old-name] [new-name] : rename present branch
+        : git branch -a : show local and remote (all) branch
+        : git branch -r : show remote branch
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 merge : git merge [BranchName to be merged] : merge branch
                                                 병합 할 분기(main) 인 상태에서 변화를 가져올 branch(병합 할 분기) 를 입력한다.
@@ -128,3 +145,26 @@ remote : git remote : show remote repository
          git remote add origin https://github.com/dldudals0728/github_menual.git : 이 github 의 저장소를 이 폴더의 origin 이란 이름의 원격 저장소로 설정하겠다는 의미.
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 push : git push -u origin main : 폴더의 현 branch 에 commit 된 내용들을 origin 이란 이름의 원격 저장소의 main 이란 branch 에 올린다는 의미.
+                                 (현재 위치한 branch 의 source ==> remote repository(name=origin)의 branch(name=main))
+     : git push -d [remote-repository] [remote-BranchName] : delete remote BranchName
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+pull : git pull : github 에 업로드된 내용을 다운로드하여 merge 함.(현재 사용하고 있는 branch 에 remote 되어있는 branch 를 pull 함.)
+                    pull 을 하지 않은 상태에서 push 를 하려고 하면 충돌이 일어나기 때문에, 모든 작업 전에는 꼭 pull 해주는 것이 좋음.
+     : git pull [remote-repository-name] [local-branch-name] : [remote-repository-name] 의 [local-branch-name] 만 pull.
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+clone : git clone [url] : download source from github
+                            github 에 저장되어 있는 파일을 가져온다. (clone 은 처음에만 하고 그 다음부터는 pull 을 하면 된다고 보면 됨.)
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+fetch : git fetch : fetch local source(compare github remote repository)
+                    현재 내 source 와 github 에 업로드 되어있는 source 를 비교할 수 있도록 패치한다. (다른사람과의 협업시 유용)
+                    변동사항이 있을때는 항상 fetch 해주는 것이 좋음 !
+                    git fetch -> git status 를 해보면 commit 이 뒤쳐져 있는지 확인할 수 있음
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+=======================================================================================================================================================
+파일 목록
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+.gitignore : git 으로 관리하고 github 에 올릴 필요가 없거나 오히려 그래서는 안되는 파일들(ex. 코드를 실행하면 자동으로 다운받아지는 파일 or 코드대로 빌드되서 자동으로 생성되는 파일 / \
+             보안적으로 중요한 내용)을 작성하여 그 파일들이 push 되는 것을 막아준다.
+             참고 링크 : http://attlassian.com/git/tutorials/saving-changes/gitignore
+             
