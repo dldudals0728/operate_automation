@@ -72,6 +72,7 @@ status : git status : working tree status
 add : git add FileName[-A] : add to staging area
                              git 이 FileName 을 관리하도록 함. 버전으로 만들기 위해 Staging Area 에 올릴 때 사용되는 명령어. \
                              Working tree 의 수정사항인 FileName 을 버전으로 만들기 위해 Staging Area 로 올림
+                             FileName1 FileName2 FileName3 ... FileName7 이런식으로 여러개를 한번에 올릴 수 있음
     : git add DirName : DirName 디렉토리 밑에 있는 모든 파일 add
     : git add . : 현재 디렉토리 밑에 있는 모든 파일 add.
     : git reset HEAD FileName : cancel git add(Staging Area -> Working tree)
