@@ -15,7 +15,7 @@ commit message format
 함수 : 함수 카테고리(basic function) 함수 종류[함수 이름(git diff) / 함수 이름(git rest --hard), 함수 종류[diff]]
 
 꿀팁
-터미널이 작아서 출력이 모두 안되는 경우, e(한 줄씩), d(한 뭉텅이씩) 를 누르면 하위 내용을 보여줌
+터미널이 작아서 출력이 모두 안되는 경우, 아래 방향키, e(한 줄씩), d(한 뭉텅이씩) 를 누르면 하위 내용을 보여줌
 change git text editor
 검색엔진 : change git default text editor
     ex. git config --global core.editor "vim" : config : git 의 설정을 바꿈, --global : 현재 저장소가 아닌 컴퓨터 전체, 로그인한 사용자 전체, \
@@ -62,6 +62,7 @@ commit : git commit (-m "commit message") : create version
                                             버전을 생성하기 위해 제출(commit)함. 인터페이스 생각보다 복잡하니까 그냥 -m~ 함수 쓰자,,
         : git commit -am "commit message" : run add and commit same time
                                             add 와 commit 을 한번에 함. 단, add 가 적어도 한번이상 된, 즉 Untracked 된 파일은 안됨 !! -> 실수 방지
+        : git commit --amend -m "modified commit message"  : 가장 마지막에 commit 된 버전의 commit message 를 변경할 수 있다.
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 log : git log : show version
                 git 의 역사를 보여줌. 버전이 잘 만들어졌는지 확인할 수 있음. (q : 나가기)
@@ -76,6 +77,7 @@ log : git log : show version
 
                     --- a/git_CLI.txt 이 버전은 git_CLI.txt 를 포함하고 있다.
                     +++ b/git_CLI.txt
+    : git log --graph --all --decorate : log 를 그래프 형식으로 보여줌.
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 cat : cat FileName.extension : File 의 내용을 보여줌
 -------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -97,3 +99,16 @@ diff : git diff : show difference
 checkout : git checkout [commitID] : go to created point[commitID]
                                         HEAD가 commitID 가 가리키는 버전, 즉 해당 버전이 생긴 시점을 가리키도록 한다. -> 해당 버전이 생긴 시점으로 감.
                                         commitID 를 main(master) 로 지정하면 가장 최신, master branch 로 다시 이동한다.
+                                        commitID 가 아닌 BranchName 을 작성하면 BranchName branch 로 넘어감
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+branch : git branch : show branch(가지)
+                        현재 branch 들을 보여줌.
+        : git branch BranchName : 이름이 BranchName 인 branch 를 생성함. 여기서 생성된 branch 는 원 branch(현재 선택되어 있는 branch) 의 현 상태를 그대로 가져옴.(평행우주)
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+merge : git merge [BranchName to be merged] : merge branch
+                                                병합 할 분기(main) 인 상태에서 변화를 가져올 branch(병합 할 분기) 를 입력한다.
+                                                window 에서는 바로 되지만, mac 에서는 commit message 를 작성하는 edit 이 실행되기 때문에 저장하고 나가기(:wq)를 해준다.
+                                                병합할 두 분기가 서로 같은 부분을 다르게 수정했다면 충돌(conflict)이 발생하여 그 부분을 수정한 뒤 merge 해야 함.
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+rebase : git rebase [BranchName to be rebased] : rebase branch
+                                                    분기를 재배치 한다. merge 와 같은 개념이지만, rebase 는 말 그대로 재배치 하여 한 줄로 통합한다.
