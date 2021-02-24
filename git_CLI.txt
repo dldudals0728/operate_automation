@@ -14,6 +14,14 @@ commit message format
 삭제 : del
 함수 : 함수 카테고리(basic function) 함수 종류[함수 이름(git diff) / 함수 이름(git rest --hard), 함수 종류[diff]]
 
+How to upload to github
+at the first time
+    git remote add origin [url]
+    git branch -M [new-name]
+    git push -u origin main
+after
+    git push -u origin main
+
 꿀팁
 터미널이 작아서 출력이 모두 안되는 경우, 아래 방향키, e(한 줄씩), d(한 뭉텅이씩) 를 누르면 하위 내용을 보여줌
 change git text editor
