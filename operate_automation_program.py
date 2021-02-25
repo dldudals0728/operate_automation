@@ -33,44 +33,6 @@ global cmbbox
 
 function = automation()
 
-def automation_start():
-    ordinal_num = radio_num_var.get()
-    time = radio_time_var.get()
-    mode = cmbbox.get()
-    print("ordinal_num :",ordinal_num, "ordinal_num type :", type(ordinal_num))
-    print("time :", time, "time type", type(time))
-    print("mode :", mode, "mode type :", type(mode))
-    mode_baseinfo = ["출석시간 반영", "교육생 자료 복사"]
-    mode_manage = ["교육수료증명서", "대체실습확인서", "요양보호사 자격증 발급,재발급 신청서"]
-    mode_report = ["개강보고", "출석부", "실시보고_대체실습", "수료보고_대체실습", "출석부_대체실습"]
-    # mode list : "교육수료증명서", "대체실습확인서", "요양보호사 자격증 발급 신청서", "출석시간 반영", "교육생 자료 복사", "개강보고(실시보고)", "종강보고(수료보고)", "출석부", "대체실습"
-
-    if mode == mode_baseinfo[0]:
-        function.update_attendance(ordinal_num, time)
-
-    # elif mode == mode_baseinfo[1]:
-        # function.mkfile(ordinal_num, time, )
-
-    if mode in mode_manage:
-        function.auto_move_class(ordinal_num, time)
-        function.automation_task_students(ordinal_num, time, mode, modevar)
-
-    if mode in mode_report:
-        if mode == mode_report[0]:
-            function.automation_task_report(ordinal_num, time, mode)
-        elif mode == mode_report[1]:
-            function.mkattendance(ordinal_num, time)
-        elif mode == mode_report[2]:
-            mode = mode_report[2][:4]
-            function.automation_task_temporary(ordinal_num, mode)
-        elif mode == mode_report[3]:
-            mode = mode_report[3][:4]
-            function.automation_task_temporary(ordinal_num, mode)
-        elif mode == mode_report[4]:
-            msgbox.showerror("업데이트 필요", "대체실습 출석부 작성 자동화 프로그램이 업데이트 되지 않았습니다.(업데이트 필요) ")
-
-
-
 def del_widget(user_widget):
 
     if user_widget.winfo_exists():
@@ -78,19 +40,43 @@ def del_widget(user_widget):
 
 def add_listbox(listbox):
     group = f"{radio_num_var.get()}기{radio_time_var.get()}"
-    for idx, cell in enumerate(function.ws_members["E"], start=1):
-        if not group in str(cell.value):
-            continue
-        string = f"{function.ws_members.cell(row=idx, column=1).value}. {function.ws_members.cell(row=idx, column=18).value}"
-        listbox.insert(END, string)
+    if cmbbox.get() == "실시보고_대체실습" or cmbbox.get() == "수료보고_대체실습" or cmbbox.get() == "출석부_대체실습":
+        group = f"대체실습 {radio_num_var.get()}기"
+        listbox.insert(END, group + " 명단")
+        for idx, cell in enumerate(function.ws_members["H"], start=1):
+            if not group in str(cell.value):
+                continue
+            string = f"{function.ws_members.cell(row=idx, column=1).value}. {function.ws_members.cell(row=idx, column=18).value}"
+            listbox.insert(END, string)
+    
+    else:
+        listbox.insert(END, group + " 명단")
+        for idx, cell in enumerate(function.ws_members["E"], start=1):
+            if not group in str(cell.value):
+                continue
+            string = f"{function.ws_members.cell(row=idx, column=1).value}. {function.ws_members.cell(row=idx, column=18).value}"
+            listbox.insert(END, string)
+
     listbox.config(state=DISABLED)
 
 def selection():
+    lst_baseinfo = ["출석시간 반영", "교육생 자료 복사"]
+    lst_manage = ["교육수료증명서", "대체실습확인서", "요양보호사 자격증 발급,재발급 신청서"]
+    lst_report = ["개강보고", "출석부", "실시보고_대체실습", "수료보고_대체실습", "출석부_대체실습"]
     if cmbbox.get() == "선택":
         msgbox.showinfo("알림", "자동화 옵션을 선택해주세요.")
+        btn_start["state"] = "disabled"
         return
     else:
-        ready = msgbox.askyesno("선택", f"{radio_num_var.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 자동화 작업을 선택하셨습니다.")
+        if cmbbox.get() == "실시보고_대체실습" or cmbbox.get() == "수료보고_대체실습" or cmbbox.get() == "출석부_대체실습":
+            ready = msgbox.askyesno("선택", f"대체실습 {radio_num_var.get()}기 {cmbbox.get()} 자동화 작업을 선택하셨습니다.")
+        elif cmbbox.get() in lst_manage:
+            if modevar.get() == True:
+                ready = msgbox.askyesno("선택", f"{radio_num_var.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 「Excel」자동화 작업을 선택하셨습니다.")
+            elif modevar.get() == False:
+                ready = msgbox.askyesno("선택", f"{radio_num_var.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 「한글」자동화 작업을 선택하셨습니다.")
+        else:
+            ready = msgbox.askyesno("선택", f"{radio_num_var.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 자동화 작업을 선택하셨습니다.")
         print(ready)
         if ready == True:
             print(cmbbox.get())
@@ -103,9 +89,12 @@ def selection():
     lst_selection = ["선택", "교육수료증명서", "대체실습확인서", "요양보호사 자격증 발급,재발급 신청서"]
     lst_selection.remove("선택")
 
-    lst_baseinfo = ["출석시간 반영", "교육생 자료 복사"]
-    lst_manage = ["교육수료증명서", "대체실습확인서", "요양보호사 자격증 발급,재발급 신청서"]
-    lst_report = ["개강보고", "출석부", "실시보고_대체실습", "수료보고_대체실습", "출석부_대체실습"]
+    
+
+    if cmbbox.get() == "실시보고_대체실습" or cmbbox.get() == "수료보고_대체실습" or cmbbox.get() == "출석부_대체실습":
+        btn_daytime.select()
+        btn_daytime["state"] = "disabled"
+        btn_nighttime["state"] = "disabled"
 
     group = f"{radio_num_var.get()}기{radio_time_var.get()}"
     print(group)
@@ -123,6 +112,11 @@ def selection():
     
     listbox.insert(END, info_message)
     add_listbox(listbox)
+
+    pvar.set(0)
+    progressbar.update()
+
+    btn_start["state"] = "normal"
     
         
 
@@ -130,6 +124,8 @@ def selection():
 def basic():
     global radio_num_var
     global radio_time_var
+    global btn_daytime
+    global btn_nighttime
 
     frame_basic_num = Frame(frame_option)
     frame_basic_num.pack(fill="x")
@@ -184,6 +180,12 @@ def baseinfo():
     radio_xlsx["state"] = "disable"
     radio_hwp["state"] = "disable"
 
+    btn_daytime.select()
+    btn_daytime["state"] = "normal"
+    btn_nighttime["state"] = "normal"
+
+    btn_start["state"] = "disabled"
+
 def manage():
     global frame_option
     global cmbbox
@@ -195,6 +197,12 @@ def manage():
     radio_xlsx.select()
     radio_xlsx["state"] = "normal"
     radio_hwp["state"] = "normal"
+
+    btn_daytime.select()
+    btn_daytime["state"] = "normal"
+    btn_nighttime["state"] = "normal"
+
+    btn_start["state"] = "disabled"
 
 def report():
     global frame_option
@@ -208,9 +216,16 @@ def report():
     radio_hwp.select()
     radio_xlsx["state"] = "disable"
     radio_hwp["state"] = "disable"
+
+    btn_daytime.select()
+    btn_daytime["state"] = "normal"
+    btn_nighttime["state"] = "normal"
+
+    btn_start["state"] = "disabled"
         
-def test():
+def exam():
     print(modevar.get())
+    print(type(progressbar))
 
 def check_update():
     update_window = Tk()
@@ -246,6 +261,43 @@ def start():
 
     print(cmbbox.get())
 
+    ordinal_num = radio_num_var.get()
+    time = radio_time_var.get()
+    mode = cmbbox.get()
+    selelct_mode = modevar.get()
+    print("ordinal_num :",ordinal_num, "ordinal_num type :", type(ordinal_num))
+    print("time :", time, "time type", type(time))
+    print("mode :", mode, "mode type :", type(mode))
+    mode_baseinfo = ["출석시간 반영", "교육생 자료 복사"]
+    mode_manage = ["교육수료증명서", "대체실습확인서", "요양보호사 자격증 발급,재발급 신청서"]
+    mode_report = ["개강보고", "출석부", "실시보고_대체실습", "수료보고_대체실습", "출석부_대체실습"]
+    # mode list : "교육수료증명서", "대체실습확인서", "요양보호사 자격증 발급 신청서", "출석시간 반영", "교육생 자료 복사", "개강보고(실시보고)", "종강보고(수료보고)", "출석부", "대체실습"
+
+    if mode == mode_baseinfo[0]:
+        function.update_attendance(ordinal_num, time)
+
+    # elif mode == mode_baseinfo[1]:
+        # function.mkfile(ordinal_num, time, )
+
+    if mode in mode_manage:
+        if selelct_mode == False:
+            function.auto_move_class(ordinal_num, time)
+        function.automation_task_students(ordinal_num, time, mode, selelct_mode)
+
+    if mode in mode_report:
+        if mode == mode_report[0]:
+            function.automation_task_report(ordinal_num, time, mode)
+        elif mode == mode_report[1]:
+            function.mkattendance(ordinal_num, time)
+        elif mode == mode_report[2]:
+            mode = mode_report[2][:4]
+            function.automation_task_temporary(ordinal_num, mode)
+        elif mode == mode_report[3]:
+            mode = mode_report[3][:4]
+            function.automation_task_temporary(ordinal_num, mode)
+        elif mode == mode_report[4]:
+            msgbox.showerror("업데이트 필요", "대체실습 출석부 작성 자동화 프로그램이 업데이트 되지 않았습니다.(업데이트 필요) ")
+
     for i in range(101):
         pvar.set(i)
         progressbar.update()
@@ -271,7 +323,7 @@ frame_btn.pack(ipady=5)
 btn_baseinfo = Button(frame_btn, text="BaseInfo", command=baseinfo, width=12)
 btn_manage = Button(frame_btn, text="교육생관리", command=manage, width=12)
 btn_report = Button(frame_btn, text="경기도청 보고", command=report, width=12)
-btn_test = Button(frame_btn, text="국시원 자동화", command=test, width=12)
+btn_test = Button(frame_btn, text="국시원 자동화", command=exam, width=12)
 
 btn_baseinfo.pack(side="left", padx=10, pady=5)
 btn_manage.pack(side="left", padx=10, pady=5)
@@ -279,7 +331,7 @@ btn_report.pack(side="left", padx=10, pady=5)
 btn_test.pack(side="left", padx=10, pady=5)
 
 # 1번 프레임
-frame_1 = Frame(main_frame, bd=1, relief="solid")
+frame_1 = Frame(main_frame)
 frame_1.pack(fill="x")
 
 frame_option = LabelFrame(frame_1, text="업무 자동화")
@@ -343,8 +395,8 @@ label_verinfo.pack(side="bottom")
 btn_update = Button(sub_frame, text="업데이트 내역", command=check_update, width=12)
 btn_update.pack()
 
-btn_select = Button(sub_frame, text="시작", command=start, width=12)
-btn_select.pack(padx=5, pady=5)
+btn_start = Button(sub_frame, text="시작", command=start, width=12, state="disabled")
+btn_start.pack(padx=5, pady=5)
 
 btn_cafe = Button(sub_frame, text="카페 자동화", command=cafe_update, width=12)
 btn_cafe.pack(padx=5, pady=5)
