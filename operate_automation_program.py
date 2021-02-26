@@ -33,21 +33,151 @@ global cmbbox
 
 function = automation()
 
+def additional_tk_ListPass():
+    def frame_quit():
+        msgbox.showinfo("종료", "세부 설정을 종료합니다.\n다시 자동화 업무를 선택해 주세요.")
+        window.destroy()
+    def ok():
+        check = msgbox.askokcancel("확인", f"제 {round_entry.get()}회 요양보호사 자격시험\n{int(exist_entry.get()) + 1}번째 부터 작성을 시작합니다.")
+        if check == True:
+            window.destroy()
+            return round_entry.get(), exist_entry.get()
+        else:
+            msgbox.showinfo("취소", "작업을 취소하셨습니다.\n다시 작업을 선택해 주세요")
+        window.destroy()
+    window = Tk()
+    window.title("세부 설정")
+    additional_frame = LabelFrame(window, text="옵션 설정")
+    additional_frame.pack()
+    additional_label = Label(additional_frame, text="세부 내용을 작성해 주세요.")
+    additional_label.pack()
+    exist_frame = Frame(additional_frame)
+    exist_frame.pack()
+    exist_label = Label(exist_frame, text="사전에 작성되어 있던 인원 수를 입력해 주세요 : ")
+    exist_label.pack(side="left", padx=5, pady=5)
+    exist_entry = Entry(exist_frame)
+    exist_entry.pack(side="left", padx=5, pady=5)
+    round_frame = Frame(additional_frame)
+    round_frame.pack()
+    round_label = Label(round_frame, text="자동화를 진행하실 시험 회차를 입력해 주세요 : ")
+    round_label.pack(side="left", padx=5, pady=5)
+    round_entry = Entry(round_frame)
+    round_entry.pack(side="left", padx=5, pady=5)
+    okcancel_frame = Frame(additional_frame)
+    okcancel_frame.pack(fill="both")
+    btn_ok = Button(okcancel_frame, text="확인", width=12, command=ok)
+    btn_cancel = Button(okcancel_frame, text="취소", width=12, command=frame_quit)
+    btn_cancel.pack(side="right", padx=7, pady=7)
+    btn_ok.pack(side="right", padx=7, pady=7)
+
+    window.mainloop()
+
+def additional_tk_copyfile():
+    ordinal_num = radio_num_var.get()
+    time = radio_time_var.get()
+    mode = cmbbox.get()
+    def setting1():
+        ready = msgbox.askyesno("실행", "교육수료증명서「Excel」파일 복사를 시작합니다.")
+        if ready == True:
+            function.mkfile(ordinal_num, time, "교육수료증명서.xlsx")
+            msgbox.showinfo("완료", "작업이 완료되었습니다.")
+        else:
+            msgbox.showinfo("취소", "작업을 취소하셨습니다.\n다시 작업을 선택해 주세요")
+        window.destroy()
+    def setting2():
+        ready = msgbox.askyesno("실행", "대체실습확인서「Excel」파일 복사를 시작합니다.")
+        if ready == True:
+            function.mkfile(ordinal_num, time, "대체실습확인서.xlsx")
+            msgbox.showinfo("완료", "작업이 완료되었습니다.")
+        else:
+            msgbox.showinfo("취소", "작업을 취소하셨습니다.\n다시 작업을 선택해 주세요")
+        window.destroy()
+    def setting3():
+        ready = msgbox.askyesno("실행", "요양보호사 자격증 발급,재발급 신청서「Excel」파일 복사를 시작합니다.")
+        if ready == True:
+            function.mkfile(ordinal_num, time, "요양보호사 자격증 발급,재발급 신청서.xlsx")
+            msgbox.showinfo("완료", "작업이 완료되었습니다.")
+        else:
+            msgbox.showinfo("취소", "작업을 취소하셨습니다.\n다시 작업을 선택해 주세요")
+        window.destroy()
+    def setting4():
+        ready = msgbox.askyesno("실행", "교육수료증명서「한글」파일 복사를 시작합니다.")
+        if ready == True:
+            function.mkfile(ordinal_num, time, "교육수료증명서.hwp")
+            msgbox.showinfo("완료", "작업이 완료되었습니다.")
+        else:
+            msgbox.showinfo("취소", "작업을 취소하셨습니다.\n다시 작업을 선택해 주세요")
+        window.destroy()
+    def setting5():
+        ready = msgbox.askyesno("실행", "대체실습확인서「한글」파일 복사를 시작합니다.")
+        if ready == True:
+            function.mkfile(ordinal_num, time, "대체실습확인서.hwp")
+            msgbox.showinfo("완료", "작업이 완료되었습니다.")
+        else:
+            msgbox.showinfo("취소", "작업을 취소하셨습니다.\n다시 작업을 선택해 주세요")
+        window.destroy()
+    def setting6():
+        ready = msgbox.askyesno("실행", "요양보호사 자격증 발급,재발급 신청서「한글」파일 복사를 시작합니다.")
+        if ready == True:
+            function.mkfile(ordinal_num, time, "요양보호사 자격증 발급,재발급 신청서.hwp")
+            msgbox.showinfo("완료", "작업이 완료되었습니다.")
+        else:
+            msgbox.showinfo("취소", "작업을 취소하셨습니다.\n다시 작업을 선택해 주세요")
+        window.destroy()
+
+    def frame_quit():
+        msgbox.showinfo("종료", "세부 선택을 종료합니다.\n 다시 자동화 업무를 선택해 주세요.")
+        window.quit()
+
+    window = Tk()
+    window.title("세부 설정")
+    additional_frame = LabelFrame(window, text="옵션 선택")
+    additional_frame.pack()
+    additional_label = Label(additional_frame, text="세부 작업을 선택해 주세요.")
+    additional_label.pack()
+    button_excel_frame = Frame(additional_frame)
+    button_excel_frame.pack()
+    btn1 = Button(button_excel_frame, text="교육수료증명서「Excel」", command=setting1)
+    btn2 = Button(button_excel_frame, text="대체실습확인서「Excel」", command=setting2)
+    btn3 = Button(button_excel_frame, text="요양보호사 자격증 발급,재발급 신청서「Excel」", command=setting3)
+    btn_hwp_frame = Frame(additional_frame)
+    btn_hwp_frame.pack()
+    btn4 = Button(btn_hwp_frame, text="교육수료증명서「한글」", command=setting4)
+    btn5 = Button(btn_hwp_frame, text="대체실습확인서「한글」", command=setting5)
+    btn6 = Button(btn_hwp_frame, text="요양보호사 자격증 발급,재발급 신청서「한글」", command=setting6)
+    btn1.pack(side="left", padx=5, pady=5)
+    btn2.pack(side="left", padx=5, pady=5)
+    btn3.pack(side="left", padx=5, pady=5)
+    btn4.pack(side="left", padx=5, pady=5)
+    btn5.pack(side="left", padx=5, pady=5)
+    btn6.pack(side="left", padx=5, pady=5)
+
+    quit_frame = Frame(additional_frame)
+    quit_frame.pack(fill="both")
+    quit_button = Button(quit_frame, text="나가기", command=frame_quit)
+    quit_button.pack(side="right", padx=7, pady=7)
+
+
+
+    window.mainloop()
+
 def del_widget(user_widget):
 
     if user_widget.winfo_exists():
         user_widget.destroy()
 
-def add_listbox(listbox):
+def write_listbox(listbox):
     group = f"{radio_num_var.get()}기{radio_time_var.get()}"
     if cmbbox.get() == "실시보고_대체실습" or cmbbox.get() == "수료보고_대체실습" or cmbbox.get() == "출석부_대체실습":
         group = f"대체실습 {radio_num_var.get()}기"
         listbox.insert(END, group + " 명단")
+        number = 1
         for idx, cell in enumerate(function.ws_members["H"], start=1):
             if not group in str(cell.value):
                 continue
-            string = f"{function.ws_members.cell(row=idx, column=1).value}. {function.ws_members.cell(row=idx, column=18).value}"
+            string = str(number) + f". {function.ws_members.cell(row=idx, column=18).value}"
             listbox.insert(END, string)
+            number += 1
     
     else:
         listbox.insert(END, group + " 명단")
@@ -63,6 +193,7 @@ def selection():
     lst_baseinfo = ["출석시간 반영", "교육생 자료 복사"]
     lst_manage = ["교육수료증명서", "대체실습확인서", "요양보호사 자격증 발급,재발급 신청서"]
     lst_report = ["개강보고", "출석부", "실시보고_대체실습", "수료보고_대체실습", "출석부_대체실습"]
+    lst_exam = ["합격자 명단 작성", "사진 복사", "국시원 회원가입"]
     if cmbbox.get() == "선택":
         msgbox.showinfo("알림", "자동화 옵션을 선택해주세요.")
         btn_start["state"] = "disabled"
@@ -75,6 +206,18 @@ def selection():
                 ready = msgbox.askyesno("선택", f"{radio_num_var.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 「Excel」자동화 작업을 선택하셨습니다.")
             elif modevar.get() == False:
                 ready = msgbox.askyesno("선택", f"{radio_num_var.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 「한글」자동화 작업을 선택하셨습니다.")
+        elif cmbbox.get() == "교육생 자료 복사":
+            ready = msgbox.askyesno("선택", f"{radio_num_var.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 자동화 작업을 선택하셨습니다.")
+            if ready == False:
+                pass
+            else:
+                additional_tk_copyfile()
+        elif cmbbox.get() == "합격자 명단 작성":
+            ready = msgbox.askyesno("선택", "합격자 명단 작성 자동화 작업을 선택하셨습니다.")
+            if ready == False:
+                pass
+            else:
+                additional_tk_ListPass()
         else:
             ready = msgbox.askyesno("선택", f"{radio_num_var.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 자동화 작업을 선택하셨습니다.")
         print(ready)
@@ -109,17 +252,16 @@ def selection():
         info_message = "D:\\Master\\mkfile\n폴더 내부의 파일들을 참조하여 출석부를 최신화 합니다."
     elif cmbbox.get() in lst_manage or cmbbox.get() in lst_report:
         info_message = "작성된 명단의 내용을 참조하여 \"" + cmbbox.get() + "\" 작성을 시작합니다."
+    else:
+        info_message = "update require"
     
     listbox.insert(END, info_message)
-    add_listbox(listbox)
+    write_listbox(listbox)
 
     pvar.set(0)
     progressbar.update()
 
     btn_start["state"] = "normal"
-    
-        
-
     
 def basic():
     global radio_num_var
@@ -224,8 +366,10 @@ def report():
     btn_start["state"] = "disabled"
         
 def exam():
-    print(modevar.get())
-    print(type(progressbar))
+    lst = ["선택", "합격자 명단 작성", "사진 복사", "국시원 회원가입"]
+    cmbbox["values"] = lst
+    cmbbox.current(0)
+    print("aaa")
 
 def check_update():
     update_window = Tk()
@@ -264,13 +408,15 @@ def start():
     ordinal_num = radio_num_var.get()
     time = radio_time_var.get()
     mode = cmbbox.get()
-    selelct_mode = modevar.get()
+    select_mode = modevar.get()
     print("ordinal_num :",ordinal_num, "ordinal_num type :", type(ordinal_num))
     print("time :", time, "time type", type(time))
     print("mode :", mode, "mode type :", type(mode))
+    print("select_mode :", select_mode, "select_modemode type :", type(select_mode))
     mode_baseinfo = ["출석시간 반영", "교육생 자료 복사"]
     mode_manage = ["교육수료증명서", "대체실습확인서", "요양보호사 자격증 발급,재발급 신청서"]
     mode_report = ["개강보고", "출석부", "실시보고_대체실습", "수료보고_대체실습", "출석부_대체실습"]
+    mode_exam = ["합격자 명단 작성", "사진 복사", "국시원 회원가입"]
     # mode list : "교육수료증명서", "대체실습확인서", "요양보호사 자격증 발급 신청서", "출석시간 반영", "교육생 자료 복사", "개강보고(실시보고)", "종강보고(수료보고)", "출석부", "대체실습"
 
     if mode == mode_baseinfo[0]:
@@ -280,11 +426,12 @@ def start():
         # function.mkfile(ordinal_num, time, )
 
     if mode in mode_manage:
-        if selelct_mode == False:
+        if select_mode == False:
             function.auto_move_class(ordinal_num, time)
-        function.automation_task_students(ordinal_num, time, mode, selelct_mode)
+        function.automation_task_students(ordinal_num, time, mode, select_mode)
 
     if mode in mode_report:
+        function.auto_move_report()
         if mode == mode_report[0]:
             function.automation_task_report(ordinal_num, time, mode)
         elif mode == mode_report[1]:
