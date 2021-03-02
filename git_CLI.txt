@@ -49,6 +49,7 @@ cd : change directory
 ls -al : read list, all
 nano : make file and write. example. nano hello1.txt
 touch : make file
+rm : remove file or directory (rm -r .git)
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 git 함수
 git init . : Initialize repository.
@@ -59,6 +60,7 @@ config : git config --global user.name "Your Name" : git account name
         : git config --global user.email "you@example.com" : git account email
         사용자의 이름과 이메일을 등록하는 함수. commit 시 사용자 개인의 commit 으로 넘어감(추측)
         이 함수를 다시 사용하여 "Your Name" 과 "you@example.com" 을 다르게 작성하면 git account Name 과 email 을 바꿀 수 있다.
+        : git config --global core.quotepath false : 한글이 출력될 수 있도록 해줌
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 status : git status : working tree status
                         가장 많이 사용되는 명령어. git 의 상태를 보여줌.
