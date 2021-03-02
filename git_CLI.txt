@@ -48,6 +48,7 @@ git FunctionName --help
 cd : change directory
 ls -al : read list, all
 nano : make file and write. example. nano hello1.txt
+cat : cat FileName.extension : File 의 내용을 보여줌
 touch : make file
 rm : remove file or directory (rm -r .git)
 -------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -100,8 +101,6 @@ log : git log : show version
                     --- a/git_CLI.txt 이 버전은 git_CLI.txt 를 포함하고 있다.
                     +++ b/git_CLI.txt
     : git log --graph --all --decorate : log 를 그래프 형식으로 보여줌.
--------------------------------------------------------------------------------------------------------------------------------------------------------
-cat : cat FileName.extension : File 의 내용을 보여줌
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 reset : git reset [commitID(6)] --hard : 이전 버전으로 이동. log 까지 전부 사라짐. 수정하고 있던 내용 마저도 다 사라짐. (신중함 필요)
                                             + [commitID(6)] => commitID 전체를 적어도 되고, commitID 가 마지막으로 와도 됨.
