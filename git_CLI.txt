@@ -145,6 +145,8 @@ rebase : git rebase [BranchName to be rebased] : rebase branch
 remote : git remote : show remote repository
                         현 폴더의 원격 저장소를 나타냄.
          git remote add origin https://github.com/dldudals0728/github_menual.git : 이 github 의 저장소를 이 폴더의 origin 이란 이름의 원격 저장소로 설정하겠다는 의미.
+         git remote -v : 원격 저장소의 상태
+         git remote rename [old-name] [new-name] : change github remote repository name
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 push : git push -u origin main : 폴더의 현 branch 에 commit 된 내용들을 origin 이란 이름의 원격 저장소의 main 이란 branch 에 올린다는 의미.
                                  (현재 위치한 branch 의 source ==> remote repository(name=origin)의 branch(name=main))
@@ -162,7 +164,9 @@ fetch : git fetch : fetch local source(compare github remote repository)
                     변동사항이 있을때는 항상 fetch 해주는 것이 좋음 !
                     git fetch -> git status 를 해보면 commit 이 뒤쳐져 있는지 확인할 수 있음
 -------------------------------------------------------------------------------------------------------------------------------------------------------
-
+rm : git rm [file-name] : remove file remote & local repo
+     git rm --cached [file-name] : remove file only remote repo
+     git rm -r [file-name] : remove folder (all file in folder)
 =======================================================================================================================================================
 파일 목록
 -------------------------------------------------------------------------------------------------------------------------------------------------------
