@@ -11,9 +11,11 @@ import time
 import sys
 from random import randint
 
+import operate_data
+
 pyautogui.PAUSE = 0.25
 
-wb = load_workbook("C:\\Users\\dldud\\Desktop\\info.xlsx")
+wb = wb_members = load_workbook(operate_data.ac_path["명단총정리"])
 ws = wb.active
 
 # 계정이 존재하지 않음

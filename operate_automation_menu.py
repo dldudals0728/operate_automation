@@ -32,7 +32,7 @@ class automation:
     
 
     # 수행 전, 명단총정리 엑셀 파일을 불러와 자료를 복사할 준비
-    wb_members = load_workbook(operate_data.ac_path["명단총정리"])
+    wb_members = load_workbook("D:\\Master\\"+operate_data.ac_name+"_명단총정리.xlsx")
     ws_members = wb_members.active
 
 
@@ -153,7 +153,7 @@ class automation:
             pyautogui.alert("프로그램을 종료합니다.\n준비작업을 마치신 후 다시 실행해 주세요.", "종료")
             return
 
-        wb_automation = load_workbook(operate_data.ac_path["업무자동화"])
+        wb_automation =  load_workbook("D:\\Master\\업무자동화.xlsx")
         ws_automation = wb_automation.active
 
         # # 컴퓨터 특성 상 처음여는 파일 또는 작업은 열리는 시간이 오래걸리기 때문에 duration 을 직접 설정하여 작업 시간을 설정할 수도 있다.
@@ -562,7 +562,7 @@ class automation:
                     i += 1
 
         elif task == "대체실습확인서":
-            wb_temp_score = load_workbook(operate_data.ac_path["대체실습 점수"])
+            wb_temp_score = load_workbook("D:\\Master\\대체실습_점수.xlsx")
             ws_temp_score = wb_temp_score.active
             if version == True:
                 i = 1
