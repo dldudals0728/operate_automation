@@ -33,6 +33,9 @@ global cmbbox
 
 function = automation()
 
+def path_option():
+    pass
+
 def additional_tk_ListPass():
     def frame_quit():
         msgbox.showinfo("종료", "세부 설정을 종료합니다.\n다시 자동화 업무를 선택해 주세요.")
@@ -40,8 +43,7 @@ def additional_tk_ListPass():
     def ok():
         check = msgbox.askokcancel("확인", f"제 {round_entry.get()}회 요양보호사 자격시험\n{int(exist_entry.get()) + 1}번째 부터 작성을 시작합니다.")
         if check == True:
-            window.destroy()
-            return round_entry.get(), exist_entry.get()
+            function.list_pass(round_entry.get(), int(exist_entery.get()))
         else:
             msgbox.showinfo("취소", "작업을 취소하셨습니다.\n다시 작업을 선택해 주세요")
         window.destroy()
@@ -63,7 +65,7 @@ def additional_tk_ListPass():
     round_label.pack(side="left", padx=5, pady=5)
     round_entry = Entry(round_frame)
     round_entry.pack(side="left", padx=5, pady=5)
-    okcancel_frame = Frame(additional_frame)
+    okcancel_frame = Frame(window)
     okcancel_frame.pack(fill="both")
     btn_ok = Button(okcancel_frame, text="확인", width=12, command=ok)
     btn_cancel = Button(okcancel_frame, text="취소", width=12, command=frame_quit)
@@ -539,18 +541,20 @@ sub_frame.pack(side="right", padx=5, pady=5, fill="both", expand=True)
 label_verinfo = Label(sub_frame, text="버전정보 0.3.1")
 label_verinfo.pack(side="bottom")
 
-btn_update = Button(sub_frame, text="업데이트 내역", command=check_update, width=12)
-btn_update.pack()
+btn_option = Button(sub_frame, text="경로 확인", command=path_option, width=12)
+btn_option.pack(padx=5, pady=5)
 
-btn_start = Button(sub_frame, text="시작", command=start, width=12, state="disabled")
-btn_start.pack(padx=5, pady=5)
+btn_update = Button(sub_frame, text="업데이트 내역", command=check_update, width=12)
+btn_update.pack(padx=5, pady=5)
 
 btn_cafe = Button(sub_frame, text="카페 자동화", command=cafe_update, width=12)
 btn_cafe.pack(padx=5, pady=5)
 
 btn_quit = Button(sub_frame, text="종료", command=root.quit, width=12)
-btn_quit.pack(padx=5, pady=5)
+btn_quit.pack(side="bottom", padx=5, pady=5)
 
+btn_start = Button(sub_frame, text="시작", command=start, width=12, state="disabled")
+btn_start.pack(side="bottom", padx=5, pady=5)
 
 
 scrollbar.config(command=listbox.yview)

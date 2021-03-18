@@ -28,7 +28,7 @@ class automation:
     
 
     # 수행 전, 명단총정리 엑셀 파일을 불러와 자료를 복사할 준비
-    wb_members = load_workbook("D:\\Master\\"+operate_data.ac_name+"_명단총정리.xlsx")
+    wb_members = load_workbook(operate_data.ac_path["명단총정리"])
     ws_members = wb_members.active
 
 
@@ -149,7 +149,7 @@ class automation:
             pyautogui.alert("프로그램을 종료합니다.\n준비작업을 마치신 후 다시 실행해 주세요.", "종료")
             return
 
-        wb_automation = load_workbook("D:\\Master\\업무자동화.xlsx")
+        wb_automation = load_workbook(operate_data.ac_path["업무자동화"])
         ws_automation = wb_automation.active
 
         # # 컴퓨터 특성 상 처음여는 파일 또는 작업은 열리는 시간이 오래걸리기 때문에 duration 을 직접 설정하여 작업 시간을 설정할 수도 있다.
@@ -558,7 +558,7 @@ class automation:
                     i += 1
 
         elif task == "대체실습확인서":
-            wb_temp_score = load_workbook("D:\\Master\\대체실습_점수.xlsx")
+            wb_temp_score = load_workbook(operate_data.ac_path["대체실습 점수"])
             ws_temp_score = wb_temp_score.active
             if version == True:
                 i = 1
@@ -1069,7 +1069,7 @@ class automation:
                     ws_certificate.cell(row=12, column=4).value = string
 
                     # 교육기관명
-                    string = "남양노아요양보호사교육원"
+                    string = operate_data.ac_name
                     ws_certificate.cell(row=12, column=7).value = string
 
                     # 요양보호사 교육기간(실습). 부터
@@ -1085,7 +1085,7 @@ class automation:
                     ws_certificate.cell(row=13, column=4).value = string
 
                     # 교육기관명(실습)
-                    string = "남양노아요양보호사교육원"
+                    string = operate_data.ac_name
                     ws_certificate.cell(row=13, column=7).value = string
 
                     # 시험 시행일
