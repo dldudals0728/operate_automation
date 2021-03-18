@@ -29,8 +29,6 @@ import fnmatch
 # 수여일 수정
 
 class automation:
-    
-
     # 수행 전, 명단총정리 엑셀 파일을 불러와 자료를 복사할 준비
     wb_members = load_workbook("D:\\Master\\"+operate_data.ac_name+"_명단총정리.xlsx")
     ws_members = wb_members.active
