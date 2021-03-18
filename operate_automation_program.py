@@ -195,7 +195,7 @@ def selection():
     lst_baseinfo = ["출석시간 반영", "교육생 자료 복사"]
     lst_manage = ["교육수료증명서", "대체실습확인서", "요양보호사 자격증 발급,재발급 신청서"]
     lst_report = ["개강보고", "출석부", "실시보고_대체실습", "수료보고_대체실습", "출석부_대체실습"]
-    lst_exam = ["합격자 명단 작성", "사진 복사", "국시원 회원가입"]
+    lst_exam = ["합격자 명단 작성", "사진 복사", "국시원 회원가입", "출력_교육수료증명서", "출력_대체실습확인서", "출력_요양보호사 자격증 발급,재발급 신청서"]
     if cmbbox.get() == "선택":
         msgbox.showinfo("알림", "자동화 옵션을 선택해주세요.")
         btn_start["state"] = "disabled"
@@ -231,11 +231,6 @@ def selection():
             msgbox.showinfo("알림", "자동화 옵션을 다시 선택해주세요.")
             return
 
-    lst_selection = ["선택", "교육수료증명서", "대체실습확인서", "요양보호사 자격증 발급,재발급 신청서"]
-    lst_selection.remove("선택")
-
-    
-
     if cmbbox.get() == "실시보고_대체실습" or cmbbox.get() == "수료보고_대체실습" or cmbbox.get() == "출석부_대체실습":
         btn_daytime.select()
         btn_daytime["state"] = "disabled"
@@ -254,6 +249,8 @@ def selection():
         info_message = "D:\\Master\\mkfile\n폴더 내부의 파일들을 참조하여 출석부를 최신화 합니다."
     elif cmbbox.get() in lst_manage or cmbbox.get() in lst_report:
         info_message = "작성된 명단의 내용을 참조하여 \"" + cmbbox.get() + "\" 작성을 시작합니다."
+    elif "출력_" in cmbbox.get():
+        info_message = "작성이 완료된 \"" + cmbbox.get()[3:] + "\" 파일을 순차적으로 출력합니다."
     else:
         info_message = "update require"
     
@@ -368,7 +365,7 @@ def report():
     btn_start["state"] = "disabled"
         
 def exam():
-    lst = ["선택", "합격자 명단 작성", "사진 복사", "국시원 회원가입"]
+    lst = ["선택", "합격자 명단 작성", "사진 복사", "국시원 회원가입", "출력_교육수료증명서", "출력_대체실습확인서", "출력_요양보호사 자격증 발급,재발급 신청서"]
     cmbbox["values"] = lst
     cmbbox.current(0)
     print("aaa")
@@ -418,7 +415,7 @@ def start():
     mode_baseinfo = ["출석시간 반영", "교육생 자료 복사"]
     mode_manage = ["교육수료증명서", "대체실습확인서", "요양보호사 자격증 발급,재발급 신청서"]
     mode_report = ["개강보고", "출석부", "실시보고_대체실습", "수료보고_대체실습", "출석부_대체실습"]
-    mode_exam = ["합격자 명단 작성", "사진 복사", "국시원 회원가입"]
+    mode_exam = ["합격자 명단 작성", "사진 복사", "국시원 회원가입", "출력_교육수료증명서", "출력_대체실습확인서", "출력_요양보호사 자격증 발급,재발급 신청서"]
     # mode list : "교육수료증명서", "대체실습확인서", "요양보호사 자격증 발급 신청서", "출석시간 반영", "교육생 자료 복사", "개강보고(실시보고)", "종강보고(수료보고)", "출석부", "대체실습"
 
     if mode == mode_baseinfo[0]:
@@ -446,6 +443,22 @@ def start():
             function.automation_task_temporary(ordinal_num, mode)
         elif mode == mode_report[4]:
             msgbox.showerror("업데이트 필요", "대체실습 출석부 작성 자동화 프로그램이 업데이트 되지 않았습니다.(업데이트 필요) ")
+    
+    if mode in mode_exam:
+        if mode == mode_exam[3] or mode_exam[4] or mode_exam[5]:
+            ready = msgbox.askyesno("***이 기능은 주의가 필요합니다 !***", "!WARNING!\n이 프로그램이 시작되면 파일들이 순차적으로 시작됩니다.\n* * * 주의 * * *\n1. 프린터가 이면지가 아닌 A4용지로 되어있는지 확인해 주세요.\n2. 출력할 A4용지의 양이 충분한지 확인해 주세요.\n3. 각 파일들이 모두 입력되었는지, 수정할 것은 없는지 잘 확인한 후에 실행해 주세요 !")
+            print(ready)
+            if ready == True:
+                print(cmbbox.get())
+                print(radio_num_var.get())
+                print(radio_time_var.get())
+                print(cmbbox.get()[3:])
+                # UnboundLocalError: local variable 'startingdate' referenced before assignment
+                # 매개변수를 전달할 때 radio_time_var.get() 이 아닌 radio_time_var 로 전달하여 garbage value 가 전달됨 -> "주간" or "야간" 이 아니므로 startingdate 선언 및 초기화 X -> 다른 함수에 있는 startingdate 로 인식 -> 위의 오류 출력 !!
+                function.printFile(radio_num_var.get(), radio_time_var.get(), cmbbox.get()[3:])
+            elif ready == False:
+                msgbox.showinfo("알림", "자동화 옵션을 다시 선택해주세요.")
+                return
 
     for i in range(101):
         pvar.set(i)

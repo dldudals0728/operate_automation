@@ -9,6 +9,10 @@ import operate_data
 # 대체실습 점수 랜덤지급
 from random import randint
 
+# 자격증 발급 필요 서류 자동 출력 : rpa_basic/11_file_system.py
+import os
+import fnmatch
+
 #                                       example
 # preform = automation()
 # perform.auto_move_class(4, "야간")
@@ -1995,6 +1999,35 @@ class automation:
             shutil.copyfile(original_path, path)
             print("파일이 복사되었습니다 :", path)
             i += 1
+        wb_automation.close()
+
+    def printFile(self, ordinal_num, time, task):
+        
+        wb_automation = load_workbook("D:\\Master\\업무자동화.xlsx")
+        ws_automation = wb_automation.active
+
+        if time == "주간":
+            startingdate = ws_automation.cell(row=112 + ordinal_num, column=2).value
+        elif time == "야간":
+            startingdate = ws_automation.cell(row=112 + ordinal_num, column=3).value
+        string_set = f"{ordinal_num}기{time}{startingdate}"
+        print(string_set)
+        dir_path = "D:\\"+operate_data.ac_name+"\\교육생관리\\" + str(ordinal_num) + "기\\" + string_set
+        print(dir_path)
+        os.chdir(dir_path)
+        pattern = "*_" + task + ".xlsx"
+        result = []
+        for root, dirs, files in os.walk(os.getcwd()):
+            # [a.txt, b.txt, c.txt, 11_file_system.py, ...]
+            for name in files:
+                if fnmatch.fnmatch(name, pattern): # 이름과 패턴이 일치하면
+                    result.append(os.path.join(root, name))
+        
+        print("이 프로그램은 1번 -> 10번대 -> 2번 -> 20번대 ,,, 순으로 출력합니다.")
+
+        for file_name in result:
+            print(file_name + " 출력을 시작합니다.")
+            os.startfile(file_name, "print")
 
 
 
