@@ -31,6 +31,17 @@ after
 How to Generate new token
 github -> settings -> Developer settings -> Personal access tokens -> Generate new token -> Note(토큰 설명) -> Select scopes -> Generate token
 (체크박스는 repo 만 해도 됨)
+======================================================================================================================================================
+Error !
+remote: Invalid username or password.
+fatal: Authentication failed for 'https://github.com/dldudals0728/github_menual.git/'
+=> 원격 저장소 삭제 후, 다시 연결하기 !
+1. 원격 저장소 삭제
+    git remote remove origin
+2. 원격 저장소 연결
+    git remote add origin url
+3. 그 다음 push !
+======================================================================================================================================================
 
 꿀팁
 터미널이 작아서 출력이 모두 안되는 경우, 아래 방향키, e(한 줄씩), d(한 뭉텅이씩) 를 누르면 하위 내용을 보여줌
