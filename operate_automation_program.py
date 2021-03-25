@@ -26,12 +26,30 @@ from operate_automation_menu import automation
 # perform.mkattendance(3, "야간")
 
 
-global radio_num_var
+global cmbbox_num
 global radio_time_var
 global frame_option
 global cmbbox
+is_clicked = 0
 
 function = automation()
+
+def dev_mode():
+    global is_clicked
+
+    
+    all_frames = [frame_1, frame_2, frame_btn, frame_cmbbox, frame_list, frame_mode, frame_mode_select, frame_option, frame_progress]
+    if is_clicked == 0:
+        for frames in all_frames:
+            frames["relief"] = "solid"
+            frames["bd"] = 1
+        is_clicked = 1
+    elif is_clicked == 1:
+        for frames in all_frames:
+            frames["bd"] = 0
+        is_clicked = 0
+    
+    frame_mode.update()
 
 def path_option():
     pass
@@ -75,7 +93,7 @@ def additional_tk_ListPass():
     window.mainloop()
 
 def additional_tk_copyfile():
-    ordinal_num = radio_num_var.get()
+    ordinal_num = int(cmbbox_num.get())
     time = radio_time_var.get()
     mode = cmbbox.get()
     def setting1():
@@ -169,9 +187,9 @@ def del_widget(user_widget):
         user_widget.destroy()
 
 def write_listbox(listbox):
-    group = f"{radio_num_var.get()}기{radio_time_var.get()}"
+    group = f"{cmbbox_num.get()}기{radio_time_var.get()}"
     if cmbbox.get() == "실시보고_대체실습" or cmbbox.get() == "수료보고_대체실습" or cmbbox.get() == "출석부_대체실습":
-        group = f"대체실습 {radio_num_var.get()}기"
+        group = f"대체실습 {cmbbox_num.get()}기"
         listbox.insert(END, group + " 명단")
         number = 1
         for idx, cell in enumerate(function.ws_members["H"], start=1):
@@ -200,16 +218,35 @@ def selection():
         msgbox.showinfo("알림", "자동화 옵션을 선택해주세요.")
         btn_start["state"] = "disabled"
         return
+    if cmbbox_num.get() == "선택":
+        msgbox.showinfo("알림", "기수를 선택해주세요.")
+        btn_start["state"] = "disabled"
+        return
     else:
+        # 메세지 출력
+        if cmbbox.get() == "출석시간 반영":
+            info_message = "D:\\"+operate_data.ac_name+"\\교육생관리\\출석부_기관장용\n폴더 내부의 파일들을 참조하여 출석부를 최신화 합니다."
+        elif cmbbox.get() == "교육생 자료 복사":
+            info_message = "D:\\Master\\mkfile\n폴더 내부의 파일들을 참조하여 출석부를 최신화 합니다."
+        elif cmbbox.get() in lst_manage or cmbbox.get() in lst_report:
+            info_message = "작성된 명단의 내용을 참조하여 \"" + cmbbox.get() + "\" 작성을 시작합니다."
+        elif "출력_" in cmbbox.get():
+            info_message = "작성이 완료된 \"" + cmbbox.get()[3:] + "\" 파일을 순차적으로 출력합니다."
+        else:
+            info_message = "update require"
+        
+        listbox.insert(END, info_message)
+        write_listbox(listbox)
+
         if cmbbox.get() == "실시보고_대체실습" or cmbbox.get() == "수료보고_대체실습" or cmbbox.get() == "출석부_대체실습":
-            ready = msgbox.askyesno("선택", f"대체실습 {radio_num_var.get()}기 {cmbbox.get()} 자동화 작업을 선택하셨습니다.")
+            ready = msgbox.askyesno("선택", f"대체실습 {cmbbox_num.get()}기 {cmbbox.get()} 자동화 작업을 선택하셨습니다.")
         elif cmbbox.get() in lst_manage:
             if modevar.get() == True:
-                ready = msgbox.askyesno("선택", f"{radio_num_var.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 「Excel」자동화 작업을 선택하셨습니다.")
+                ready = msgbox.askyesno("선택", f"{cmbbox_num.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 「Excel」자동화 작업을 선택하셨습니다.")
             elif modevar.get() == False:
-                ready = msgbox.askyesno("선택", f"{radio_num_var.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 「한글」자동화 작업을 선택하셨습니다.")
+                ready = msgbox.askyesno("선택", f"{cmbbox_num.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 「한글」자동화 작업을 선택하셨습니다.")
         elif cmbbox.get() == "교육생 자료 복사":
-            ready = msgbox.askyesno("선택", f"{radio_num_var.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 자동화 작업을 선택하셨습니다.")
+            ready = msgbox.askyesno("선택", f"{cmbbox_num.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 자동화 작업을 선택하셨습니다.")
             if ready == False:
                 pass
             else:
@@ -221,13 +258,8 @@ def selection():
             else:
                 additional_tk_ListPass()
         else:
-            ready = msgbox.askyesno("선택", f"{radio_num_var.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 자동화 작업을 선택하셨습니다.")
-        print(ready)
-        if ready == True:
-            print(cmbbox.get())
-            print(radio_num_var.get())
-            print(radio_time_var.get())
-        elif ready == False:
+            ready = msgbox.askyesno("선택", f"{cmbbox_num.get()}기 {radio_time_var.get()}반 {cmbbox.get()} 자동화 작업을 선택하셨습니다.")
+        if ready == False:
             msgbox.showinfo("알림", "자동화 옵션을 다시 선택해주세요.")
             return
 
@@ -236,26 +268,11 @@ def selection():
         btn_daytime["state"] = "disabled"
         btn_nighttime["state"] = "disabled"
 
-    group = f"{radio_num_var.get()}기{radio_time_var.get()}"
-    print(group)
+    group = f"{cmbbox_num.get()}기{radio_time_var.get()}"
     members = 0
 
     listbox.config(state=NORMAL)
     listbox.delete(0, END)
-
-    if cmbbox.get() == "출석시간 반영":
-        info_message = "D:\\"+operate_data.ac_name+"\\교육생관리\\출석부_기관장용\n폴더 내부의 파일들을 참조하여 출석부를 최신화 합니다."
-    elif cmbbox.get() == "교육생 자료 복사":
-        info_message = "D:\\Master\\mkfile\n폴더 내부의 파일들을 참조하여 출석부를 최신화 합니다."
-    elif cmbbox.get() in lst_manage or cmbbox.get() in lst_report:
-        info_message = "작성된 명단의 내용을 참조하여 \"" + cmbbox.get() + "\" 작성을 시작합니다."
-    elif "출력_" in cmbbox.get():
-        info_message = "작성이 완료된 \"" + cmbbox.get()[3:] + "\" 파일을 순차적으로 출력합니다."
-    else:
-        info_message = "update require"
-    
-    listbox.insert(END, info_message)
-    write_listbox(listbox)
 
     pvar.set(0)
     progressbar.update()
@@ -263,43 +280,57 @@ def selection():
     btn_start["state"] = "normal"
     
 def basic():
-    global radio_num_var
+    global cmbbox_num
     global radio_time_var
     global btn_daytime
     global btn_nighttime
 
-    frame_basic_num = Frame(frame_option)
-    frame_basic_num.pack(fill="x")
-    label_num = Label(frame_basic_num, text="기수 선택")
-    label_num.pack(side="left", padx=(30, 0), pady=5)
+    frame_basic = Frame(frame_option)
+    frame_basic.pack(fill="x")
+    # label_num = Label(frame_basic_num, text="기수 선택")
+    # label_num.pack(side="left", padx=(30, 0), pady=5)
 
-    frame_radio_num = Frame(frame_basic_num)
-    frame_radio_num.pack()
-    radio_num_var = IntVar() # StringVar 로 하려 했으나, noa_auto_menu 함수 인자가 int 형으로 되어 있어 IntVar 로 받음
-    btn_number_1 = Radiobutton(frame_radio_num, text="1기", value=1, variable=radio_num_var)
-    btn_number_1.select()
-    btn_number_2 = Radiobutton(frame_radio_num, text="2기", value=2, variable=radio_num_var)
-    btn_number_3 = Radiobutton(frame_radio_num, text="3기", value=3, variable=radio_num_var)
-    btn_number_4 = Radiobutton(frame_radio_num, text="4기", value=4, variable=radio_num_var)
-    btn_number_5 = Radiobutton(frame_radio_num, text="5기", value=5, variable=radio_num_var)
+    frame_ordinal_num = Frame(frame_basic)
+    frame_ordinal_num.pack(side="left", padx=(45, 0), pady=5)
 
-    frame_basic_time = Frame(frame_option)
-    frame_basic_time.pack(fill="x")
+    label_num = Label(frame_ordinal_num, text="기수 선택")
+    label_num.pack(side="left", pady=5)
+
+    # frame_radio_num = Frame(frame_basic_num, relief="solid", bd=1)
+    # frame_radio_num.pack(side="left", padx=(30, 0), pady=5)
+    # radio_num_var = IntVar() # StringVar 로 하려 했으나, noa_auto_menu 함수 인자가 int 형으로 되어 있어 IntVar 로 받음
+    # btn_number_1 = Radiobutton(frame_radio_num, text="1기", value=1, variable=radio_num_var)
+    # btn_number_1.select()
+    # btn_number_2 = Radiobutton(frame_radio_num, text="2기", value=2, variable=radio_num_var)
+    # btn_number_3 = Radiobutton(frame_radio_num, text="3기", value=3, variable=radio_num_var)
+    # btn_number_4 = Radiobutton(frame_radio_num, text="4기", value=4, variable=radio_num_var)
+    # btn_number_5 = Radiobutton(frame_radio_num, text="5기", value=5, variable=radio_num_var)
+
+    lst_ordinal_num = [str(i) for i in range(1, 13)]
+    lst_ordinal_num.insert(0, "선택")
+    cmbbox_num = ttk.Combobox(frame_ordinal_num, state="readonly", values=lst_ordinal_num, width=7)
+    cmbbox_num.current(0)
+    cmbbox_num.pack(side="left", padx=5, pady=5)
+    label_ord = Label(frame_ordinal_num, text="기")
+    label_ord.pack(side="left", pady=5)
+
+    frame_basic_time = Frame(frame_basic)
+    frame_basic_time.pack(side="left", padx=(30, 0), pady=5)
     label_time = Label(frame_basic_time, text="시간 선택")
-    label_time.pack(side="left", padx=(30, 0), pady=5)
+    label_time.pack(side="left", pady=5)
 
     frame_radio_time = Frame(frame_basic_time)
     frame_radio_time.pack()
     radio_time_var = StringVar()
-    btn_daytime = Radiobutton(frame_radio_time, text="주간", value="주간", variable=radio_time_var)
+    btn_daytime = Radiobutton(frame_basic_time, text="주간", value="주간", variable=radio_time_var)
     btn_daytime.select()
-    btn_nighttime = Radiobutton(frame_radio_time, text="야간", value="야간", variable=radio_time_var)
+    btn_nighttime = Radiobutton(frame_basic_time, text="야간", value="야간", variable=radio_time_var)
 
-    btn_number_5.pack(side="right", padx=5, pady=5)
-    btn_number_4.pack(side="right", padx=5, pady=5)
-    btn_number_3.pack(side="right", padx=5, pady=5)
-    btn_number_2.pack(side="right", padx=5, pady=5)
-    btn_number_1.pack(side="right", padx=5, pady=5)
+    # btn_number_5.pack(side="right", padx=5, pady=5)
+    # btn_number_4.pack(side="right", padx=5, pady=5)
+    # btn_number_3.pack(side="right", padx=5, pady=5)
+    # btn_number_2.pack(side="right", padx=5, pady=5)
+    # btn_number_1.pack(side="right", padx=5, pady=5)
 
     btn_nighttime.pack(side="right", padx=5, pady=5)
     btn_daytime.pack(side="right", padx=5, pady=5)
@@ -368,7 +399,6 @@ def exam():
     lst = ["선택", "합격자 명단 작성", "사진 복사", "국시원 회원가입", "출력_교육수료증명서", "출력_대체실습확인서", "출력_요양보호사 자격증 발급,재발급 신청서"]
     cmbbox["values"] = lst
     cmbbox.current(0)
-    print("aaa")
 
 def check_update():
     update_window = Tk()
@@ -399,19 +429,10 @@ def check_update():
     update_window.mainloop()
 
 def start():
-    print("radio num var : " + str(radio_num_var.get()))
-    print("radio time var : " + str(radio_time_var.get()))
-
-    print(cmbbox.get())
-
-    ordinal_num = radio_num_var.get()
+    ordinal_num = int(cmbbox_num.get())
     time = radio_time_var.get()
     mode = cmbbox.get()
     select_mode = modevar.get()
-    print("ordinal_num :",ordinal_num, "ordinal_num type :", type(ordinal_num))
-    print("time :", time, "time type", type(time))
-    print("mode :", mode, "mode type :", type(mode))
-    print("select_mode :", select_mode, "select_modemode type :", type(select_mode))
     mode_baseinfo = ["출석시간 반영", "교육생 자료 복사"]
     mode_manage = ["교육수료증명서", "대체실습확인서", "요양보호사 자격증 발급,재발급 신청서"]
     mode_report = ["개강보고", "출석부", "실시보고_대체실습", "수료보고_대체실습", "출석부_대체실습"]
@@ -447,15 +468,10 @@ def start():
     if mode in mode_exam:
         if mode == mode_exam[3] or mode_exam[4] or mode_exam[5]:
             ready = msgbox.askyesno("***이 기능은 주의가 필요합니다 !***", "!WARNING!\n이 프로그램이 시작되면 파일들이 순차적으로 시작됩니다.\n* * * 주의 * * *\n1. 프린터가 이면지가 아닌 A4용지로 되어있는지 확인해 주세요.\n2. 출력할 A4용지의 양이 충분한지 확인해 주세요.\n3. 각 파일들이 모두 입력되었는지, 수정할 것은 없는지 잘 확인한 후에 실행해 주세요 !")
-            print(ready)
             if ready == True:
-                print(cmbbox.get())
-                print(radio_num_var.get())
-                print(radio_time_var.get())
-                print(cmbbox.get()[3:])
                 # UnboundLocalError: local variable 'startingdate' referenced before assignment
                 # 매개변수를 전달할 때 radio_time_var.get() 이 아닌 radio_time_var 로 전달하여 garbage value 가 전달됨 -> "주간" or "야간" 이 아니므로 startingdate 선언 및 초기화 X -> 다른 함수에 있는 startingdate 로 인식 -> 위의 오류 출력 !!
-                function.printFile(radio_num_var.get(), radio_time_var.get(), cmbbox.get()[3:])
+                function.printFile(int(cmbbox_num.get()), radio_time_var.get(), cmbbox.get()[3:])
             elif ready == False:
                 msgbox.showinfo("알림", "자동화 옵션을 다시 선택해주세요.")
                 return
@@ -562,6 +578,9 @@ btn_update.pack(padx=5, pady=5)
 
 btn_cafe = Button(sub_frame, text="카페 자동화", command=cafe_update, width=12)
 btn_cafe.pack(padx=5, pady=5)
+
+btn_devmode = Button(sub_frame, text="개발자 모드", command=dev_mode, width=12)
+btn_devmode.pack(padx=5, pady=5)
 
 btn_quit = Button(sub_frame, text="종료", command=root.quit, width=12)
 btn_quit.pack(side="bottom", padx=5, pady=5)
