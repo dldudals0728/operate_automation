@@ -632,59 +632,140 @@ class automation:
                     string = f" 요양보호사 {automation.ws_members.cell(row=idx, column=4).value}"
                     ws_temp.cell(row=7, column=7).value = string
 
-                    if automation.ws_members.cell(row=idx, column=8).value == "대체실습 1기":
-                        # operate_data.teacher[1]
-                        for j in range(1, 7):
-                            string = ws_automation.cell(row=14, column=j).value
-                            ws_temp.cell(row=12, column=j + 1).value = string
+                    if "대체실습" in automation.ws_members.cell(row=idx, column=8).value:
+                        if "1기" in automation.ws_members.cell(row=idx, column=8).value:
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=14, column=j).value
+                                ws_temp.cell(row=12, column=j + 1).value = string
 
-                        # operate_data.teacher[4]
-                        for j in range(1, 7):
-                            string = ws_automation.cell(row=17, column=j).value
-                            ws_temp.cell(row=13, column=j + 1).value = string
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=17, column=j).value
+                                ws_temp.cell(row=13, column=j + 1).value = string
+                            
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=16, column=j).value
+                                ws_temp.cell(row=14, column=j + 1).value = string
+
+                        elif "2기" in automation.ws_members.cell(row=idx, column=8).value:
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=13, column=j).value
+                                ws_temp.cell(row=12, column=j + 1).value = string
+
+                        elif "3기" in automation.ws_members.cell(row=idx, column=8).value:
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=13, column=j).value
+                                ws_temp.cell(row=12, column=j + 1).value = string
+
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=14, column=j).value
+                                ws_temp.cell(row=13, column=j + 1).value = string
+                            
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=16, column=j).value
+                                ws_temp.cell(row=14, column=j + 1).value = string
                         
-                        # operate_data.teacher[2]
-                        for j in range(1, 7):
-                            string = ws_automation.cell(row=16, column=j).value
-                            ws_temp.cell(row=14, column=j + 1).value = string
+                        elif "4기" in automation.ws_members.cell(row=idx, column=8).value:
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=13, column=j).value
+                                ws_temp.cell(row=12, column=j + 1).value = string
 
-                    elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 2기":
-                        # operate_data.teacher[0]
-                        for j in range(1, 7):
-                            string = ws_automation.cell(row=13, column=j).value
-                            ws_temp.cell(row=12, column=j + 1).value = string
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=14, column=j).value
+                                ws_temp.cell(row=13, column=j + 1).value = string
+                            
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=16, column=j).value
+                                ws_temp.cell(row=14, column=j + 1).value = string
 
-                    elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 3기":
-                        # operate_data.teacher[0]
-                        for j in range(1, 7):
-                            string = ws_automation.cell(row=13, column=j).value
-                            ws_temp.cell(row=12, column=j + 1).value = string
+                        elif "5기" in automation.ws_members.cell(row=idx, column=8).value:
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=13, column=j).value
+                                ws_temp.cell(row=12, column=j + 1).value = string
 
-                        # operate_data.teacher[1]
-                        for j in range(1, 7):
-                            string = ws_automation.cell(row=14, column=j).value
-                            ws_temp.cell(row=13, column=j + 1).value = string
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=14, column=j).value
+                                ws_temp.cell(row=13, column=j + 1).value = string
+                            
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=16, column=j).value
+                                ws_temp.cell(row=14, column=j + 1).value = string
+
+                        elif "6기" in automation.ws_members.cell(row=idx, column=8).value:
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=13, column=j).value
+                                ws_temp.cell(row=12, column=j + 1).value = string
                         
-                        # operate_data.teacher[2]
-                        for j in range(1, 7):
-                            string = ws_automation.cell(row=16, column=j).value
-                            ws_temp.cell(row=14, column=j + 1).value = string
+                        elif "7기" in automation.ws_members.cell(row=idx, column=8).value:
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=13, column=j).value
+                                ws_temp.cell(row=12, column=j + 1).value = string
 
-                    elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 4기":
-                        # operate_data.teacher[0]
-                        for j in range(1, 7):
-                            string = ws_automation.cell(row=13, column=j).value
-                            ws_temp.cell(row=12, column=j + 1).value = string
-
-                        # operate_data.teacher[1]
-                        for j in range(1, 7):
-                            string = ws_automation.cell(row=14, column=j).value
-                            ws_temp.cell(row=13, column=j + 1).value = string
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=14, column=j).value
+                                ws_temp.cell(row=13, column=j + 1).value = string
+                            
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=16, column=j).value
+                                ws_temp.cell(row=14, column=j + 1).value = string
                         
-                        # operate_data.teacher[2]
-                        for j in range(1, 7):
-                            string = ws_automation.cell(row=16, column=j).value
-                            ws_temp.cell(row=14, column=j + 1).value = string
+                        elif "8기" in automation.ws_members.cell(row=idx, column=8).value:
+                            for j in range(1, 7):
+                                string = ws_automation.cell(row=13, column=j).value
+                                ws_temp.cell(row=12, column=j + 1).value = string
+
+                    # if automation.ws_members.cell(row=idx, column=8).value == "대체실습 1기":
+                    #     # operate_data.teacher[1]
+                    #     for j in range(1, 7):
+                    #         string = ws_automation.cell(row=14, column=j).value
+                    #         ws_temp.cell(row=12, column=j + 1).value = string
+
+                    #     # operate_data.teacher[4]
+                    #     for j in range(1, 7):
+                    #         string = ws_automation.cell(row=17, column=j).value
+                    #         ws_temp.cell(row=13, column=j + 1).value = string
+                        
+                    #     # operate_data.teacher[2]
+                    #     for j in range(1, 7):
+                    #         string = ws_automation.cell(row=16, column=j).value
+                    #         ws_temp.cell(row=14, column=j + 1).value = string
+
+                    # elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 2기":
+                    #     # operate_data.teacher[0]
+                    #     for j in range(1, 7):
+                    #         string = ws_automation.cell(row=13, column=j).value
+                    #         ws_temp.cell(row=12, column=j + 1).value = string
+
+                    # elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 3기":
+                    #     # operate_data.teacher[0]
+                    #     for j in range(1, 7):
+                    #         string = ws_automation.cell(row=13, column=j).value
+                    #         ws_temp.cell(row=12, column=j + 1).value = string
+
+                    #     # operate_data.teacher[1]
+                    #     for j in range(1, 7):
+                    #         string = ws_automation.cell(row=14, column=j).value
+                    #         ws_temp.cell(row=13, column=j + 1).value = string
+                        
+                    #     # operate_data.teacher[2]
+                    #     for j in range(1, 7):
+                    #         string = ws_automation.cell(row=16, column=j).value
+                    #         ws_temp.cell(row=14, column=j + 1).value = string
+
+                    # elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 4기":
+                    #     # operate_data.teacher[0]
+                    #     for j in range(1, 7):
+                    #         string = ws_automation.cell(row=13, column=j).value
+                    #         ws_temp.cell(row=12, column=j + 1).value = string
+
+                    #     # operate_data.teacher[1]
+                    #     for j in range(1, 7):
+                    #         string = ws_automation.cell(row=14, column=j).value
+                    #         ws_temp.cell(row=13, column=j + 1).value = string
+                        
+                    #     # operate_data.teacher[2]
+                    #     for j in range(1, 7):
+                    #         string = ws_automation.cell(row=16, column=j).value
+                    #         ws_temp.cell(row=14, column=j + 1).value = string
 
                     # 대체실습 기간
                     string = f"{automation.ws_members.cell(row=idx, column = 9).value[:4]} 년  {automation.ws_members.cell(row=idx, column = 9).value[5:7]} 월  {automation.ws_members.cell(row=idx, column = 9).value[8:]} 일  ∼    {automation.ws_members.cell(row=idx, column = 10).value[:4]} 년  {automation.ws_members.cell(row=idx, column = 10).value[5:7]} 월  {automation.ws_members.cell(row=idx, column = 10).value[8:]} 일"
@@ -1116,30 +1197,30 @@ class automation:
                     ws_certificate.cell(row=13, column=7).value = string
 
                     # 시험 시행일
-                    if automation.ws_members.cell(row=idx, column=18).value == "오연숙":
-                        string = "시험시행일   2021년 05월 15일"
-                    elif automation.ws_members.cell(row=idx, column=5).value == "3기주간1019" or "3기야간1116" or "4기주간1207":
+                    if "34" in automation.ws_members.cell(row=idx, column=24).value:
                         string = "시험시행일   2021년 02월 20일"
-                    elif automation.ws_members.cell(row=idx, column=5).value == "4기야간0201" or "5기주간0201":
+                    elif "35" in automation.ws_members.cell(row=idx, column=24).value:
                         string = "시험시행일   2021년 05월 15일"
+                    elif "36" in automation.ws_members.cell(row=idx, column=24).value:
+                        string = "시험시행일   2021년 08월 07일"
                     ws_certificate.cell(row=14, column=2).value = string
 
                     # 시험 합격일
-                    if automation.ws_members.cell(row=idx, column=18).value == "오연숙":
-                        string = "시험합격일   2021년 06월 01일"
-                    elif automation.ws_members.cell(row=idx, column=5).value == "3기주간1019" or "3기야간1116" or "4기주간1207":
+                    if "34" in automation.ws_members.cell(row=idx, column=24).value:
                         string = "시험합격일   2021년 03월 09일"
-                    elif automation.ws_members.cell(row=idx, column=5).value == "4기야간0201" or "5기주간0201":
+                    elif "35" in automation.ws_members.cell(row=idx, column=24).value:
                         string = "시험합격일   2021년 06월 01일"
+                    elif "36" in automation.ws_members.cell(row=idx, column=24).value:
+                        string = "시험합격일   2021년 08월 24일"
                     ws_certificate.cell(row=14, column=5).value = string
 
                     # 신청 일자
-                    if automation.ws_members.cell(row=idx, column=18).value == "오연숙":
+                    if "34" in automation.ws_members.cell(row=idx, column=24).value:
                         string = "     2021  년     03  월    15   일    "
-                    elif automation.ws_members.cell(row=idx, column=5).value == "3기주간1019" or "3기야간1116" or "4기주간1207":
-                        string = "     2021  년     03  월    15   일    "
-                    elif automation.ws_members.cell(row=idx, column=5).value == "4기야간0201" or "5기주간0201":
-                        string = "     2021  년     03  월    15   일    "
+                    elif "35" in automation.ws_members.cell(row=idx, column=24).value:
+                        string = "     2021  년     06  월    07   일    "
+                    elif "36" in automation.ws_members.cell(row=idx, column=24).value:
+                        string = "     2021  년     08  월    31   일    "
                     ws_certificate.cell(row=19, column=1).value = string
 
                     # 이름 / shift 는 keyDown(or Up) 에서 left 와 right 를 모두 입력해 주어야 정상작동 함 !!
