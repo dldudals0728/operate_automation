@@ -1197,29 +1197,29 @@ class automation:
                     ws_certificate.cell(row=13, column=7).value = string
 
                     # 시험 시행일
-                    if "34" in automation.ws_members.cell(row=idx, column=24).value:
+                    if "34" in str(automation.ws_members.cell(row=idx, column=24).value):
                         string = "시험시행일   2021년 02월 20일"
-                    elif "35" in automation.ws_members.cell(row=idx, column=24).value:
+                    elif "35" in str(automation.ws_members.cell(row=idx, column=24).value):
                         string = "시험시행일   2021년 05월 15일"
-                    elif "36" in automation.ws_members.cell(row=idx, column=24).value:
+                    elif "36" in str(automation.ws_members.cell(row=idx, column=24).value):
                         string = "시험시행일   2021년 08월 07일"
                     ws_certificate.cell(row=14, column=2).value = string
 
                     # 시험 합격일
-                    if "34" in automation.ws_members.cell(row=idx, column=24).value:
+                    if "34" in str(automation.ws_members.cell(row=idx, column=24).value):
                         string = "시험합격일   2021년 03월 09일"
-                    elif "35" in automation.ws_members.cell(row=idx, column=24).value:
+                    elif "35" in str(automation.ws_members.cell(row=idx, column=24).value):
                         string = "시험합격일   2021년 06월 01일"
-                    elif "36" in automation.ws_members.cell(row=idx, column=24).value:
+                    elif "36" in str(automation.ws_members.cell(row=idx, column=24).value):
                         string = "시험합격일   2021년 08월 24일"
                     ws_certificate.cell(row=14, column=5).value = string
 
                     # 신청 일자
-                    if "34" in automation.ws_members.cell(row=idx, column=24).value:
+                    if "34" in str(automation.ws_members.cell(row=idx, column=24).value):
                         string = "     2021  년     03  월    15   일    "
-                    elif "35" in automation.ws_members.cell(row=idx, column=24).value:
+                    elif "35" in str(automation.ws_members.cell(row=idx, column=24).value):
                         string = "     2021  년     06  월    07   일    "
-                    elif "36" in automation.ws_members.cell(row=idx, column=24).value:
+                    elif "36" in str(automation.ws_members.cell(row=idx, column=24).value):
                         string = "     2021  년     08  월    31   일    "
                     ws_certificate.cell(row=19, column=1).value = string
 
