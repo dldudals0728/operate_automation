@@ -280,22 +280,39 @@ class automation:
                     ws_completion.cell(row=19, column=7).value = string
 
                     # 수여일 / 각 인원 대체실습 기준 종료일 바로 다음 월요일 날짜로 지정
-                    if automation.ws_members.cell(row=idx, column=8).value == "대체실습 1기":
-                        string = f"                               {ws_automation.cell(row=3, column=3).value[:4]} 년    {ws_automation.cell(row=3, column=3).value[5:7]} 월     {ws_automation.cell(row=3, column=3).value[8:]} 일"
-                    elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 2기":
-                        string = f"                               {ws_automation.cell(row=4, column=3).value[:4]} 년    {ws_automation.cell(row=4, column=3).value[5:7]} 월     {ws_automation.cell(row=4, column=3).value[8:]} 일"
-                    elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 3기":
-                        string = f"                               {ws_automation.cell(row=5, column=3).value[:4]} 년    {ws_automation.cell(row=5, column=3).value[5:7]} 월     {ws_automation.cell(row=5, column=3).value[8:]} 일"
-                    elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 4기":
-                        string = f"                               {ws_automation.cell(row=6, column=3).value[:4]} 년    {ws_automation.cell(row=6, column=3).value[5:7]} 월     {ws_automation.cell(row=6, column=3).value[8:]} 일"
-                    elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 5기":
-                        string = f"                               {ws_automation.cell(row=7, column=3).value[:4]} 년    {ws_automation.cell(row=7, column=3).value[5:7]} 월     {ws_automation.cell(row=7, column=3).value[8:]} 일"
-                    elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 6기":
-                        string = f"                               {ws_automation.cell(row=8, column=3).value[:4]} 년    {ws_automation.cell(row=8, column=3).value[5:7]} 월     {ws_automation.cell(row=8, column=3).value[8:]} 일"
-                    elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 7기":
-                        string = f"                               {ws_automation.cell(row=9, column=3).value[:4]} 년    {ws_automation.cell(row=9, column=3).value[5:7]} 월     {ws_automation.cell(row=9, column=3).value[8:]} 일"
-                    elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 8기":
-                        string = f"                               {ws_automation.cell(row=10, column=3).value[:4]} 년    {ws_automation.cell(row=10, column=3).value[5:7]} 월     {ws_automation.cell(row=10, column=3).value[8:]} 일"
+                    if "대체실습" in automation.ws_members.cell(row=idx, column=8).value:
+                        if "1기" in automation.ws_members.cell(row=idx, column=8).value:
+                            string = f"                               {ws_automation.cell(row=3, column=3).value[:4]} 년    {ws_automation.cell(row=3, column=3).value[5:7]} 월     {ws_automation.cell(row=3, column=3).value[8:]} 일"
+                        elif "2기" in automation.ws_members.cell(row=idx, column=8).value:
+                            string = f"                               {ws_automation.cell(row=4, column=3).value[:4]} 년    {ws_automation.cell(row=4, column=3).value[5:7]} 월     {ws_automation.cell(row=4, column=3).value[8:]} 일"
+                        elif "2기" in automation.ws_members.cell(row=idx, column=8).value:
+                            string = f"                               {ws_automation.cell(row=5, column=3).value[:4]} 년    {ws_automation.cell(row=5, column=3).value[5:7]} 월     {ws_automation.cell(row=5, column=3).value[8:]} 일"
+                        elif "2기" in automation.ws_members.cell(row=idx, column=8).value:
+                            string = f"                               {ws_automation.cell(row=6, column=3).value[:4]} 년    {ws_automation.cell(row=6, column=3).value[5:7]} 월     {ws_automation.cell(row=6, column=3).value[8:]} 일"
+                        elif "2기" in automation.ws_members.cell(row=idx, column=8).value:
+                            string = f"                               {ws_automation.cell(row=7, column=3).value[:4]} 년    {ws_automation.cell(row=7, column=3).value[5:7]} 월     {ws_automation.cell(row=7, column=3).value[8:]} 일"
+                        elif "2기" in automation.ws_members.cell(row=idx, column=8).value:
+                            string = f"                               {ws_automation.cell(row=8, column=3).value[:4]} 년    {ws_automation.cell(row=8, column=3).value[5:7]} 월     {ws_automation.cell(row=8, column=3).value[8:]} 일"
+                        elif "2기" in automation.ws_members.cell(row=idx, column=8).value:
+                            string = f"                               {ws_automation.cell(row=9, column=3).value[:4]} 년    {ws_automation.cell(row=9, column=3).value[5:7]} 월     {ws_automation.cell(row=9, column=3).value[8:]} 일"
+                        elif "2기" in automation.ws_members.cell(row=idx, column=8).value:
+                            string = f"                               {ws_automation.cell(row=10, column=3).value[:4]} 년    {ws_automation.cell(row=10, column=3).value[5:7]} 월     {ws_automation.cell(row=10, column=3).value[8:]} 일"
+                    # if automation.ws_members.cell(row=idx, column=8).value == "대체실습 1기":
+                    #     string = f"                               {ws_automation.cell(row=3, column=3).value[:4]} 년    {ws_automation.cell(row=3, column=3).value[5:7]} 월     {ws_automation.cell(row=3, column=3).value[8:]} 일"
+                    # elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 2기":
+                    #     string = f"                               {ws_automation.cell(row=4, column=3).value[:4]} 년    {ws_automation.cell(row=4, column=3).value[5:7]} 월     {ws_automation.cell(row=4, column=3).value[8:]} 일"
+                    # elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 3기":
+                    #     string = f"                               {ws_automation.cell(row=5, column=3).value[:4]} 년    {ws_automation.cell(row=5, column=3).value[5:7]} 월     {ws_automation.cell(row=5, column=3).value[8:]} 일"
+                    # elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 4기":
+                    #     string = f"                               {ws_automation.cell(row=6, column=3).value[:4]} 년    {ws_automation.cell(row=6, column=3).value[5:7]} 월     {ws_automation.cell(row=6, column=3).value[8:]} 일"
+                    # elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 5기":
+                    #     string = f"                               {ws_automation.cell(row=7, column=3).value[:4]} 년    {ws_automation.cell(row=7, column=3).value[5:7]} 월     {ws_automation.cell(row=7, column=3).value[8:]} 일"
+                    # elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 6기":
+                    #     string = f"                               {ws_automation.cell(row=8, column=3).value[:4]} 년    {ws_automation.cell(row=8, column=3).value[5:7]} 월     {ws_automation.cell(row=8, column=3).value[8:]} 일"
+                    # elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 7기":
+                    #     string = f"                               {ws_automation.cell(row=9, column=3).value[:4]} 년    {ws_automation.cell(row=9, column=3).value[5:7]} 월     {ws_automation.cell(row=9, column=3).value[8:]} 일"
+                    # elif automation.ws_members.cell(row=idx, column=8).value == "대체실습 8기":
+                    #     string = f"                               {ws_automation.cell(row=10, column=3).value[:4]} 년    {ws_automation.cell(row=10, column=3).value[5:7]} 월     {ws_automation.cell(row=10, column=3).value[8:]} 일"
                     ws_completion.cell(row=23, column=1).value = string
 
                     wb_completion.save(string_stu)
