@@ -11,11 +11,11 @@ import tkinter.ttk as ttk # combobox, progressbar
 import tkinter.messagebox as msgbox
 
 import cafe_update_module
-
 import operate_data
 
 from operate_automation_menu import automation
 #                                       example
+ 
 # preform = automation()
 # perform.auto_move_class(4, "야간")
 # perform.auto_move_report()
@@ -227,7 +227,7 @@ def selection():
         if cmbbox.get() == "출석시간 반영":
             info_message = "D:\\"+operate_data.ac_name+"\\교육생관리\\출석부_기관장용\n폴더 내부의 파일들을 참조하여 출석부를 최신화 합니다."
         elif cmbbox.get() == "교육생 자료 복사":
-            info_message = "D:\\Master\\mkfile\n폴더 내부의 파일들을 참조하여 출석부를 최신화 합니다."
+            info_message = "D:\\Master\\mkfile\n폴더 내부의 파일들을 참조하여 폴더를 최신화 합니다."
         elif cmbbox.get() in lst_manage or cmbbox.get() in lst_report:
             info_message = "작성된 명단의 내용을 참조하여 \"" + cmbbox.get() + "\" 작성을 시작합니다."
         elif "출력_" in cmbbox.get():
@@ -593,5 +593,3 @@ scrollbar.config(command=listbox.yview)
 root.mainloop()
 
 a = pyautogui.getWindowsWithTitle("교육원 운영 자동화 프로그램")[0]
-
-print(a)

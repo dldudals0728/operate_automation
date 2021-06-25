@@ -2092,9 +2092,6 @@ class automation:
         # new_path 는 기수를 설정하여, 각 기수의 멤버를 받아 파일을 복사한다.
         # ex) original_path = "D:\\"+operate_data.ac_name+"\\교육생관리\\4기\\4기주간1207\\1.abc\\abc_요양보호사 자격증 발급,재발급 신청서.hwp" / new_path =  "4기야간0201"
         # how to use ? : x.mkfile(4, "주간", "교육수료증명서.hwp") !!! 주의 !!! 꼭 확장자 명을 작성할 것 !
-        self.new_path_num = new_path_num
-        self.new_path_time = new_path_time
-        self.file_name = file_name
 
         wb_automation = load_workbook("D:\\Master\\업무자동화.xlsx")
         ws_automation = wb_automation.active
@@ -2111,6 +2108,19 @@ class automation:
         for idx, cell in enumerate(automation.ws_members["E"], start=1):
             if string_set != cell.value:
                 continue
+            if automation.ws_members.cell(row=idx, column=15).value == "일반":
+                path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(new_path_num)}기\\{string_set}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}"
+            elif automation.ws_members.cell(row=idx, column=15).value == "자격증(사복)":
+                path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(new_path_num)}기\\{string_set}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}_사복"
+            elif automation.ws_members.cell(row=idx, column=15).value == "자격증(간조)":
+                path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(new_path_num)}기\\{string_set}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}_간조"
+            elif automation.ws_members.cell(row=idx, column=15).value == "자격증(간호)":
+                path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(new_path_num)}기\\{string_set}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}_간호"
+            
+            if not os.path.isdir(path):
+                print(path, " 폴더가 존재하지 않아 폴더를 생성합니다.")
+                os.mkdir(path)
+
             if automation.ws_members.cell(row=idx, column=15).value == "일반":
                 path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(new_path_num)}기\\{string_set}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}\\{automation.ws_members.cell(row=idx, column=18).value}_{file_name}"
             elif automation.ws_members.cell(row=idx, column=15).value == "자격증(사복)":
@@ -2151,6 +2161,62 @@ class automation:
         for file_name in result:
             print(file_name + " 출력을 시작합니다.")
             os.startfile(file_name, "print")
+
+    def picture_copy(self, exam):
+        # 시험 차수: 36 <class 'int'>
+        not_exist = []
+        exsist = []
+        # D:\남양노아요양보호사교육원\경기도청\자격증발급\35회_제출용\자격증 사진
+        copy_path = "D:\\"+operate_data.ac_name+f"\\경기도청\\자격증발급\\{exam}회_제출용\\자격증 사진"
+        if os.path.exists(copy_path):
+            shutil.rmtree(copy_path)
+            os.mkdir(copy_path)
+        else:
+            os.mkdir(copy_path)
+        for idx, cell in enumerate(automation.ws_members["X"], start=1):
+            if idx <= 4:
+                continue
+            if not exam == automation.ws_members.cell(row=idx, column=24).value:
+                continue
+            # D:\남양노아요양보호사교육원\교육생관리\6기\6기주간0315\10. 이순희\6기주간_이순희.jpg
+            name = automation.ws_members.cell(row=idx, column=18).value
+            ordinal_num = automation.ws_members.cell(row=idx, column=4).value
+            time = automation.ws_members.cell(row=idx, column=5).value
+            folder_order = automation.ws_members.cell(row=idx, column=1).value
+            file_name = str(automation.ws_members.cell(row=idx, column=20).value[:6]) + str(automation.ws_members.cell(row=idx, column=20).value[7:])
+            
+            if automation.ws_members.cell(row=idx, column=15).value == "일반":
+                value = "일반"
+                original_path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(ordinal_num)}\\{time}\\{folder_order}. {name}\\{time[:4]}_{name}.jpg"
+                if os.path.isfile(original_path):
+                    exsist.append(name)
+                else:
+                    not_exist.append(name)
+            else:
+                value = automation.ws_members.cell(row=idx, column=15).value[4:6]
+                original_path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(ordinal_num)}\\{time}\\{folder_order}. {name}_{value}\\{time[:4]}_{name}_{value}.jpg"
+                if os.path.isfile(original_path):
+                    exsist.append(name)
+                else:
+                    original_path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(ordinal_num)}\\{time}\\{folder_order}. {name}_{value}\\{time[:4]}_{name}.jpg"
+                    if os.path.isfile(original_path):
+                        exsist.append(name)
+                    else:
+                        not_exist.append(name)
+                # if not os.path.isfile(original_path):
+                #     print("파일이 존재하지 않습니다:" + str(time) + "\\" + str(folder_order)+ ". " + str(name))
+                #     not_exist.append(str(time) + "\\" + str(folder_order)+ ". " + str(name))
+                #     continue
+
+            copy_path = "D:\\"+operate_data.ac_name+f"\\경기도청\\자격증발급\\{exam}회_제출용\\자격증 사진\\{file_name}.jpg"
+            shutil.copy2(original_path, copy_path)
+            print("파일이 복사되었습니다 :", name, "->", file_name)
+
+        print("존재하는 파일:", exsist)
+        print("존재하지 않는 파일:", not_exist)
+
+            # D:\\남양노아요양보호사교육원\\교육생관리\\4기\\4기주간1207\\13. 김현희_사복\\4기주간_김현희_사복
+            # D:\\남양노아요양보호사교육원\\교육생관리\\4기\\4기주간1207\\13. 김현희_사복\\4기주간_김현희_사복
 
 
 
