@@ -194,8 +194,8 @@ class AutoCLI(automation):
             print("\n잘못 입력하셨습니다. 다시 입력해 주세요.")
             self.printMenu2()
 
-        print(self.gisu + "기 " + self.time + "반 " + answer_menu + "를 작성합니다.")
-        function.automation_task_students(self.gisu, self.time, answer_menu, 1)
+        self.inputGisuTime()
+        function.automation_task_students(self.gisu, self.time, answer_menu, True)
         print(self.gisu + "기 " + self.time + "반 " + answer_menu + " 작성을 완료하였습니다.")
 
         self.printMenu()

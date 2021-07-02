@@ -144,12 +144,13 @@ class automation:
         self.task = task
         self.version = version
 
-        is_ready = pyautogui.confirm("자동화 프로그램을 시작하시기 전에\n1. 모든 각 문서는 D:\\Master\\rpa_basic_file 에서 복사된 파일이어야 합니다.\n(각 자료가 입력되어 있어야 함)\n2. 한글, 파일 탐색기(폴더) 가 하나라도 실행되어 있어선 안됩니다.\n준비가 되었으면 확인, 안되어있으면 취소를 눌러주세요.", "경고")
-        if is_ready == "OK":
-            pyautogui.alert("자동화 프로그램을 시작합니다.\n프로그램을 강제로 종료하고 싶으실 경우 마우스를 각 꼭짓점에 가져가주세요.", "실행")
-        elif is_ready == "Cancel":
-            pyautogui.alert("프로그램을 종료합니다.\n준비작업을 마치신 후 다시 실행해 주세요.", "종료")
-            return
+        if version == False:
+            is_ready = pyautogui.confirm("자동화 프로그램을 시작하시기 전에\n1. 모든 각 문서는 D:\\Master\\rpa_basic_file 에서 복사된 파일이어야 합니다.\n(각 자료가 입력되어 있어야 함)\n2. 한글, 파일 탐색기(폴더) 가 하나라도 실행되어 있어선 안됩니다.\n준비가 되었으면 확인, 안되어있으면 취소를 눌러주세요.", "경고")
+            if is_ready == "OK":
+                pyautogui.alert("자동화 프로그램을 시작합니다.\n프로그램을 강제로 종료하고 싶으실 경우 마우스를 각 꼭짓점에 가져가주세요.", "실행")
+            elif is_ready == "Cancel":
+                pyautogui.alert("프로그램을 종료합니다.\n준비작업을 마치신 후 다시 실행해 주세요.", "종료")
+                return
 
         wb_automation =  load_workbook("D:\\Master\\업무자동화.xlsx")
         ws_automation = wb_automation.active
@@ -203,6 +204,7 @@ class automation:
         wb_automation = load_workbook("D:\\Master\\업무자동화.xlsx")
         ws_automation = wb_automation.active
         string_set = f"{ordinal_num}기{time}"
+        switch = 0
         
         if task == "교육수료증명서":
             if version == True:
@@ -213,18 +215,18 @@ class automation:
                     if idx <= 4:
                         continue
                     # !!!caution!!! f-string 사용 시에는 \enter(줄바꿈) 사용하면 X ! 그대로 입력됨
-                    if time == "주간":
-                        startingdate = ws_automation.cell(row=112 + ordinal_num, column=2).value
-                    elif time == "야간":
-                        startingdate = ws_automation.cell(row=112 + ordinal_num, column=3).value
+                    if switch == 0:
+                        string_set = cell.value
+                        switch = 1
+
                     if automation.ws_members.cell(row=idx, column=15).value == "일반":
-                        string_stu = f"D:\\"+operate_data.ac_name+f"\\교육생관리\\{ordinal_num}기\\{ordinal_num}기{time}{startingdate}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}\\{automation.ws_members.cell(row=idx, column=18).value}_{task}.xlsx"
+                        string_stu = f"D:\\"+operate_data.ac_name+f"\\교육생관리\\{ordinal_num}기\\{string_set}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}\\{automation.ws_members.cell(row=idx, column=18).value}_{task}.xlsx"
                     elif automation.ws_members.cell(row=idx, column=15).value == "자격증(간조)":
-                        string_stu = f"D:\\"+operate_data.ac_name+f"\\교육생관리\\{ordinal_num}기\\{ordinal_num}기{time}{startingdate}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}_간조\\{automation.ws_members.cell(row=idx, column=18).value}_{task}.xlsx"
+                        string_stu = f"D:\\"+operate_data.ac_name+f"\\교육생관리\\{ordinal_num}기\\{string_set}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}_간조\\{automation.ws_members.cell(row=idx, column=18).value}_{task}.xlsx"
                     elif automation.ws_members.cell(row=idx, column=15).value == "자격증(사복)":
-                        string_stu = f"D:\\"+operate_data.ac_name+f"\\교육생관리\\{ordinal_num}기\\{ordinal_num}기{time}{startingdate}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}_사복\\{automation.ws_members.cell(row=idx, column=18).value}_{task}.xlsx"
+                        string_stu = f"D:\\"+operate_data.ac_name+f"\\교육생관리\\{ordinal_num}기\\{string_set}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}_사복\\{automation.ws_members.cell(row=idx, column=18).value}_{task}.xlsx"
                     elif automation.ws_members.cell(row=idx, column=15).value == "자격증(간호)":
-                        string_stu = f"D:\\"+operate_data.ac_name+f"\\교육생관리\\{ordinal_num}기\\{ordinal_num}기{time}{startingdate}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}_간호\\{automation.ws_members.cell(row=idx, column=18).value}_{task}.xlsx"
+                        string_stu = f"D:\\"+operate_data.ac_name+f"\\교육생관리\\{ordinal_num}기\\{string_set}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}_간호\\{automation.ws_members.cell(row=idx, column=18).value}_{task}.xlsx"
                     print(string_stu)
                     wb_completion = load_workbook(string_stu)
                     ws_completion = wb_completion.active
@@ -1917,6 +1919,7 @@ class automation:
     def list_pass(self, exam_round, exist=0):
         # excel 호환모드(.xls)는 openpyxl 로 다룰 수 없음.
         wb_pass = load_workbook("D:\\"+operate_data.ac_name+f"\\경기도청\\자격증발급\\{exam_round}회_제출용\\화성시-"+operate_data.ac_name+f"-{exam_round}회합격자명단.xlsx")
+        # D:\남양노아요양보호사교육원\경기도청\자격증발급\35회_제출용\화성시-남양노아요양보호사교육원-35회합격자명단
         ws_pass = wb_pass.active
         starting_row = 5 + exist
         for idx, cell in enumerate(automation.ws_members["X"], start=1):
@@ -2095,19 +2098,22 @@ class automation:
 
         wb_automation = load_workbook("D:\\Master\\업무자동화.xlsx")
         ws_automation = wb_automation.active
-        if new_path_time == "주간":
-            startingdate = ws_automation.cell(row=112 + new_path_num, column=2).value
-        elif new_path_time == "야간":
-            startingdate = ws_automation.cell(row=112 + new_path_num, column=3).value
-        string_set = f"{new_path_num}기{new_path_time}{startingdate}"
+        string_set = f"{new_path_num}기{new_path_time}"
         print(string_set)
+
+        switch = 0
 
         i = 1
         original_path = f"D:\\Master\\mkfile\\{file_name}"
         print("파일을 복사합니다.\n원본파일 :", original_path)
         for idx, cell in enumerate(automation.ws_members["E"], start=1):
-            if string_set != cell.value:
+            if idx < 5:
                 continue
+            if string_set not in cell.value:
+                continue
+            if switch == 0:
+                string_set = cell.value
+                switch = 1
             if automation.ws_members.cell(row=idx, column=15).value == "일반":
                 path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(new_path_num)}기\\{string_set}\\{i}. {automation.ws_members.cell(row=idx, column=18).value}"
             elif automation.ws_members.cell(row=idx, column=15).value == "자격증(사복)":
@@ -2162,7 +2168,7 @@ class automation:
             print(file_name + " 출력을 시작합니다.")
             os.startfile(file_name, "print")
 
-    def picture_copy(self, exam):
+    def copy_picture(self, exam):
         # 시험 차수: 36 <class 'int'>
         not_exist = []
         exsist = []
@@ -2188,39 +2194,26 @@ class automation:
             if automation.ws_members.cell(row=idx, column=15).value == "일반":
                 value = "일반"
                 original_path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(ordinal_num)}\\{time}\\{folder_order}. {name}\\{time[:4]}_{name}.jpg"
-                if os.path.isfile(original_path):
-                    exsist.append(name)
-                else:
+                if not os.path.isfile(original_path):
+                    print("\n파일이 존재하지 않습니다\n" + original_path + "\n\n")
                     not_exist.append(name)
             else:
                 value = automation.ws_members.cell(row=idx, column=15).value[4:6]
                 original_path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(ordinal_num)}\\{time}\\{folder_order}. {name}_{value}\\{time[:4]}_{name}_{value}.jpg"
                 if os.path.isfile(original_path):
-                    exsist.append(name)
+                    pass
                 else:
                     original_path = "D:\\"+operate_data.ac_name+f"\\교육생관리\\{str(ordinal_num)}\\{time}\\{folder_order}. {name}_{value}\\{time[:4]}_{name}.jpg"
-                    if os.path.isfile(original_path):
-                        exsist.append(name)
-                    else:
+                    if not os.path.isfile(original_path):
+                        print("\n파일이 존재하지 않습니다\n" + original_path + "\n\n")
                         not_exist.append(name)
-                # if not os.path.isfile(original_path):
-                #     print("파일이 존재하지 않습니다:" + str(time) + "\\" + str(folder_order)+ ". " + str(name))
-                #     not_exist.append(str(time) + "\\" + str(folder_order)+ ". " + str(name))
-                #     continue
 
             copy_path = "D:\\"+operate_data.ac_name+f"\\경기도청\\자격증발급\\{exam}회_제출용\\자격증 사진\\{file_name}.jpg"
             shutil.copy2(original_path, copy_path)
             print("파일이 복사되었습니다 :", name, "->", file_name)
 
-        print("존재하는 파일:", exsist)
-        print("존재하지 않는 파일:", not_exist)
-
-            # D:\\남양노아요양보호사교육원\\교육생관리\\4기\\4기주간1207\\13. 김현희_사복\\4기주간_김현희_사복
-            # D:\\남양노아요양보호사교육원\\교육생관리\\4기\\4기주간1207\\13. 김현희_사복\\4기주간_김현희_사복
-
-
-
-        
+        if not not_exist == []:
+            print("존재하지 않는 파일:", not_exist)
             
 # file_position_detail : x = 335, y = 230, +- = 21
 # file_position_big_icorn : x = 330, y = 242, +- = 110
