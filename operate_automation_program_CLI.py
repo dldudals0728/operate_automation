@@ -8,13 +8,11 @@ import operate_data
 
 from operate_automation_menu import automation
 
-function = automation()
-
 class AutoCLI(automation):
     def __init__(self):
         print("자동화 프로그램을 시작합니다.")
 
-        function = automation()
+        self.function = automation()
 
         self.gisu = None
         self.time = None
@@ -71,7 +69,7 @@ class AutoCLI(automation):
             print("**** 합격자명단 파일의 내용을 합격자명단_호환모드 로 복사한 후 ****")
             print("**************** 호환모드의 파일을 제출해야 합니다. ***************")
             print("*******************************************************************")
-            function.list_pass(exam_round=int(exam), exist=int(exist))
+            self.function.list_pass(exam_round=int(exam), exist=int(exist))
             print(exam + "회 합격자명단 파일 최신화를 완료했습니다.")
 
         elif answer_menu == "2":
@@ -83,7 +81,7 @@ class AutoCLI(automation):
                 self.printMenu4()
             
             print(exam + "회 사진 복사를 시작합니다.")
-            function.copy_picture(exam)
+            self.function.copy_picture(exam)
             print(exam + "회 사진 복사를 완료했습니다.")
 
         elif answer_menu == "3":
@@ -140,7 +138,7 @@ class AutoCLI(automation):
                 self.printMenu4()
 
             print(self.gisu + "기 " + self.time + "반 " + task + " 출력을 시작합니다.")
-            function.printFile(self.gisu, self.time, task)
+            self.function.printFile(self.gisu, self.time, task)
             print(self.gisu + "기 " + self.time + "반 " + task + " 출력을 완료하였습니다.")
 
         elif answer_menu == "q" or answer_menu == "Q":
@@ -162,9 +160,47 @@ class AutoCLI(automation):
         print("5. 출석부_대체실습")
         print("q. 프로그램 종료")
         print("***********************")
-        print("\n\n******************************************")
-        print("**** 이 기능은 업데이트되지 않았습니다. ****")
-        print("******************************************\n\n")
+
+        answer_menu = input("메뉴를 선택해주세요: ")
+        if answer_menu == "1":
+            self.inputGisuTime()
+
+            print(f"{self.gisu}기 {self.time}반 개강보고 명단 작성을 시작합니다.")
+            self.function.mkReportOpenXlsx(self.gisu, self.time)
+            print(f"{self.gisu}기 {self.time}반 개강보고 명단 작성을 완료했습니다.")
+
+        elif answer_menu == "3":
+            while(True):
+                self.gisu = input("기수를 입력해 주세요:")
+                if (not self.gisu.isdigit()) or int(self.gisu) < 1:
+                    print("\n잘못 입력하셨습니다. 다시 입력해 주세요.")
+
+                else:
+                    break
+
+            print(f"대체실습 {self.gisu}기 실시보고 명단 작성을 시작합니다.")
+            self.function.mkReportOpenCloseXlsx_temp(self.gisu, 0)
+            print(f"대체실습 {self.gisu}기 실시보고 명단 작성을 완료했습니다.")
+
+        elif answer_menu == "4":
+            while(True):
+                self.gisu = input("기수를 입력해 주세요:")
+                if (not self.gisu.isdigit()) or int(self.gisu) < 1:
+                    print("\n잘못 입력하셨습니다. 다시 입력해 주세요.")
+
+                else:
+                    break
+
+            print(f"대체실습 {self.gisu}기 수료보고 명단 작성을 시작합니다.")
+            self.function.mkReportOpenCloseXlsx_temp(self.gisu, 1)
+            print(f"대체실습 {self.gisu}기 수료보고 명단 작성을 완료했습니다.")
+
+        else:
+            print("\n\n******************************************")
+            print("**** 이 기능은 업데이트되지 않았습니다. ****")
+            print("******************************************\n\n")
+
+
         self.printMenu()
 
 
@@ -195,7 +231,7 @@ class AutoCLI(automation):
             self.printMenu2()
 
         self.inputGisuTime()
-        function.automation_task_students(self.gisu, self.time, answer_menu, True)
+        self.function.automation_task_students(self.gisu, self.time, answer_menu, True)
         print(self.gisu + "기 " + self.time + "반 " + answer_menu + " 작성을 완료하였습니다.")
 
         self.printMenu()
@@ -218,7 +254,7 @@ class AutoCLI(automation):
             self.inputGisuTime()
 
             print(self.gisu + "기 " + self.time + "반 출석부를 최신화 합니다.")
-            function.update_attendance(self.gisu, self.time)
+            self.function.update_attendance(self.gisu, self.time)
             print(self.gisu + "기 " + self.time + "반 출석부를 최신화를 완료했습니다.")
 
         elif answer_menu == "2":
@@ -244,7 +280,7 @@ class AutoCLI(automation):
             self.inputGisuTime()
 
             print(self.gisu + "기 " + self.time + "반 폴더에 " + file_name + "를 복사합니다.")
-            function.mkfile(self.gisu, self.time, file_name)
+            self.function.mkfile(self.gisu, self.time, file_name)
             print(self.gisu + "기 " + self.time + "반 폴더로 " + file_name + "복사를 완료했습니다.")
 
         elif answer_menu == "q" or answer_menu == "Q":
@@ -256,6 +292,30 @@ class AutoCLI(automation):
 
         self.printMenu()
 
+    def printMenu0(self):
+        print("\n\n******************************")
+        print("******************************")
+        print("***** database 수정 메뉴 *****")
+        print("******************************")
+        print("******************************\n\n")
+        print("┌──────────────menu──────────────┐")
+        print("│\t1. database 경로 변경\t │")
+        print("│\t2. 학원명 변경\t\t │")
+        print("│\tq. 메뉴 나가기\t\t │")
+        print("└────────────────────────────────┘")
+        answer_menu = input("select menu: ")
+        if answer_menu == "1":
+            pass
+        elif answer_menu == "2":
+            pass
+        elif answer_menu == "q" or answer_menu == "Q":
+            self.printMenu()
+        else:
+            print("wrong typing !")
+            self.printMenu0()
+
+
+
     def printMenu(self):
         print("\n\n")
         print("******* 메뉴 *******")
@@ -263,6 +323,7 @@ class AutoCLI(automation):
         print("2. 교육생 관리")
         print("3. 경기도청 보고")
         print("4. 국시원 자동화")
+        print("0. database 수정")
         print("q. 프로그램 종료")
         print("********************")
         answer_menu = input("메뉴를 선택해주세요: ")
@@ -277,6 +338,9 @@ class AutoCLI(automation):
         
         elif answer_menu == "4":
             self.printMenu4()
+
+        elif answer_menu == "0":
+            self.printMenu0()
 
         elif answer_menu == "q" or answer_menu == "Q":
             self.exitProgram()
