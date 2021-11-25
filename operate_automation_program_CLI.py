@@ -40,10 +40,8 @@ class AutoCLI(automation):
         print("1. 합격자 명단 작성")
         print("2. 사진 복사")
         print("3. 국시원 회원가입")
-        print("4. 출력_교육수료증명서")
-        print("5. 출력_대체실습 확인서")
-        print("6. 출력_요양보호사 자격증 발급, 재발급 신청서")
-        print("q. 프로그램 종료")
+        print("4. 서류 출력")
+        print("q. 메뉴 나가기")
         print("****************************")
         answer_menu = input("메뉴를 선택해주세요: ")
         if answer_menu == "1":
@@ -80,9 +78,10 @@ class AutoCLI(automation):
                 print("\n잘못 입력하셨습니다. 다시 입력해 주세요.")
                 self.printMenu4()
             
-            print(exam + "회 사진 복사를 시작합니다.")
+            exam = int(exam)
+            print(str(exam) + "회 사진 복사를 시작합니다.")
             self.function.copy_picture(exam)
-            print(exam + "회 사진 복사를 완료했습니다.")
+            print(str(exam) + "회 사진 복사를 완료했습니다.")
 
         elif answer_menu == "3":
             print("\n국시원 회원가입")
@@ -91,7 +90,7 @@ class AutoCLI(automation):
             print("******************************************\n\n")
             self.printMenu4()
 
-        elif answer_menu == "4" or answer_menu == "5" or answer_menu == "6":
+        elif answer_menu == "4":
             print("\n서류 출력")
             print("*****************************************************************************************")
             print("************************* 이 기능은 주의가 필요합니다 !WARNING! *************************")
@@ -117,7 +116,7 @@ class AutoCLI(automation):
             print("1. 교육수료증명서")
             print("2. 대체실습 확인서")
             print("3. 요양보호사 자격증 발급, 재발급 신청서")
-            print("q. 프로그램 종료")
+            print("q. 메뉴 나가기")
             print("*******************************")
             task = input("출력할 서류를 선택해주세요: ")
 
@@ -131,18 +130,18 @@ class AutoCLI(automation):
                 task = "요양보호사 자격증 발급,재발급 신청서"
 
             elif task == "q" or task == "Q":
-                self.exitProgram()
+                self.printMenu4()
 
             else:
                 print("\n잘못 입력하셨습니다. 다시 입력해 주세요.")
                 self.printMenu4()
 
             print(self.gisu + "기 " + self.time + "반 " + task + " 출력을 시작합니다.")
-            self.function.printFile(self.gisu, self.time, task)
+            self.function.print_file(self.gisu, self.time, task, 0)
             print(self.gisu + "기 " + self.time + "반 " + task + " 출력을 완료하였습니다.")
 
         elif answer_menu == "q" or answer_menu == "Q":
-            self.exitProgram()
+            self.printMenu()
 
         else:
             print("\n잘못 입력하셨습니다. 다시 입력해 주세요.")
@@ -158,7 +157,7 @@ class AutoCLI(automation):
         print("3. 실시보고_대체실습")
         print("4. 수료보고_대체실습")
         print("5. 출석부_대체실습")
-        print("q. 프로그램 종료")
+        print("q. 메뉴 나가기")
         print("***********************")
 
         answer_menu = input("메뉴를 선택해주세요: ")
@@ -166,8 +165,20 @@ class AutoCLI(automation):
             self.inputGisuTime()
 
             print(f"{self.gisu}기 {self.time}반 개강보고 명단 작성을 시작합니다.")
-            self.function.mkReportOpenXlsx(self.gisu, self.time)
+            self.function.mk_report_open_xlsx(self.gisu, self.time)
             print(f"{self.gisu}기 {self.time}반 개강보고 명단 작성을 완료했습니다.")
+
+        elif answer_menu == "2":
+            self.inputGisuTime()
+            print(f"{self.gisu}기 {self.time}반 출석부 명단 작성을 시작합니다.")
+
+            if self.time == "주간":
+                class_type = 0
+            elif self.time == "야간":
+                class_type = 1
+
+            self.function.mk_attendance_xlsx(self.gisu, class_type)
+            print(f"{self.gisu}기 {self.time}반 출석부 명단 작성을 완료했습니다.")
 
         elif answer_menu == "3":
             while(True):
@@ -179,7 +190,7 @@ class AutoCLI(automation):
                     break
 
             print(f"대체실습 {self.gisu}기 실시보고 명단 작성을 시작합니다.")
-            self.function.mkReportOpenCloseXlsx_temp(self.gisu, 0)
+            self.function.mk_report_open_close_xlsx_temp(self.gisu, 0)
             print(f"대체실습 {self.gisu}기 실시보고 명단 작성을 완료했습니다.")
 
         elif answer_menu == "4":
@@ -191,15 +202,25 @@ class AutoCLI(automation):
                 else:
                     break
 
-            print(f"대체실습 {self.gisu}기 수료보고 명단 작성을 시작합니다.")
-            self.function.mkReportOpenCloseXlsx_temp(self.gisu, 1)
-            print(f"대체실습 {self.gisu}기 수료보고 명단 작성을 완료했습니다.")
+                print(f"대체실습 {self.gisu}기 수료보고 명단 작성을 시작합니다.")
+                self.function.mk_report_open_close_xlsx_temp(self.gisu, 1)
+                print(f"대체실습 {self.gisu}기 수료보고 명단 작성을 완료했습니다.")
+        
+        elif answer_menu == "5":
+            while(True):
+                self.gisu = input("기수를 입력해 주세요:")
+                if (not self.gisu.isdigit()) or int(self.gisu) < 1:
+                    print("\n잘못 입력하셨습니다. 다시 입력해 주세요.")
 
-        else:
-            print("\n\n******************************************")
-            print("**** 이 기능은 업데이트되지 않았습니다. ****")
-            print("******************************************\n\n")
+                else:
+                    break
 
+            print(f"대체실습 {self.gisu}기 출석부 명단 작성을 시작합니다.")
+            self.function.mk_attendance_xlsx(self.gisu, 2)
+            print(f"대체실습 {self.gisu}기 출석부 명단 작성을 완료했습니다.")
+
+        elif answer_menu == "q" or answer_menu == "Q":
+            self.printMenu()
 
         self.printMenu()
 
@@ -210,7 +231,7 @@ class AutoCLI(automation):
         print("1. 교육수료증명서")
         print("2. 대체실습 확인서")
         print("3. 요양보호사 자격증 발급, 재발급 신청서")
-        print("q. 프로그램 종료")
+        print("q. 메뉴 나가기")
         print("**************************")
 
         answer_menu = input("메뉴를 선택해주세요: ")
@@ -224,7 +245,7 @@ class AutoCLI(automation):
             answer_menu = "요양보호사 자격증 발급,재발급 신청서"
 
         elif answer_menu == "q" or answer_menu == "Q":
-            self.exitProgram()
+            self.printMenu()
 
         else:
             print("\n잘못 입력하셨습니다. 다시 입력해 주세요.")
@@ -243,7 +264,7 @@ class AutoCLI(automation):
         print("******* Base Info *******")
         print("1. 출석시간 반영")
         print("2. 교육생 자료 복사")
-        print("q. 프로그램 종료")
+        print("q. 메뉴 나가기")
         print("*************************")
         answer_menu = input("메뉴를 선택해주세요: ")
 
@@ -264,6 +285,7 @@ class AutoCLI(automation):
             print("1. 교육수료증명서")
             print("2. 대체실습 확인서")
             print("3. 요양보호사 자격증 발급, 재발급 신청서")
+            print("q. 메뉴 나가기")
             print("************************")
             file_name = input("복사할 자료를 선택해 주세요.")
             
@@ -273,6 +295,8 @@ class AutoCLI(automation):
                 file_name = "대체실습확인서.xlsx"
             elif file_name == "3":
                 file_name = "요양보호사 자격증 발급,재발급 신청서.xlsx"
+            elif answer_menu == "q" or answer_menu == "Q":
+                self.printMenu1()
             else:
                 print("잘못 입력하셨습니다. 다시 입력해 주세요.")
                 self.printMenu1()
@@ -284,7 +308,7 @@ class AutoCLI(automation):
             print(self.gisu + "기 " + self.time + "반 폴더로 " + file_name + "복사를 완료했습니다.")
 
         elif answer_menu == "q" or answer_menu == "Q":
-            self.exitProgram()
+            self.printMenu()
 
         else:
             print("\n잘못 입력하셨습니다. 다시 입력해 주세요.")
