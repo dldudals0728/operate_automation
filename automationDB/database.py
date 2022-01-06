@@ -29,40 +29,7 @@ class DB():
                 print(e)
                 print("SQL Exception\ndatabase Exception: Connection is already closed!")
 
-    def SELECTALL(self, table):
-        try:
-            with self.conn.cursor() as curs:
-                # # 컬럼 수 가져오기
-                # sql = "SELECT COUNT(*) FROM information_schema.columns WHERE table_name='{}' and table_schema='ac';".format(table)
-                # curs.execute(sql)
-                # rs = curs.fetchone()
-                # cols = rs[0]
-
-                sql = "SELECT * FROM {};".format(table)
-                curs.execute(sql)
-                rs = curs.fetchall()
-                # for idx, row in enumerate(rs):
-                #     connObj.insertRows(connObj.rowCount(), 1)
-                #     for i in range(cols):
-                #         connObj.setData(connObj.index(idx, i), row[i])
-                # for i in range(len(rs)):
-                #     connObj.insertRows(connObj.rowCount(), 1)
-                #     for j in range(cols):
-                #         connObj.setData(connObj.index(i, j), str(rs[i][j]))
-
-                return rs
-
-        except Exception as e:
-            print(e)
-            return "error"
-            try:
-                print("SELECTALL Exception -> connection close")
-                # self.conn.close()
-            except Exception as e:
-                print(e)
-                print("SELECTALL Exception\ndatabase Exception: Connection is already closed!")
-
-    def SELECT(self, columns, table, where=None, fetchone=False):
+    def SELECT(self, columns, table, where=None, orderBy=None, fetchone=False):
         try:
             with self.conn.cursor() as curs:
                 # 컬럼 수 가져오기
@@ -71,10 +38,20 @@ class DB():
                 # rs = curs.fetchone()
                 # cols = rs[0]
 
+                sql = "SELECT {} FROM {}".format(columns, table)
+
                 if where == None:
-                    sql = "SELECT {} FROM {};".format(columns, table)
+                    pass
                 else:
-                    sql = "SELECT {} FROM {} WHERE {};".format(columns, table, where)
+                    sql += " WHERE {}".format(where)
+
+                if orderBy == None:
+                    pass
+                else:
+                    sql += " ORDER BY {} *1".format(orderBy)
+
+                sql += ";"
+
                 curs.execute(sql)
                 if fetchone == True:
                     rs = curs.fetchone()

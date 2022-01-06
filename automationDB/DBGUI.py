@@ -311,7 +311,7 @@ class batchUpdate(QWidget):
         self.combobox_T.addItem("주간")
         self.combobox_T.addItem("야간")
 
-        rs = db.main.dbPrograms.SELECT("classNumber, classTime", "lecture")
+        rs = db.main.dbPrograms.SELECT("classNumber, classTime", "lecture", orderBy="classNumber")
         if rs == "error":
             QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
         else:
@@ -1624,18 +1624,21 @@ class mainLayout(QWidget, DB):
         if Refresh == False:
             if source.text() == "수강생 관리":
                 self.curTable = "user"
+                order = "id"
 
                 self.readDB.setColumnCount(15)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_user)
 
             elif source.text() == "기수 관리":
                 self.curTable = "lecture"
+                order = "classNumber"
 
                 self.readDB.setColumnCount(4)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_lecture)
 
             elif source.text() == "강사 관리":
                 self.curTable = "teacher"
+                order = "id"
 
                 self.readDB.setColumnCount(7)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_teacher)
@@ -1643,38 +1646,50 @@ class mainLayout(QWidget, DB):
 
             elif source.text() == "대체실습":
                 self.curTable = "temptraining"
+                order = "classNumber"
 
                 self.readDB.setColumnCount(4)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_temptraining)
 
             elif source.text() == "대체실습 담당강사":
                 self.curTable = "temptrainingteacher"
+                order = "classNumber"
 
                 self.readDB.setColumnCount(2)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_temptrainingteacher)
 
         elif Refresh == True:
             if self.curTable == "user":
+                order = "id"
+
                 self.readDB.setColumnCount(15)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_user)
 
             elif self.curTable == "lecture":
+                order = "classNumber"
+
                 self.readDB.setColumnCount(4)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_lecture)
 
             elif self.curTable == "teacher":
+                order = "id"
+
                 self.readDB.setColumnCount(7)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_teacher)
 
             elif self.curTable == "temptraining":
+                order = "classNumber"
+
                 self.readDB.setColumnCount(4)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_temptraining)
 
             elif self.curTable == "temptrainingteacher":
+                order = "classNumber"
+
                 self.readDB.setColumnCount(2)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_temptrainingteacher)
 
-        rs = self.dbPrograms.SELECTALL(self.curTable)
+        rs = self.dbPrograms.SELECT("*", self.curTable, orderBy=order)
 
         if rs == "error":
             QMessageBox.information(self, "SQL query Error", "SQL query returns error!", QMessageBox.Yes, QMessageBox.Yes)
@@ -1697,13 +1712,13 @@ class mainLayout(QWidget, DB):
                 self.R_category.addItem("ID")
                 self.R_category.addItem("이름")
                 self.R_category.addItem("자격증")
-                self.R_category.addItem("기수")
-                self.R_category.addItem("반")
+                self.R_category.addItem("기수/반")
+                self.R_category.addItem("대체실습")
+                self.R_category.addItem("시험회차")
 
             elif source.text() == "기수 관리":
                 self.R_category.addItem("SQL")
-                self.R_category.addItem("기수")
-                self.R_category.addItem("반")
+                self.R_category.addItem("기수/반")
 
             elif source.text() == "강사 관리":
                 self.R_category.addItem("SQL")
@@ -1732,13 +1747,13 @@ class mainLayout(QWidget, DB):
                 self.R_category.addItem("ID")
                 self.R_category.addItem("이름")
                 self.R_category.addItem("자격증")
-                self.R_category.addItem("기수")
-                self.R_category.addItem("반")
+                self.R_category.addItem("기수/반")
+                self.R_category.addItem("대체실습")
+                self.R_category.addItem("시험회차")
 
             elif self.curTable == "lecture":
                 self.R_category.addItem("SQL")
-                self.R_category.addItem("기수")
-                self.R_category.addItem("반")
+                self.R_category.addItem("기수/반")
 
             elif self.curTable == "teacher":
                 self.R_category.addItem("SQL")
@@ -1778,12 +1793,30 @@ class mainLayout(QWidget, DB):
 
         elif curCategory == "자격증":
             curCategory = "license"
+
+        elif curCategory == "기수/반":
+            words = keyWord.split(" ")
+            if len(words) == 1:
+                if keyWord[-1] == "간":
+                    curCategory = "classTime"
+
+                else:
+                    curCategory = "classNumber"
             
-        elif curCategory == "기수":
-            curCategory = "classNumber"
-            
-        elif curCategory == "반":
-            curCategory = "classTime"
+            elif len(words) == 2:
+                if words[0][-1] == "간":
+                    curCategory = "classTime = '{}' and classNumber".format(words[0])
+                    keyWord = words[1]
+
+                else:
+                    curCategory = "classNumber = '{}' and classTime".format(words[0])
+                    keyWord = words[1]
+
+        elif curCategory == "대체실습":
+            curCategory = "temporaryClassNumber"
+
+        elif curCategory == "시험회차":
+            curCategory = "exam"
             
         elif curCategory == "시작일":
             curCategory = "startDate"
@@ -1823,6 +1856,8 @@ class mainLayout(QWidget, DB):
             if rs == "error":
                 QMessageBox.information(self, "SQL query Error", "SQL query returns error!", QMessageBox.Yes, QMessageBox.Yes)
             else:
+                search_result = "{}, \"{}\" 검색 결과\n{}개의 검색 결과가 존재합니다.".format(self.R_category.currentText(), self.R_searchBox.text(), len(rs))
+                self.textInfo.setText(search_result)
                 cols = self.readDB.columnCount()
                 for i in range(len(rs)):
                     self.readDB.insertRows(self.readDB.rowCount(), 1)
@@ -1928,20 +1963,25 @@ class mainLayout(QWidget, DB):
 
         elif self.curTable == "user":
             query = "id IS null or name IS null or RRN IS null or phoneNumber IS null or license IS null or address IS null or originAddress IS null or classNumber IS null or classTime IS null or totalCreditHour IS null or theoryCreditHour IS null or practicalCreditHour IS null or trainingCreditHour IS null or temporaryClassNumber IS null or exam IS null"
+            order = "id"
             
         elif self.curTable == "lecture":
             query = "classNumber IS null or classTime IS null or startDate IS null or endDate IS null"
+            order = "classNumber"
 
         elif self.curTable == "teacher":
             query = "id IS null or category IS null or name IS null or dateOfBirth IS null or license IS null or minCareer IS null or ACKDate IS null"
+            order = "id"
 
         elif self.curTable == "temptraining":
             query = "classNumber IS null or startDate IS null or endDate IS null or awardDate IS null"
+            order = "classNumber"
 
         elif self.curTable == "temptrainingteacher":
             query = "classNumber IS null or teacherName IS null"
+            order = "classNumber"
 
-        rs = self.dbPrograms.SELECT("*", self.curTable, where=query)
+        rs = self.dbPrograms.SELECT("*", self.curTable, where=query, orderBy=order)
         if rs == "error":
             QMessageBox.information(self, "SQL query Error", "SQL query returns error!", QMessageBox.Yes, QMessageBox.Yes)
         else:
