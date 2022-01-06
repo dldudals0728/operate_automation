@@ -1,9 +1,12 @@
 from openpyxl import load_workbook
+from openpyxl.drawing.image import Image
 from database import DB
+import random
 
 class Automation:
     def __init__(self):
-        self.wbPath = ""
+        self.wbPath = "D:\\Master\\mkfile\\"
+        self.basePath = "D:\\남양노아요양보호사교육원\\교육생관리\\"
         self.wb = None
         self.ws = None
         self.DB = DB()
@@ -15,6 +18,7 @@ class Automation:
     3. 개인적으로 생성 및 출력한다. (일일이!!! ) ==> 이건 좀 필요할 듯. 누군가 누락됐을 때 생성할 필요 있음!    O
     """
     def mkDoc(self, doc_type, exam):
+        self.wbPath += "\\{}.xlsx".format(doc_type)
         if doc_type == "교육수료증명서":
             try:
                 where = "exam={};".format(exam)
@@ -28,7 +32,8 @@ class Automation:
                     for index in range(len(rows)):
                         item_dict[user_query_list[index]] = rows[index]
 
-                    self.wbPath = "D:\\user\\Desktop\\자동화파일\\mkfile\\교육수료증명서.xlsx"
+                    save_path = self.basePath + "{}\\{}{}\\{}".format(item_dict["classNumber"], item_dict["classNumber"], item_dict["classTime"], item_dict["name"])
+
                     self.wb = load_workbook(self.wbPath)
                     self.ws = self.wb.active
 
@@ -98,7 +103,7 @@ class Automation:
                     string = "                                      {}".format(item_dict["awardDate"])
                     self.ws.cell(row=23, column=1).value = string
 
-                    self.wb.save("D:\\user\\Desktop\\자동화파일\\mkfile\\{}.xlsx".format(item_dict["name"]))
+                    self.wb.save(save_path + "\\{}_{}xlsx".format(item_dict["name"], doc_type))
                     self.wb.close()
 
             except:
@@ -116,7 +121,8 @@ class Automation:
                     for index in range(len(rows)):
                         item_dict[user_query_list[index]] = rows[index]
 
-                    self.wbPath = "document path"
+                    save_path = self.basePath + "{}\\{}{}\\{}".format(item_dict["classNumber"], item_dict["classNumber"], item_dict["classTime"], item_dict["name"])
+
                     self.wb = load_workbook(self.wbPath)
                     self.ws = self.wb.active
 
@@ -183,7 +189,7 @@ class Automation:
                             temp_row = cell.row
                     temp_score = self.ws_score.cell(row=temp_row, column=7).value
                     if temp_score == None:
-                        temp_score = randint(85, 100)
+                        temp_score = random.randint(85, 100)
                     else:
                         pass
                     self.ws.cell(row=22, column=6).value = temp_score
@@ -196,7 +202,7 @@ class Automation:
                     string = "                                      {}".format(item_dict["awardDate"])
                     self.ws.cell(row=27, column=1).value = string
 
-                    self.wb.save("document path")
+                    self.wb.save(save_path + "\\{}_{}xlsx".format(item_dict["name"], doc_type))
                     self.wb.close()
 
             except:
@@ -204,17 +210,24 @@ class Automation:
 
         elif doc_type == "요양보호사 자격증 발급,재발급 신청서":
             try:
+                item_dict = {}
+
                 where = "exam={};".format(exam)
+                exam_rs = self.DB.SELECT("*", "exam", where, fetchone=True)
+                item_dict["examDate"] = exam_rs[3].strftime("%Y년 %m월 %d일")
+                item_dict["passDate"] = exam_rs[4].strftime("%Y년 %m월 %d일")
+                item_dict["submitDate"] = exam_rs[5].strftime("     %Y  년     %m  월    %d   일    ")
+
                 user_rs = self.DB.SELECT("id, name, RRN, phoneNumber, address, classNumber, classTime, temporaryClassNumber", "user", where)
 
                 user_query_list = ["id", "name", "RRN", "phoneNumber", "address", "classNumber", "classTime", "temporaryClassNumber"]
-                item_dict = {}
 
                 for rows in user_rs:
                     for index in range(len(rows)):
                         item_dict[user_query_list[index]] = rows[index]
 
-                    self.wbPath = "document path"
+                    save_path = self.basePath + "{}\\{}{}\\{}".format(item_dict["classNumber"], item_dict["classNumber"], item_dict["classTime"], item_dict["name"])
+
                     self.wb = load_workbook(self.wbPath)
                     self.ws = self.wb.active
 
@@ -237,12 +250,13 @@ class Automation:
 
                     # 사진
                     # D:\남양노아요양보호사교육원\교육생관리\7기\7기주간0503\7. 이윤옥
-                    if len(string_set) == 8:
-                        class_info = string_set[:4]
-                    elif len(string_set) == 9:
-                        class_info = string_set[:5]
-                    student_picture = string_stu.replace(f"{self.ws_members.cell(row=idx, column=18).value}_{task}.xlsx", f"{class_info}_{self.ws_members.cell(row=idx, column=18).value}.jpg")
-                    img = Image(student_picture)
+                    ## 사진 이름을 어떻게 짛을 지가 관건!
+                    try:
+                        student_picture = save_path + "\\{}.jpg".format(item_dict["name"])
+                        img = Image(student_picture)
+                    except:
+                        student_picture = save_path + "\\{}{}_{}.jpg".format(item_dict["classNumber"], item_dict["classTime"], item_dict["name"])
+                        img = Image(student_picture)
                     img.height = 142
                     img.width = 111
                     img.anchor = "G6"
@@ -297,26 +311,30 @@ class Automation:
                     self.ws.cell(row=13, column=7).value = string
 
                     # 시험 시행일
-                    string = "시험시행일   2021년 11월 06일"
+                    string = "시험시행일   {}".format(item_dict["examDate"])
                     self.ws.cell(row=14, column=2).value = string
 
                     # 시험 합격일
-                    string = "시험합격일   2021년 11월 23일"
+                    string = "시험합격일   {}".format(item_dict["passDate"])
                     self.ws.cell(row=14, column=5).value = string
 
                     # 신청 일자
-                    string = "     2021  년     11  월    29   일    "
+                    string = item_dict["submitDate"]
                     self.ws.cell(row=19, column=1).value = string
 
                     # 이름 / shift 는 keyDown(or Up) 에서 left 와 right 를 모두 입력해 주어야 정상작동 함 !!
                     string = "{} (서명 또는 인)".format(item_dict["name"])
                     self.ws.cell(row=20, column=4).value = string
 
-                    self.wb.save("document path")
+                    self.wb.save(save_path + "\\{}_{}xlsx".format(item_dict["name"], doc_type))
                     self.wb.close()
 
             except:
                 self.DB.conn.close()
+
+        
+    def examPassList(self, exam):
+        pass
 
 
 if __name__ == '__main__':

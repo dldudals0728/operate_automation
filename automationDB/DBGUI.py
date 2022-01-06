@@ -333,8 +333,6 @@ class UPDATE(QWidget):
         self.targetTable = ""
         self.base_path = "D:\\남양노아요양보호사교육원\\교육생관리"
 
-        self.key_dict = {}
-
     def initUI(self):
         self.setWindowTitle("데이터 수정")
 
@@ -351,16 +349,14 @@ class UPDATE(QWidget):
         if not os.path.exists(path):
             os.makedirs(path)
 
-    def moveDirectory(self, before_number, before_time, before_name, after_number, after_time, after_name):
-        dir_name = ""
+    def moveDirectory(self, name, before_number, before_time, after_number, after_time):
         before_path = self.base_path + "\\{}\\{}{}".format(before_number, before_number, before_time)
         after_path = self.base_path + "\\{}\\{}{}".format(after_number, after_number, after_time)
         dir_list = os.listdir(before_path)
 
         for directory in dir_list:
-            if before_name == directory:
+            if name == directory:
                 before_path = before_path + "\\{}".format(directory)
-                dir_name = directory
 
         if not os.path.exists(after_path):
             os.makedirs(after_path)
@@ -398,7 +394,7 @@ class UPDATE(QWidget):
             query_list = ["id", "name", "RRN", "phoneNumber", "license", "address", "originAddress", "classNumber", "classTime", \
                 "totalCreditHour", "theoryCreditHour", "practicalCreditHour", "trainingCreditHour", "temporaryClassNumber", "exam"]
 
-            where = "id = '{}' and name = '{}'".format(self.key_dict["ID"], self.key_dict["name"])
+            where = "id = '{}' and name = '{}' and RRN='{}'".format(self.key_dict["ID"], self.key_dict["name"], self.key_dict["RRN"])
             query = ""
             for i in range(len(user_list)):
                 query += query_list[i] + "="
@@ -565,7 +561,7 @@ class UPDATE(QWidget):
                         if (self.key_dict["기수"] == "" or self.key_dict["반"] == ""):
                             self.generateDirectory(number, time, name)
                         elif (self.key_dict["기수"] != "" and self.key_dict["반"] != ""):
-                            self.moveDirectory(self.key_dict["기수"], self.key_dict["반"], self.key_dict["name"], number, time, name)
+                            self.moveDirectory(name, self.key_dict["기수"], self.key_dict["반"], number, time)
             self.close()
         else:
             pass
@@ -575,6 +571,7 @@ class UPDATE(QWidget):
             self.close()
 
     def showEvent(self, QShowEvent):
+        self.key_dict = {}
         self.lineEditList = []
         cnt_row = 0
         cnt_col = 0
@@ -731,6 +728,7 @@ class UPDATE(QWidget):
 
             self.key_dict["ID"] = str(input_user[0])
             self.key_dict["name"] = str(input_user[1])
+            self.key_dict["RRN"] = str(input_user[2])
             self.key_dict["기수"] = str(input_user[7])
             self.key_dict["반"] = str(input_user[8])
             self.key_dict["자격증"] = str(input_user[4])
@@ -1708,26 +1706,25 @@ class mainLayout(QWidget, DB):
         self.R_category.clear()
         if Refresh == False:
             if source.text() == "수강생 관리":
-                self.R_category.addItem("SQL")
                 self.R_category.addItem("ID")
                 self.R_category.addItem("이름")
                 self.R_category.addItem("자격증")
                 self.R_category.addItem("기수/반")
                 self.R_category.addItem("대체실습")
                 self.R_category.addItem("시험회차")
+                self.R_category.addItem("SQL")
 
             elif source.text() == "기수 관리":
-                self.R_category.addItem("SQL")
                 self.R_category.addItem("기수/반")
+                self.R_category.addItem("SQL")
 
             elif source.text() == "강사 관리":
-                self.R_category.addItem("SQL")
                 self.R_category.addItem("ID")
                 self.R_category.addItem("이름")
                 self.R_category.addItem("자격증")
+                self.R_category.addItem("SQL")
 
             elif source.text() == "대체실습":
-                self.R_category.addItem("SQL")
                 self.R_category.addItem("기수")
                 # 시작일은 검색어 "이후"의 날짜들 모두, 종료일은 검색어 "이전"의 날짜들 모두
                 # (시작일을 2022-01-01로 검색할 경우 1월 1일 이후에 시작하는 기수 검색)
@@ -1735,34 +1732,34 @@ class mainLayout(QWidget, DB):
                 self.R_category.addItem("시작일")
                 self.R_category.addItem("종료일")
                 self.R_category.addItem("수여일")
+                self.R_category.addItem("SQL")
 
             elif source.text() == "대체실습 담당강사":
-                self.R_category.addItem("SQL")
                 self.R_category.addItem("기수")
                 self.R_category.addItem("강사")
+                self.R_category.addItem("SQL")
 
         elif Refresh == True:
             if self.curTable == "user":
-                self.R_category.addItem("SQL")
                 self.R_category.addItem("ID")
                 self.R_category.addItem("이름")
                 self.R_category.addItem("자격증")
                 self.R_category.addItem("기수/반")
                 self.R_category.addItem("대체실습")
                 self.R_category.addItem("시험회차")
+                self.R_category.addItem("SQL")
 
             elif self.curTable == "lecture":
-                self.R_category.addItem("SQL")
                 self.R_category.addItem("기수/반")
+                self.R_category.addItem("SQL")
 
             elif self.curTable == "teacher":
-                self.R_category.addItem("SQL")
                 self.R_category.addItem("ID")
                 self.R_category.addItem("이름")
                 self.R_category.addItem("자격증")
+                self.R_category.addItem("SQL")
 
             elif self.curTable == "temptraining":
-                self.R_category.addItem("SQL")
                 self.R_category.addItem("기수")
                 # 시작일은 검색어 "이후"의 날짜들 모두, 종료일은 검색어 "이전"의 날짜들 모두
                 # (시작일을 2022-01-01로 검색할 경우 1월 1일 이후에 시작하는 기수 검색)
@@ -1770,11 +1767,12 @@ class mainLayout(QWidget, DB):
                 self.R_category.addItem("시작일")
                 self.R_category.addItem("종료일")
                 self.R_category.addItem("수여일")
+                self.R_category.addItem("SQL")
 
             elif self.curTable == "temptrainingteacher":
-                self.R_category.addItem("SQL")
                 self.R_category.addItem("기수")
                 self.R_category.addItem("강사")
+                self.R_category.addItem("SQL")
 
     def search(self):
         keyWord = self.R_searchBox.text()
@@ -1852,7 +1850,11 @@ class mainLayout(QWidget, DB):
         try:
             self.readDB.clear()
             self.selectTable()
-            rs = self.dbPrograms.SELECT("*", curTable, where=f"{curCategory} = '{keyWord}'")
+            if curCategory == "name" or curCategory == "teacherName":
+                rs = self.dbPrograms.SELECT("*", curTable, where=f"{curCategory} LIKE '%{keyWord}%'")
+            else:
+                rs = self.dbPrograms.SELECT("*", curTable, where=f"{curCategory} = '{keyWord}'")
+                
             if rs == "error":
                 QMessageBox.information(self, "SQL query Error", "SQL query returns error!", QMessageBox.Yes, QMessageBox.Yes)
             else:
