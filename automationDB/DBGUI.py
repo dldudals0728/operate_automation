@@ -18,12 +18,58 @@ from pymysql import NULL
 from database import DB
 
 from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
 from datetime import datetime
 
 import os
 import shutil
 
 from PIL import Image
+
+class reportLecture(QWidget):
+    global db
+
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+        self.setWindowTitle("경기도청 실시보고 데이터")
+        self.setWindowIcon(QIcon("D:\\남양노아요양보호사교육원\\행정서식\\남양노아요양보호사.jpg"))
+
+    def initUI(self):
+        self.label_number = QLabel("기수", self)
+        self.label_number.move(25, 25)
+        self.combobox_N = QComboBox(self)
+        self.combobox_N.setFixedWidth(100)
+        self.combobox_N.move(25 + 49, 25)
+
+        self.label_time = QLabel("반", self)
+        self.label_time.move(25, 50)
+        self.combobox_T = QComboBox(self)
+        self.combobox_T.setFixedWidth(100)
+        self.combobox_T.move(25 + 49, 50)
+
+    def showEvent(self, QShowEvent):
+        self.combobox_N.clear()
+        self.combobox_T.clear()
+        self.class_num_list = []
+        
+        self.combobox_N.addItem("선택")
+        self.combobox_T.addItem("선택")
+        self.combobox_T.addItem("주간")
+        self.combobox_T.addItem("야간")
+
+        rs = db.main.dbPrograms.SELECT("classNumber, classTime", "lecture", orderBy="classNumber *1")
+        if rs == "error":
+            QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
+        else:
+            for row in rs:
+                if not row[0] in self.class_num_list:
+                    self.class_num_list.append(row[0])
+            
+            self.combobox_N.addItems(self.class_num_list)
+        
+        
+
 
 class scanFile(QWidget):
     global db
@@ -32,13 +78,14 @@ class scanFile(QWidget):
         super().__init__()
         self.initUI()
         self.setWindowTitle("파일 스캔")
+        self.setWindowIcon(QIcon("D:\\남양노아요양보호사교육원\\행정서식\\남양노아요양보호사.jpg"))
         self.file_list = []
         self.file_index = 0
         
     def initUI(self):
         self.grid = QGridLayout()
         self.setLayout(self.grid)
-        self.targetTable = "user"
+        self.target_table = "user"
         cnt_row = 5
         cnt_col = 7
         self.resize(600, 400)
@@ -46,78 +93,78 @@ class scanFile(QWidget):
         self.labelImg = QLabel(self)
         self.labelImg.setFixedSize(500, 600)
         self.grid.addWidget(self.labelImg, 0, 0, cnt_row, 1)
-        self.labelID_user = QLabel("ID", self)
-        self.labelID_user.setFixedWidth(90)
-        self.labelID_user.setAlignment(Qt.AlignRight)
-        self.grid.addWidget(self.labelID_user, 0, 1)
-        self.textID_user = QLineEdit()
-        self.grid.addWidget(self.textID_user, 0, 2)
-        self.labelName_user = QLabel("이름", self)
-        self.labelName_user.setFixedWidth(90)
-        self.labelName_user.setAlignment(Qt.AlignRight)
-        self.grid.addWidget(self.labelName_user, 0, 3)
-        self.textName_user = QLineEdit()
-        self.grid.addWidget(self.textName_user, 0, 4)
-        self.labelLicen_user = QLabel("자격증", self)
-        self.labelLicen_user.setFixedWidth(90)
-        self.labelLicen_user.setAlignment(Qt.AlignRight)
-        self.grid.addWidget(self.labelLicen_user, 0, 5)
-        self.textLicen_user = QLineEdit()
-        self.grid.addWidget(self.textLicen_user, 0, 6)
+        self.label_id_user = QLabel("ID", self)
+        self.label_id_user.setFixedWidth(90)
+        self.label_id_user.setAlignment(Qt.AlignRight)
+        self.grid.addWidget(self.label_id_user, 0, 1)
+        self.text_id_user = QLineEdit()
+        self.grid.addWidget(self.text_id_user, 0, 2)
+        self.label_name_user = QLabel("이름", self)
+        self.label_name_user.setFixedWidth(90)
+        self.label_name_user.setAlignment(Qt.AlignRight)
+        self.grid.addWidget(self.label_name_user, 0, 3)
+        self.text_name_user = QLineEdit()
+        self.grid.addWidget(self.text_name_user, 0, 4)
+        self.label_licen_user = QLabel("자격증", self)
+        self.label_licen_user.setFixedWidth(90)
+        self.label_licen_user.setAlignment(Qt.AlignRight)
+        self.grid.addWidget(self.label_licen_user, 0, 5)
+        self.text_licen_user = QLineEdit()
+        self.grid.addWidget(self.text_licen_user, 0, 6)
 
-        self.labelClsN_user = QLabel("기수", self)
-        self.labelClsN_user.setFixedWidth(90)
-        self.labelClsN_user.setAlignment(Qt.AlignRight)
-        self.grid.addWidget(self.labelClsN_user, 1, 1)
-        self.textClsN_user = QLineEdit()
-        self.grid.addWidget(self.textClsN_user, 1, 2)
-        self.labelClsT_user = QLabel("반", self)
-        self.labelClsT_user.setFixedWidth(90)
-        self.labelClsT_user.setAlignment(Qt.AlignRight)
-        self.grid.addWidget(self.labelClsT_user, 1, 3)
-        self.textClsT_user = QLineEdit()
-        self.grid.addWidget(self.textClsT_user, 1, 4)
-        self.labelTemp = QLabel("대체실습", self)
-        self.labelTemp.setFixedWidth(90)
-        self.labelTemp.setAlignment(Qt.AlignRight)
-        self.grid.addWidget(self.labelTemp, 1, 5)
-        self.textTemp = QLineEdit()
-        self.grid.addWidget(self.textTemp, 1, 6)
+        self.label_clsN_user = QLabel("기수", self)
+        self.label_clsN_user.setFixedWidth(90)
+        self.label_clsN_user.setAlignment(Qt.AlignRight)
+        self.grid.addWidget(self.label_clsN_user, 1, 1)
+        self.text_clsN_user = QLineEdit()
+        self.grid.addWidget(self.text_clsN_user, 1, 2)
+        self.label_clsT_user = QLabel("반", self)
+        self.label_clsT_user.setFixedWidth(90)
+        self.label_clsT_user.setAlignment(Qt.AlignRight)
+        self.grid.addWidget(self.label_clsT_user, 1, 3)
+        self.text_clsT_user = QLineEdit()
+        self.grid.addWidget(self.text_clsT_user, 1, 4)
+        self.label_temp = QLabel("대체실습", self)
+        self.label_temp.setFixedWidth(90)
+        self.label_temp.setAlignment(Qt.AlignRight)
+        self.grid.addWidget(self.label_temp, 1, 5)
+        self.text_temp = QLineEdit()
+        self.grid.addWidget(self.text_temp, 1, 6)
 
-        self.labelRRN = QLabel("주민등록번호", self)
-        self.labelRRN.setFixedWidth(90)
-        self.labelRRN.setAlignment(Qt.AlignRight)
-        self.grid.addWidget(self.labelRRN, 2, 1)
-        self.textRRN = QLineEdit()
-        self.grid.addWidget(self.textRRN, 2, 2, 1, 2)
-        self.labelPhone = QLabel("전화번호", self)
-        self.labelPhone.setFixedWidth(90)
-        self.labelPhone.setAlignment(Qt.AlignRight)
-        self.grid.addWidget(self.labelPhone, 2, 4)
-        self.textPhone = QLineEdit()
-        self.grid.addWidget(self.textPhone, 2, 5, 1, 2)
+        self.label_RRN = QLabel("주민등록번호", self)
+        self.label_RRN.setFixedWidth(90)
+        self.label_RRN.setAlignment(Qt.AlignRight)
+        self.grid.addWidget(self.label_RRN, 2, 1)
+        self.text_RRN = QLineEdit()
+        self.grid.addWidget(self.text_RRN, 2, 2, 1, 2)
+        self.label_phone = QLabel("전화번호", self)
+        self.label_phone.setFixedWidth(90)
+        self.label_phone.setAlignment(Qt.AlignRight)
+        self.grid.addWidget(self.label_phone, 2, 4)
+        self.text_phone = QLineEdit()
+        self.grid.addWidget(self.text_phone, 2, 5, 1, 2)
         
         
-        self.labelAdr = QLabel("주소", self)
-        self.labelAdr.setFixedWidth(90)
-        self.labelAdr.setAlignment(Qt.AlignRight)
-        self.grid.addWidget(self.labelAdr, 3, 1)
-        self.textAdr = QLineEdit()
-        self.grid.addWidget(self.textAdr, 3, 2, 1, 5)
-        self.labelOriginAdr = QLabel("본적주소", self)
-        self.labelOriginAdr.setFixedWidth(90)
-        self.labelOriginAdr.setAlignment(Qt.AlignRight)
-        self.grid.addWidget(self.labelOriginAdr, 4, 1)
-        self.textOriginAdr = QLineEdit()
-        self.grid.addWidget(self.textOriginAdr, 4, 2, 1, 5)
+        self.label_adr = QLabel("주소", self)
+        self.label_adr.setFixedWidth(90)
+        self.label_adr.setAlignment(Qt.AlignRight)
+        self.grid.addWidget(self.label_adr, 3, 1)
+        self.text_adr = QLineEdit()
+        self.grid.addWidget(self.text_adr, 3, 2, 1, 5)
+        self.label_origin_adr = QLabel("본적주소", self)
+        self.label_origin_adr.setFixedWidth(90)
+        self.label_origin_adr.setAlignment(Qt.AlignRight)
+        self.grid.addWidget(self.label_origin_adr, 4, 1)
+        self.text_origin_adr = QLineEdit()
+        self.grid.addWidget(self.text_origin_adr, 4, 2, 1, 5)
 
-        self.btnInsert = QPushButton("Insert", self)
-        self.btnInsert.clicked.connect(self.scanner)
-        self.btnCancel = QPushButton("Close", self)
-        self.btnCancel.clicked.connect(self.close)
+        self.btn_insert = QPushButton("Insert", self)
+        self.btn_insert.clicked.connect(self.scanner)
+        self.btn_cancel = QPushButton("Close", self)
+        self.btn_cancel.clicked.connect(self.close)
 
-        self.grid.addWidget(self.btnInsert, cnt_row, cnt_col - 2)
-        self.grid.addWidget(self.btnCancel, cnt_row, cnt_col - 1)
+        self.grid.addWidget(self.btn_insert, cnt_row, cnt_col - 2)
+        self.grid.addWidget(self.btn_cancel, cnt_row, cnt_col - 1)
 
     def refreshUI(self):
         print("self.file_list")
@@ -128,56 +175,56 @@ class scanFile(QWidget):
         pixmap = pixmap.scaledToWidth(500)
 
         self.labelImg.setPixmap(QPixmap(pixmap))
-        self.textID_user.clear()
-        self.textName_user.clear()
-        self.textLicen_user.clear()
-        self.textClsN_user.clear()
-        self.textClsT_user.clear()
-        self.textTemp.clear()
-        self.textRRN.clear()
-        self.textPhone.clear()
-        self.textAdr.clear()
-        self.textOriginAdr.clear()
+        self.text_id_user.clear()
+        self.text_name_user.clear()
+        self.text_licen_user.clear()
+        self.text_clsN_user.clear()
+        self.text_clsT_user.clear()
+        self.text_temp.clear()
+        self.text_RRN.clear()
+        self.text_phone.clear()
+        self.text_adr.clear()
+        self.text_origin_adr.clear()
 
         doc_type = "주민등록등본"
         name = "name"
         adr = "주소"
         origin_adr = "본적주소"
 
-        self.textName_user.setText(name)
-        self.textAdr.setText(adr)
-        self.textOriginAdr.setText(origin_adr)
+        self.text_name_user.setText(name)
+        self.text_adr.setText(adr)
+        self.text_origin_adr.setText(origin_adr)
 
-        print("self.textID_user.text()")
-        print("\"" + self.textID_user.text() + "\"")
-        print(type(self.textID_user.text()))
-        print("self.textName_user.text()")
-        print("\"" + self.textName_user.text() + "\"")
-        print(type(self.textName_user.text()))
-        print("self.textLicen_user.text()")
-        print("\"" + self.textLicen_user.text() + "\"")
-        print(type(self.textLicen_user.text()))
-        print("self.textClsN_user.text()")
-        print("\"" + self.textClsN_user.text() + "\"")
-        print(type(self.textClsN_user.text()))
-        print("self.textClsT_user.text()")
-        print("\"" + self.textClsT_user.text() + "\"")
-        print(type(self.textClsT_user.text()))
-        print("self.textTemp.text()")
-        print("\"" + self.textTemp.text() + "\"")
-        print(type(self.textTemp.text()))
-        print("self.textRRN.text()")
-        print("\"" + self.textRRN.text() + "\"")
-        print(type(self.textRRN.text()))
-        print("self.textPhone.text()")
-        print("\"" + self.textPhone.text() + "\"")
-        print(type(self.textPhone.text()))
-        print("self.textAdr.text()")
-        print("\"" + self.textAdr.text() + "\"")
-        print(type(self.textAdr.text()))
-        print("self.textOriginAdr.text()")
-        print("\"" + self.textOriginAdr.text() + "\"")
-        print(type(self.textOriginAdr.text()))
+        print("self.text_id_user.text()")
+        print("\"" + self.text_id_user.text() + "\"")
+        print(type(self.text_id_user.text()))
+        print("self.text_name_user.text()")
+        print("\"" + self.text_name_user.text() + "\"")
+        print(type(self.text_name_user.text()))
+        print("self.text_licen_user.text()")
+        print("\"" + self.text_licen_user.text() + "\"")
+        print(type(self.text_licen_user.text()))
+        print("self.text_clsN_user.text()")
+        print("\"" + self.text_clsN_user.text() + "\"")
+        print(type(self.text_clsN_user.text()))
+        print("self.text_clsT_user.text()")
+        print("\"" + self.text_clsT_user.text() + "\"")
+        print(type(self.text_clsT_user.text()))
+        print("self.text_temp.text()")
+        print("\"" + self.text_temp.text() + "\"")
+        print(type(self.text_temp.text()))
+        print("self.text_RRN.text()")
+        print("\"" + self.text_RRN.text() + "\"")
+        print(type(self.text_RRN.text()))
+        print("self.text_phone.text()")
+        print("\"" + self.text_phone.text() + "\"")
+        print(type(self.text_phone.text()))
+        print("self.text_adr.text()")
+        print("\"" + self.text_adr.text() + "\"")
+        print(type(self.text_adr.text()))
+        print("self.text_origin_adr.text()")
+        print("\"" + self.text_origin_adr.text() + "\"")
+        print(type(self.text_origin_adr.text()))
 
     def scanner(self):
         rs = db.main.dbPrograms.SELECT("*", "user", "name='' and RRN=''")
@@ -248,6 +295,7 @@ class batchUpdate(QWidget):
         super().__init__()
         self.initUI()
         self.setWindowTitle("시험 회차 변경")
+        self.setWindowIcon(QIcon("D:\\남양노아요양보호사교육원\\행정서식\\남양노아요양보호사.jpg"))
 
     def initUI(self):
         self.box = QVBoxLayout()
@@ -311,16 +359,14 @@ class batchUpdate(QWidget):
         self.combobox_T.addItem("주간")
         self.combobox_T.addItem("야간")
 
-        rs = db.main.dbPrograms.SELECT("classNumber, classTime", "lecture", orderBy="classNumber")
+        rs = db.main.dbPrograms.SELECT("classNumber, classTime", "lecture", orderBy="classNumber *1")
         if rs == "error":
             QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
         else:
-            for rows in rs:
-                self.class_num_list.append(rows[0])
+            for row in rs:
+                if not row[0] in self.class_num_list:
+                    self.class_num_list.append(row[0])
             
-            self.class_num_list = set(self.class_num_list)
-            self.class_num_list = list(self.class_num_list)
-            self.class_num_list.sort()
             self.combobox_N.addItems(self.class_num_list)
 
 class UPDATE(QWidget):
@@ -330,8 +376,9 @@ class UPDATE(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
-        self.targetTable = ""
+        self.target_table = ""
         self.base_path = "D:\\남양노아요양보호사교육원\\교육생관리"
+        self.setWindowIcon(QIcon("D:\\남양노아요양보호사교육원\\행정서식\\남양노아요양보호사.jpg"))
 
     def initUI(self):
         self.setWindowTitle("데이터 수정")
@@ -350,57 +397,57 @@ class UPDATE(QWidget):
             os.makedirs(path)
 
     def moveDirectory(self, name, before_number, before_time, after_number, after_time):
-        before_path = self.base_path + "\\{}\\{}{}".format(before_number, before_number, before_time)
+        before_path = self.base_path + "\\{}\\{}{}\\{}".format(before_number, before_number, before_time, name)
         after_path = self.base_path + "\\{}\\{}{}".format(after_number, after_number, after_time)
-        dir_list = os.listdir(before_path)
-
-        for directory in dir_list:
-            if name == directory:
-                before_path = before_path + "\\{}".format(directory)
 
         if not os.path.exists(after_path):
             os.makedirs(after_path)
 
-        shutil.move(before_path, after_path)
+        if os.path.exists(before_path):
+            shutil.move(before_path, after_path)
+
+        else:
+            if not os.path.exists(after_path):
+                self.generateDirectory(after_number, after_time, name)
 
     def dataUpdate(self):
-        if self.targetTable == "user":
-            if self.textID_user.text().strip() == "" or self.textName_user.text().strip() == "":
+        if self.target_table == "user":
+            if self.text_id_user.text().strip() == "" or self.text_name_user.text().strip() == "":
                 QMessageBox.warning(self, "오류", "ID, 이름값을 입력해야 합니다!")
                 return
             
             user_list = []
-            user_list.append(self.textID_user.text().strip())
-            user_list.append(self.textName_user.text().strip())
-            user_list.append(self.textRRN.text().strip())
-            user_list.append(self.textPhone.text().strip())
-            user_list.append(self.textLicen_user.text().strip())
-            user_list.append(self.textAdr.text().strip())
-            user_list.append(self.textOriginAdr.text().strip())
-            user_list.append(self.textClsN_user.text().strip())
-            user_list.append(self.textClsT_user.text().strip())
+            user_list.append(self.text_id_user.text().strip())
+            user_list.append(self.text_name_user.text().strip())
+            user_list.append(self.text_RRN.text().strip())
+            user_list.append(self.text_phone.text().strip())
+            user_list.append(self.text_licen_user.text().strip())
+            user_list.append(self.text_adr.text().strip())
+            user_list.append(self.text_origin_adr.text().strip())
+            user_list.append(self.text_clsN_user.text().strip())
+            user_list.append(self.text_clsT_user.text().strip())
             # 총 이수, 이론, 실기, 실습 시간으로 NULL값 추가
             try:
-                total_Hour = str(int(self.textTheT.text().strip()) + int(self.textPracT.text().strip()) + int(self.textTrainT.text().strip()))
+                total_Hour = str(int(self.text_theory_time.text().strip()) + int(self.text_practice_time.text().strip()) + int(self.text_training_time.text().strip()))
             except:
                 total_Hour = NULL
             user_list.append(total_Hour)
-            user_list.append(self.textTheT.text().strip())
-            user_list.append(self.textPracT.text().strip())
-            user_list.append(self.textTrainT.text().strip())
-            user_list.append(self.textTemp.text().strip())
-            user_list.append(self.textExam.text().strip())
+            user_list.append(self.text_theory_time.text().strip())
+            user_list.append(self.text_practice_time.text().strip())
+            user_list.append(self.text_training_time.text().strip())
+            user_list.append(self.text_temp.text().strip())
+            user_list.append(self.text_exam.text().strip())
 
             query_list = ["id", "name", "RRN", "phoneNumber", "license", "address", "originAddress", "classNumber", "classTime", \
                 "totalCreditHour", "theoryCreditHour", "practicalCreditHour", "trainingCreditHour", "temporaryClassNumber", "exam"]
 
-            where = "id = '{}' and name = '{}' and RRN='{}'".format(self.key_dict["ID"], self.key_dict["name"], self.key_dict["RRN"])
+            where = "id = '{}' and name = '{}'".format(self.key_dict["ID"], self.key_dict["name"])
             query = ""
             for i in range(len(user_list)):
                 query += query_list[i] + "="
 
                 # 값이 없거나 NULL값인 경우는 그냥('없이) query문에 들어가고, 아닌 경우는 '를 붙혀서 query문에 넣는다!
-                if user_list[i] == "" or user_list[i] == NULL or user_list[i] == None:
+                if user_list[i] == "" or user_list[i] == NULL:
                     user_list[i] = NULL
                     query += user_list[i]
 
@@ -414,16 +461,16 @@ class UPDATE(QWidget):
                 .format(user_list[0], user_list[1], user_list[2], user_list[3], user_list[4], user_list[5], user_list[6], user_list[7], user_list[8], user_list[13], user_list[9], user_list[10], user_list[11], user_list[12], user_list[14])
             ask += "\n해당 정보로 업데이트합니다."
                 
-        elif self.targetTable == "lecture":
-            if self.textClsN_lecture.text().strip() == "" or self.textClsT_lecture.text().strip() == "":
+        elif self.target_table == "lecture":
+            if self.text_clsN_lecture.text().strip() == "" or self.text_clsT_lecture.text().strip() == "":
                 QMessageBox.warning(self, "오류", "기수, 반을 입력해야 합니다!")
                 return
 
             lect_list = []
-            lect_list.append(self.textClsN_lecture.text().strip())
-            lect_list.append(self.textClsT_lecture.text().strip())
-            lect_list.append(self.textStartD_lecture.text().strip())
-            lect_list.append(self.textEndD_lecture.text().strip())
+            lect_list.append(self.text_clsN_lecture.text().strip())
+            lect_list.append(self.text_clsT_lecture.text().strip())
+            lect_list.append(self.text_startD_lecture.text().strip())
+            lect_list.append(self.text_endD_lecture.text().strip())
 
             query_list = ["classNumber", "classTime", "startDate", "endDate"]
 
@@ -433,7 +480,7 @@ class UPDATE(QWidget):
             for i in range(len(lect_list)):
                 query += query_list[i] + "="
 
-                if lect_list[i] == "" or lect_list[i] == NULL or lect_list[i] == None:
+                if lect_list[i] == "" or lect_list[i] == NULL:
                     lect_list[i] = NULL
                     query += lect_list[i]
 
@@ -446,19 +493,19 @@ class UPDATE(QWidget):
             ask = "기수: {}\t반: {}\n시작일: {}\n종료일: {}\n".format(lect_list[0], lect_list[1], lect_list[2], lect_list[3])
             ask += "\n해당 정보로 업데이트합니다."
 
-        elif self.targetTable == "teacher":
-            if self.textID_teacher.text().strip() == "" or self.textName_teacher.text().strip() == "":
+        elif self.target_table == "teacher":
+            if self.text_id_teacher.text().strip() == "" or self.text_name_teacher.text().strip() == "":
                 QMessageBox.warning(self, "오류", "ID, 이름값을 입력해야 합니다!")
                 return
             
             teach_list = []
-            teach_list.append(self.textID_teacher.text().strip())
-            teach_list.append(self.textCateg.text().strip())
-            teach_list.append(self.textName_teacher.text().strip())
-            teach_list.append(self.textDOB.text().strip())
-            teach_list.append(self.textLicen_teacher.text().strip())
-            teach_list.append(self.textMinC.text().strip())
-            teach_list.append(self.textACK.text().strip())
+            teach_list.append(self.text_id_teacher.text().strip())
+            teach_list.append(self.text_category.text().strip())
+            teach_list.append(self.text_name_teacher.text().strip())
+            teach_list.append(self.text_DOB.text().strip())
+            teach_list.append(self.text_licen_teacher.text().strip())
+            teach_list.append(self.text_min_career.text().strip())
+            teach_list.append(self.text_ACK.text().strip())
 
             query_list = ["id", "category", "name", "dateOfBirth", "license", "minCareer", "ACKDate"]
 
@@ -468,7 +515,7 @@ class UPDATE(QWidget):
             for i in range(len(teach_list)):
                 query += query_list[i] + "="
 
-                if teach_list[i] == "" or teach_list[i] == NULL or teach_list[i] == None:
+                if teach_list[i] == "" or teach_list[i] == NULL:
                     teach_list[i] = NULL
                     query += teach_list[i]
 
@@ -482,16 +529,16 @@ class UPDATE(QWidget):
                 .format(teach_list[0], teach_list[1], teach_list[2], teach_list[3], teach_list[4], teach_list[5], teach_list[6])
             ask += "\n해당 정보로 업데이트합니다."
 
-        elif self.targetTable == "temptraining":
-            if self.textClsN_tempTrain.text().strip() == "":
+        elif self.target_table == "temptraining":
+            if self.text_clsN_temp_training.text().strip() == "":
                 QMessageBox.warning(self, "오류", "기수를 입력해야 합니다!")
                 return
 
             temp_list = []
-            temp_list.append(self.textClsN_tempTrain.text().strip())
-            temp_list.append(self.textStartD_tempTrain.text().strip())
-            temp_list.append(self.textEndD_tempTrain.text().strip())
-            temp_list.append(self.textAwardD.text().strip())
+            temp_list.append(self.text_clsN_temp_training.text().strip())
+            temp_list.append(self.text_startD_temp_training.text().strip())
+            temp_list.append(self.text_endD_temp_training.text().strip())
+            temp_list.append(self.text_awardD.text().strip())
 
             query_list = ["classNumber", "startDate", "endDate", "awardDate"]
 
@@ -501,7 +548,7 @@ class UPDATE(QWidget):
             for i in range(len(temp_list)):
                 query += query_list[i] + "="
 
-                if temp_list[i] == "" or temp_list[i] == NULL or temp_list[i] == None:
+                if temp_list[i] == "" or temp_list[i] == NULL:
                     temp_list[i] = NULL
                     query += temp_list[i]
 
@@ -514,47 +561,46 @@ class UPDATE(QWidget):
             ask = "기수: {}\n시작일: {}\n종료일: {}\n수여일: {}\n".format(temp_list[0], temp_list[1], temp_list[2], temp_list[3])
             ask += "\n해당 정보로 업데이트합니다."
 
-        elif self.targetTable == "temptrainingteacher":
-            if self.textClsN_tempTrainT.text().strip() == "" or self.textTeach.text().strip() == "":
+        elif self.target_table == "temptrainingteacher":
+            if self.text_clsN_temp_training_teacher.text().strip() == "" or self.text_teacher.text().strip() == "":
                 QMessageBox.warning(self, "오류", "기수, 담당강사를 입력해야 합니다!")
                 return
 
-            tempT_list = []
-            tempT_list.append(self.textClsN_tempTrainT.text().strip())
-            tempT_list.append(self.textTeach.text().strip())
+            temp_training_teacher_list = []
+            temp_training_teacher_list.append(self.text_clsN_temp_training_teacher.text().strip())
+            temp_training_teacher_list.append(self.text_teacher.text().strip())
 
             query_list = ["classNumber", "teacherName"]
 
             where = "classNumber = '{}' and teacherName = '{}'".format(self.key_dict["기수"], self.key_dict["강사"])
 
             query = ""
-            for i in range(len(tempT_list)):
+            for i in range(len(temp_training_teacher_list)):
                 query += query_list[i] + "="
-                if tempT_list[i] == "" or tempT_list[i] == NULL or tempT_list[i] == None:
-                    tempT_list[i] = NULL
-                    query += tempT_list[i]
+                if temp_training_teacher_list[i] == "" or temp_training_teacher_list[i] == NULL:
+                    temp_training_teacher_list[i] = NULL
+                    query += temp_training_teacher_list[i]
 
                 else:
-                    query += "'" + tempT_list[i] + "'"
+                    query += "'" + temp_training_teacher_list[i] + "'"
 
-                if i != len(tempT_list) - 1:
+                if i != len(temp_training_teacher_list) - 1:
                     query += ", "
 
-            ask = "기수: {}\n강사: {}\n".format(tempT_list[0], tempT_list[1])
+            ask = "기수: {}\n강사: {}\n".format(temp_training_teacher_list[0], temp_training_teacher_list[1])
             ask += "\n해당 정보로 업데이트합니다."
-
 
         ans = QMessageBox.question(self, "데이터 수정 확인", ask, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
-            db.main.dbPrograms.UPDATE(self.targetTable, query, where)
+            db.main.dbPrograms.UPDATE(self.target_table, query, where)
             QMessageBox.about(self, "완료", "데이터를 성공적으로 수정했습니다.")
             db.main.showTable(Refresh=True)
             db.main.textInfo.clear()
 
-            if self.targetTable == "user":
-                name = self.textName_user.text().strip()
-                number = self.textClsN_user.text().strip()
-                time = self.textClsT_user.text().strip()
+            if self.target_table == "user":
+                name = self.text_name_user.text().strip()
+                number = self.text_clsN_user.text().strip()
+                time = self.text_clsT_user.text().strip()
 
                 if not (self.key_dict["기수"] == number and self.key_dict["반"] == time):
                     if not (number == "" or time == ""):
@@ -572,7 +618,7 @@ class UPDATE(QWidget):
 
     def showEvent(self, QShowEvent):
         self.key_dict = {}
-        self.lineEditList = []
+        self.line_edit_list = []
         cnt_row = 0
         cnt_col = 0
         # 1. 기존에 있던 label과 Line Edit 삭제
@@ -581,379 +627,378 @@ class UPDATE(QWidget):
                 # self.grid.itemAt(i).widget().hide()
 
         # 2. 공통으로 들어갈 insert 버튼과 close 버튼 생성
-        self.btnUpdate = QPushButton("Update", self)
-        self.btnUpdate.clicked.connect(self.dataUpdate)
-        self.btnCancel = QPushButton("Close", self)
-        self.btnCancel.clicked.connect(self.close)
+        self.btn_update = QPushButton("Update", self)
+        self.btn_update.clicked.connect(self.dataUpdate)
+        self.btn_cancel = QPushButton("Close", self)
+        self.btn_cancel.clicked.connect(self.close)
         
         # 3. 현재 테이블에 맞는 label 및 Line Edit 생성 및 추가
-        if db.main.curTable == "user":
-            self.targetTable = "user"
+        if db.main.current_table == "user":
+            self.target_table = "user"
             self.setWindowTitle("데이터 수정 - 수강생")
             cnt_row = 7
             cnt_col = 6
             self.resize(600, 400)
 
-            self.labelID_user = QLabel("ID", self)
-            self.labelID_user.setFixedWidth(90)
-            self.labelID_user.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelID_user, 0, 0)
-            self.textID_user = QLineEdit()
-            self.grid.addWidget(self.textID_user, 0, 1)
-            self.lineEditList.append(self.textID_user)
-            self.labelName_user = QLabel("이름", self)
-            self.labelName_user.setFixedWidth(90)
-            self.labelName_user.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelName_user, 0, 2)
-            self.textName_user = QLineEdit()
-            self.grid.addWidget(self.textName_user, 0, 3)
-            self.lineEditList.append(self.textName_user)
-            self.labelLicen_user = QLabel("자격증", self)
-            self.labelLicen_user.setFixedWidth(90)
-            self.labelLicen_user.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelLicen_user, 0, 4)
-            self.textLicen_user = QLineEdit()
-            self.grid.addWidget(self.textLicen_user, 0, 5)
-            self.lineEditList.append(self.textLicen_user)
+            self.label_id_user = QLabel("ID", self)
+            self.label_id_user.setFixedWidth(90)
+            self.label_id_user.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_id_user, 0, 0)
+            self.text_id_user = QLineEdit()
+            self.grid.addWidget(self.text_id_user, 0, 1)
+            self.line_edit_list.append(self.text_id_user)
+            self.label_name_user = QLabel("이름", self)
+            self.label_name_user.setFixedWidth(90)
+            self.label_name_user.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_name_user, 0, 2)
+            self.text_name_user = QLineEdit()
+            self.grid.addWidget(self.text_name_user, 0, 3)
+            self.line_edit_list.append(self.text_name_user)
+            self.label_licen_user = QLabel("자격증", self)
+            self.label_licen_user.setFixedWidth(90)
+            self.label_licen_user.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_licen_user, 0, 4)
+            self.text_licen_user = QLineEdit()
+            self.grid.addWidget(self.text_licen_user, 0, 5)
+            self.line_edit_list.append(self.text_licen_user)
 
-            self.labelClsN_user = QLabel("기수", self)
-            self.labelClsN_user.setFixedWidth(90)
-            self.labelClsN_user.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelClsN_user, 1, 0)
-            self.textClsN_user = QLineEdit()
-            self.grid.addWidget(self.textClsN_user, 1, 1)
-            self.lineEditList.append(self.textClsN_user)
-            self.labelClsT_user = QLabel("반", self)
-            self.labelClsT_user.setFixedWidth(90)
-            self.labelClsT_user.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelClsT_user, 1, 2)
-            self.textClsT_user = QLineEdit()
-            self.grid.addWidget(self.textClsT_user, 1, 3)
-            self.lineEditList.append(self.textClsT_user)
-            self.labelTemp = QLabel("대체실습", self)
-            self.labelTemp.setFixedWidth(90)
-            self.labelTemp.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelTemp, 1, 4)
-            self.textTemp = QLineEdit()
-            self.grid.addWidget(self.textTemp, 1, 5)
-            self.lineEditList.append(self.textTemp)
+            self.label_clsN_user = QLabel("기수", self)
+            self.label_clsN_user.setFixedWidth(90)
+            self.label_clsN_user.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_clsN_user, 1, 0)
+            self.text_clsN_user = QLineEdit()
+            self.grid.addWidget(self.text_clsN_user, 1, 1)
+            self.line_edit_list.append(self.text_clsN_user)
+            self.label_clsT_user = QLabel("반", self)
+            self.label_clsT_user.setFixedWidth(90)
+            self.label_clsT_user.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_clsT_user, 1, 2)
+            self.text_clsT_user = QLineEdit()
+            self.grid.addWidget(self.text_clsT_user, 1, 3)
+            self.line_edit_list.append(self.text_clsT_user)
+            self.label_temp = QLabel("대체실습", self)
+            self.label_temp.setFixedWidth(90)
+            self.label_temp.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_temp, 1, 4)
+            self.text_temp = QLineEdit()
+            self.grid.addWidget(self.text_temp, 1, 5)
+            self.line_edit_list.append(self.text_temp)
 
-            self.labelRRN = QLabel("주민등록번호", self)
-            self.labelRRN.setFixedWidth(90)
-            self.labelRRN.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelRRN, 2, 0)
-            self.textRRN = QLineEdit()
-            self.grid.addWidget(self.textRRN, 2, 1, 1, 2)
-            self.lineEditList.append(self.textRRN)
-            self.labelPhone = QLabel("전화번호", self)
-            self.labelPhone.setFixedWidth(90)
-            self.labelPhone.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelPhone, 2, 3)
-            self.textPhone = QLineEdit()
-            self.grid.addWidget(self.textPhone, 2, 4, 1, 2)
-            self.lineEditList.append(self.textPhone)
+            self.label_RRN = QLabel("주민등록번호", self)
+            self.label_RRN.setFixedWidth(90)
+            self.label_RRN.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_RRN, 2, 0)
+            self.text_RRN = QLineEdit()
+            self.grid.addWidget(self.text_RRN, 2, 1, 1, 2)
+            self.line_edit_list.append(self.text_RRN)
+            self.label_phone = QLabel("전화번호", self)
+            self.label_phone.setFixedWidth(90)
+            self.label_phone.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_phone, 2, 3)
+            self.text_phone = QLineEdit()
+            self.grid.addWidget(self.text_phone, 2, 4, 1, 2)
+            self.line_edit_list.append(self.text_phone)
             
             
-            self.labelAdr = QLabel("주소", self)
-            self.labelAdr.setFixedWidth(90)
-            self.labelAdr.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelAdr, 3, 0)
-            self.textAdr = QLineEdit()
-            self.grid.addWidget(self.textAdr, 3, 1, 1, 5)
-            self.lineEditList.append(self.textAdr)
-            self.labelOriginAdr = QLabel("본적주소", self)
-            self.labelOriginAdr.setFixedWidth(90)
-            self.labelOriginAdr.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelOriginAdr, 4, 0)
-            self.textOriginAdr = QLineEdit()
-            self.grid.addWidget(self.textOriginAdr, 4, 1, 1, 5)
-            self.lineEditList.append(self.textOriginAdr)
+            self.label_adr = QLabel("주소", self)
+            self.label_adr.setFixedWidth(90)
+            self.label_adr.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_adr, 3, 0)
+            self.text_adr = QLineEdit()
+            self.grid.addWidget(self.text_adr, 3, 1, 1, 5)
+            self.line_edit_list.append(self.text_adr)
+            self.label_origin_adr = QLabel("본적주소", self)
+            self.label_origin_adr.setFixedWidth(90)
+            self.label_origin_adr.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_origin_adr, 4, 0)
+            self.text_origin_adr = QLineEdit()
+            self.grid.addWidget(self.text_origin_adr, 4, 1, 1, 5)
+            self.line_edit_list.append(self.text_origin_adr)
 
-            self.labelTotalT = QLabel("총 이수시간은 이론 + 실기 + 실습 이수시간으로 입력됩니다.")
-            self.grid.addWidget(self.labelTotalT, 5, 0, 1, 6)
+            self.label_total_time = QLabel("총 이수시간은 이론 + 실기 + 실습 이수시간으로 입력됩니다.")
+            self.grid.addWidget(self.label_total_time, 5, 0, 1, 6)
 
-            self.labelTheT = QLabel("이론이수")
-            self.labelTheT.setFixedWidth(90)
-            self.labelTheT.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelTheT, 6, 0)
-            self.textTheT = QLineEdit()
-            self.grid.addWidget(self.textTheT, 6, 1)
-            self.lineEditList.append(self.textTheT)
+            self.label_theory_time = QLabel("이론이수")
+            self.label_theory_time.setFixedWidth(90)
+            self.label_theory_time.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_theory_time, 6, 0)
+            self.text_theory_time = QLineEdit()
+            self.grid.addWidget(self.text_theory_time, 6, 1)
+            self.line_edit_list.append(self.text_theory_time)
 
-            self.labelPracT = QLabel("실기이수")
-            self.labelPracT.setFixedWidth(90)
-            self.labelPracT.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelPracT, 6, 2)
-            self.textPracT = QLineEdit()
-            self.grid.addWidget(self.textPracT, 6, 3)
-            self.lineEditList.append(self.textPracT)
+            self.label_practice_time = QLabel("실기이수")
+            self.label_practice_time.setFixedWidth(90)
+            self.label_practice_time.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_practice_time, 6, 2)
+            self.text_practice_time = QLineEdit()
+            self.grid.addWidget(self.text_practice_time, 6, 3)
+            self.line_edit_list.append(self.text_practice_time)
 
-            self.labelTrainT = QLabel("실습이수")
-            self.labelTrainT.setFixedWidth(90)
-            self.labelTrainT.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelTrainT, 6, 4)
-            self.textTrainT = QLineEdit()
-            self.grid.addWidget(self.textTrainT, 6, 5)
-            self.lineEditList.append(self.textTrainT)
+            self.label_training_time = QLabel("실습이수")
+            self.label_training_time.setFixedWidth(90)
+            self.label_training_time.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_training_time, 6, 4)
+            self.text_training_time = QLineEdit()
+            self.grid.addWidget(self.text_training_time, 6, 5)
+            self.line_edit_list.append(self.text_training_time)
 
-            self.labelExam = QLabel("시험회차")
-            self.labelExam.setFixedWidth(90)
-            self.labelExam.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelExam, 7, 0)
-            self.textExam = QLineEdit()
-            self.grid.addWidget(self.textExam, 7, 1)
-            self.lineEditList.append(self.textExam)
+            self.label_exam = QLabel("시험회차")
+            self.label_exam.setFixedWidth(90)
+            self.label_exam.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_exam, 7, 0)
+            self.text_exam = QLineEdit()
+            self.grid.addWidget(self.text_exam, 7, 1)
+            self.line_edit_list.append(self.text_exam)
 
             input_user = []
             for i in range(15):
                 input_user.append(db.main.readDB.index(db.main.table.currentIndex().row(), i).data())
 
-                if input_user[i] == None or input_user[i] == NULL or input_user[i] == "" or input_user[i] == "None" or input_user[i] == "NULL":
+                if input_user[i] == "NULL":
                     input_user[i] = ""
 
-            self.textID_user.setText(str(input_user[0]))
-            self.textName_user.setText(str(input_user[1]))
-            self.textLicen_user.setText(str(input_user[4]))
-            self.textClsN_user.setText(str(input_user[7]))
-            self.textClsT_user.setText(str(input_user[8]))
-            self.textTemp.setText(str(input_user[13]))
-            self.textRRN.setText(str(input_user[2]))
-            self.textPhone.setText(str(input_user[3]))
-            self.textAdr.setText(str(input_user[5]))
-            self.textOriginAdr.setText(str(input_user[6]))
-            self.textTheT.setText(str(input_user[10]))
-            self.textPracT.setText(str(input_user[11]))
-            self.textTrainT.setText(str(input_user[12]))
-            self.textExam.setText(str(input_user[14]))
+            self.text_id_user.setText(str(input_user[0]))
+            self.text_name_user.setText(str(input_user[1]))
+            self.text_licen_user.setText(str(input_user[4]))
+            self.text_clsN_user.setText(str(input_user[7]))
+            self.text_clsT_user.setText(str(input_user[8]))
+            self.text_temp.setText(str(input_user[13]))
+            self.text_RRN.setText(str(input_user[2]))
+            self.text_phone.setText(str(input_user[3]))
+            self.text_adr.setText(str(input_user[5]))
+            self.text_origin_adr.setText(str(input_user[6]))
+            self.text_theory_time.setText(str(input_user[10]))
+            self.text_practice_time.setText(str(input_user[11]))
+            self.text_training_time.setText(str(input_user[12]))
+            self.text_exam.setText(str(input_user[14]))
 
             self.key_dict["ID"] = str(input_user[0])
             self.key_dict["name"] = str(input_user[1])
-            self.key_dict["RRN"] = str(input_user[2])
             self.key_dict["기수"] = str(input_user[7])
             self.key_dict["반"] = str(input_user[8])
             self.key_dict["자격증"] = str(input_user[4])
 
-        elif db.main.curTable == "lecture":
-            self.targetTable = "lecture"
+        elif db.main.current_table == "lecture":
+            self.target_table = "lecture"
             self.setWindowTitle("데이터 수정 - 기수")
             cnt_row = 2
             cnt_col = 4
             self.resize(300, 200)
-            self.labelClsN_lecture = QLabel("기수", self)
-            self.labelClsN_lecture.setFixedWidth(90)
-            self.labelClsN_lecture.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelClsN_lecture, 0, 0)
-            self.textClsN_lecture = QLineEdit()
-            self.textClsN_lecture.setFixedWidth(120)
-            self.grid.addWidget(self.textClsN_lecture, 0, 1)
-            self.lineEditList.append(self.textClsN_lecture)
-            self.labelClsT_lecture = QLabel("반", self)
-            self.labelClsT_lecture.setFixedWidth(90)
-            self.labelClsT_lecture.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelClsT_lecture, 0, 2)
-            self.textClsT_lecture = QLineEdit()
-            self.textClsT_lecture.setFixedWidth(120)
-            self.grid.addWidget(self.textClsT_lecture, 0, 3)
-            self.lineEditList.append(self.textClsT_lecture)
-            self.labelStartD_lecture = QLabel("시작일", self)
-            self.labelStartD_lecture.setFixedWidth(90)
-            self.labelStartD_lecture.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelStartD_lecture, 1, 0)
-            self.textStartD_lecture = QLineEdit()
-            self.textStartD_lecture.setFixedWidth(120)
-            self.grid.addWidget(self.textStartD_lecture, 1, 1)
-            self.lineEditList.append(self.textStartD_lecture)
-            self.labelEndD_lecture = QLabel("종료일", self)
-            self.labelEndD_lecture.setFixedWidth(90)
-            self.labelEndD_lecture.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelEndD_lecture, 1, 2)
-            self.textEndD_lecture = QLineEdit()
-            self.textEndD_lecture.setFixedWidth(120)
-            self.grid.addWidget(self.textEndD_lecture, 1, 3)
-            self.lineEditList.append(self.textEndD_lecture)
+            self.label_clsN_lecture = QLabel("기수", self)
+            self.label_clsN_lecture.setFixedWidth(90)
+            self.label_clsN_lecture.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_clsN_lecture, 0, 0)
+            self.text_clsN_lecture = QLineEdit()
+            self.text_clsN_lecture.setFixedWidth(120)
+            self.grid.addWidget(self.text_clsN_lecture, 0, 1)
+            self.line_edit_list.append(self.text_clsN_lecture)
+            self.label_clsT_lecture = QLabel("반", self)
+            self.label_clsT_lecture.setFixedWidth(90)
+            self.label_clsT_lecture.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_clsT_lecture, 0, 2)
+            self.text_clsT_lecture = QLineEdit()
+            self.text_clsT_lecture.setFixedWidth(120)
+            self.grid.addWidget(self.text_clsT_lecture, 0, 3)
+            self.line_edit_list.append(self.text_clsT_lecture)
+            self.label_startD_lecture = QLabel("시작일", self)
+            self.label_startD_lecture.setFixedWidth(90)
+            self.label_startD_lecture.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_startD_lecture, 1, 0)
+            self.text_startD_lecture = QLineEdit()
+            self.text_startD_lecture.setFixedWidth(120)
+            self.grid.addWidget(self.text_startD_lecture, 1, 1)
+            self.line_edit_list.append(self.text_startD_lecture)
+            self.label_endD_lecture = QLabel("종료일", self)
+            self.label_endD_lecture.setFixedWidth(90)
+            self.label_endD_lecture.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_endD_lecture, 1, 2)
+            self.text_endD_lecture = QLineEdit()
+            self.text_endD_lecture.setFixedWidth(120)
+            self.grid.addWidget(self.text_endD_lecture, 1, 3)
+            self.line_edit_list.append(self.text_endD_lecture)
 
             input_lecture = []
             for i in range(4):
                 input_lecture.append(db.main.readDB.index(db.main.table.currentIndex().row(), i).data())
 
-                if input_lecture[i] == None or input_lecture[i] == NULL or input_lecture[i] == "" or input_lecture[i] == "None" or input_lecture[i] == "NULL":
+                if input_lecture[i] == "NULL":
                     input_lecture[i] = ""
 
-            self.textClsN_lecture.setText(str(input_lecture[0]))
-            self.textClsT_lecture.setText(str(input_lecture[1]))
-            self.textStartD_lecture.setText(str(input_lecture[2]))
-            self.textEndD_lecture.setText(str(input_lecture[3]))
+            self.text_clsN_lecture.setText(str(input_lecture[0]))
+            self.text_clsT_lecture.setText(str(input_lecture[1]))
+            self.text_startD_lecture.setText(str(input_lecture[2]))
+            self.text_endD_lecture.setText(str(input_lecture[3]))
 
             self.key_dict["기수"] = str(input_lecture[0])
             self.key_dict["반"] = str(input_lecture[1])
 
-        elif db.main.curTable == "teacher":
-            self.targetTable = "teacher"
+        elif db.main.current_table == "teacher":
+            self.target_table = "teacher"
             self.setWindowTitle("데이터 수정 - 강사")
             cnt_row = 3
             cnt_col = 6
             self.resize(400, 200)
-            self.labelID_teacher = QLabel("ID", self)
-            self.labelID_teacher.setFixedWidth(90)
-            self.labelID_teacher.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelID_teacher, 0, 0)
-            self.textID_teacher = QLineEdit()
-            self.grid.addWidget(self.textID_teacher, 0, 1)
-            self.lineEditList.append(self.textID_teacher)
-            self.labelName_teacher = QLabel("이름", self)
-            self.labelName_teacher.setFixedWidth(90)
-            self.labelName_teacher.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelName_teacher, 0, 2)
-            self.textName_teacher = QLineEdit()
-            self.grid.addWidget(self.textName_teacher, 0, 3)
-            self.lineEditList.append(self.textName_teacher)
-            self.labelLicen_teacher = QLabel("자격증", self)
-            self.labelLicen_teacher.setFixedWidth(90)
-            self.labelLicen_teacher.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelLicen_teacher, 0, 4)
-            self.textLicen_teacher = QLineEdit()
-            self.grid.addWidget(self.textLicen_teacher, 0, 5)
-            self.lineEditList.append(self.textLicen_teacher)
-            self.labelDOB = QLabel("생년월일", self)
-            self.labelDOB.setFixedWidth(90)
-            self.labelDOB.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelDOB, 1, 0)
-            self.textDOB = QLineEdit()
-            self.grid.addWidget(self.textDOB, 1, 1, 1, 2)
-            self.lineEditList.append(self.textDOB)
-            self.labelCateg = QLabel("전임/외래", self)
-            self.labelCateg.setFixedWidth(90)
-            self.labelCateg.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelCateg, 1, 3)
-            self.textCateg = QLineEdit()
-            self.grid.addWidget(self.textCateg, 1, 4, 1, 2)
-            self.lineEditList.append(self.textCateg)
-            self.labelMinC = QLabel("최소경력", self)
-            self.labelMinC.setFixedWidth(90)
-            self.labelMinC.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelMinC, 2, 0)
-            self.textMinC = QLineEdit()
-            self.grid.addWidget(self.textMinC, 2, 1, 1, 2)
-            self.lineEditList.append(self.textMinC)
-            self.labelACK = QLabel("도 승인일자")
-            self.labelACK.setFixedWidth(90)
-            self.labelACK.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelACK, 2, 3)
-            self.textACK = QLineEdit()
-            self.grid.addWidget(self.textACK, 2, 4, 1, 2)
-            self.lineEditList.append(self.textACK)
+            self.label_id_teacher = QLabel("ID", self)
+            self.label_id_teacher.setFixedWidth(90)
+            self.label_id_teacher.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_id_teacher, 0, 0)
+            self.text_id_teacher = QLineEdit()
+            self.grid.addWidget(self.text_id_teacher, 0, 1)
+            self.line_edit_list.append(self.text_id_teacher)
+            self.label_name_teacher = QLabel("이름", self)
+            self.label_name_teacher.setFixedWidth(90)
+            self.label_name_teacher.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_name_teacher, 0, 2)
+            self.text_name_teacher = QLineEdit()
+            self.grid.addWidget(self.text_name_teacher, 0, 3)
+            self.line_edit_list.append(self.text_name_teacher)
+            self.label_licen_teacher = QLabel("자격증", self)
+            self.label_licen_teacher.setFixedWidth(90)
+            self.label_licen_teacher.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_licen_teacher, 0, 4)
+            self.text_licen_teacher = QLineEdit()
+            self.grid.addWidget(self.text_licen_teacher, 0, 5)
+            self.line_edit_list.append(self.text_licen_teacher)
+            self.label_DOB = QLabel("생년월일", self)
+            self.label_DOB.setFixedWidth(90)
+            self.label_DOB.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_DOB, 1, 0)
+            self.text_DOB = QLineEdit()
+            self.grid.addWidget(self.text_DOB, 1, 1, 1, 2)
+            self.line_edit_list.append(self.text_DOB)
+            self.label_category = QLabel("전임/외래", self)
+            self.label_category.setFixedWidth(90)
+            self.label_category.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_category, 1, 3)
+            self.text_category = QLineEdit()
+            self.grid.addWidget(self.text_category, 1, 4, 1, 2)
+            self.line_edit_list.append(self.text_category)
+            self.label_min_career = QLabel("최소경력", self)
+            self.label_min_career.setFixedWidth(90)
+            self.label_min_career.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_min_career, 2, 0)
+            self.text_min_career = QLineEdit()
+            self.grid.addWidget(self.text_min_career, 2, 1, 1, 2)
+            self.line_edit_list.append(self.text_min_career)
+            self.label_ACK = QLabel("도 승인일자")
+            self.label_ACK.setFixedWidth(90)
+            self.label_ACK.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_ACK, 2, 3)
+            self.text_ACK = QLineEdit()
+            self.grid.addWidget(self.text_ACK, 2, 4, 1, 2)
+            self.line_edit_list.append(self.text_ACK)
 
             input_teacher = []
             for i in range(7):
                 input_teacher.append(db.main.readDB.index(db.main.table.currentIndex().row(), i).data())
 
-                if input_teacher[i] == None or input_teacher[i] == NULL or input_teacher[i] == "" or input_teacher[i] == "None" or input_teacher[i] == "NULL":
+                if input_teacher[i] == "NULL":
                     input_teacher[i] = ""
 
-            self.textID_teacher.setText(str(input_teacher[0]))
-            self.textName_teacher.setText(str(input_teacher[2]))
-            self.textLicen_teacher.setText(str(input_teacher[4]))
-            self.textDOB.setText(str(input_teacher[3]))
-            self.textCateg.setText(str(input_teacher[1]))
-            self.textMinC.setText(str(input_teacher[5]))
-            self.textACK.setText(str(input_teacher[6]))
+            self.text_id_teacher.setText(str(input_teacher[0]))
+            self.text_name_teacher.setText(str(input_teacher[2]))
+            self.text_licen_teacher.setText(str(input_teacher[4]))
+            self.text_DOB.setText(str(input_teacher[3]))
+            self.text_category.setText(str(input_teacher[1]))
+            self.text_min_career.setText(str(input_teacher[5]))
+            self.text_ACK.setText(str(input_teacher[6]))
 
             self.key_dict["ID"] = str(input_teacher[0])
             self.key_dict["name"] = str(input_teacher[2])
 
-        elif db.main.curTable == "temptraining":
-            self.targetTable = "temptraining"
+        elif db.main.current_table == "temptraining":
+            self.target_table = "temptraining"
             self.setWindowTitle("데이터 수정 - 대체실습")
             cnt_row = 2
             cnt_col = 4
             self.resize(300, 200)
-            self.labelClsN_tempTrain = QLabel("기수", self)
-            self.labelClsN_tempTrain.setFixedWidth(90)
-            self.labelClsN_tempTrain.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelClsN_tempTrain, 0, 0)
-            self.textClsN_tempTrain = QLineEdit()
-            self.textClsN_tempTrain.setFixedWidth(120)
-            self.grid.addWidget(self.textClsN_tempTrain, 0, 1)
-            self.lineEditList.append(self.textClsN_tempTrain)
-            self.labelStartD_tempTrain = QLabel("시작일", self)
-            self.labelStartD_tempTrain.setFixedWidth(90)
-            self.labelStartD_tempTrain.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelStartD_tempTrain, 0, 2)
-            self.textStartD_tempTrain = QLineEdit()
-            self.textStartD_tempTrain.setFixedWidth(120)
-            self.grid.addWidget(self.textStartD_tempTrain, 0, 3)
-            self.lineEditList.append(self.textStartD_tempTrain)
-            self.labelEndD_tempTrain = QLabel("종료일", self)
-            self.labelEndD_tempTrain.setFixedWidth(90)
-            self.labelEndD_tempTrain.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelEndD_tempTrain, 1, 0)
-            self.textEndD_tempTrain = QLineEdit()
-            self.textEndD_tempTrain.setFixedWidth(120)
-            self.grid.addWidget(self.textEndD_tempTrain, 1, 1)
-            self.lineEditList.append(self.textEndD_tempTrain)
-            self.labelAwardD = QLabel("수여일", self)
-            self.labelAwardD.setFixedWidth(90)
-            self.labelAwardD.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelAwardD, 1, 2)
-            self.textAwardD = QLineEdit()
-            self.textAwardD.setFixedWidth(120)
-            self.grid.addWidget(self.textAwardD, 1, 3)
-            self.lineEditList.append(self.textAwardD)
+            self.label_clsN_temp_training = QLabel("기수", self)
+            self.label_clsN_temp_training.setFixedWidth(90)
+            self.label_clsN_temp_training.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_clsN_temp_training, 0, 0)
+            self.text_clsN_temp_training = QLineEdit()
+            self.text_clsN_temp_training.setFixedWidth(120)
+            self.grid.addWidget(self.text_clsN_temp_training, 0, 1)
+            self.line_edit_list.append(self.text_clsN_temp_training)
+            self.label_startD_temp_training = QLabel("시작일", self)
+            self.label_startD_temp_training.setFixedWidth(90)
+            self.label_startD_temp_training.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_startD_temp_training, 0, 2)
+            self.text_startD_temp_training = QLineEdit()
+            self.text_startD_temp_training.setFixedWidth(120)
+            self.grid.addWidget(self.text_startD_temp_training, 0, 3)
+            self.line_edit_list.append(self.text_startD_temp_training)
+            self.label_endD_temp_training = QLabel("종료일", self)
+            self.label_endD_temp_training.setFixedWidth(90)
+            self.label_endD_temp_training.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_endD_temp_training, 1, 0)
+            self.text_endD_temp_training = QLineEdit()
+            self.text_endD_temp_training.setFixedWidth(120)
+            self.grid.addWidget(self.text_endD_temp_training, 1, 1)
+            self.line_edit_list.append(self.text_endD_temp_training)
+            self.label_awardD = QLabel("수여일", self)
+            self.label_awardD.setFixedWidth(90)
+            self.label_awardD.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_awardD, 1, 2)
+            self.text_awardD = QLineEdit()
+            self.text_awardD.setFixedWidth(120)
+            self.grid.addWidget(self.text_awardD, 1, 3)
+            self.line_edit_list.append(self.text_awardD)
 
-            input_tempTrain = []
+            input_temp_training = []
             for i in range(4):
-                input_tempTrain.append(db.main.readDB.index(db.main.table.currentIndex().row(), i).data())
+                input_temp_training.append(db.main.readDB.index(db.main.table.currentIndex().row(), i).data())
 
-                if input_tempTrain[i] == None or input_tempTrain[i] == NULL or input_tempTrain[i] == "" or input_tempTrain[i] == "None" or input_tempTrain[i] == "NULL":
-                    input_tempTrain[i] = ""
+                if input_temp_training[i] == "NULL":
+                    input_temp_training[i] = ""
 
-            self.textClsN_tempTrain.setText(str(input_tempTrain[0]))
-            self.textStartD_tempTrain.setText(str(input_tempTrain[1]))
-            self.textEndD_tempTrain.setText(str(input_tempTrain[2]))
-            self.textAwardD.setText(str(input_tempTrain[3]))
+            self.text_clsN_temp_training.setText(str(input_temp_training[0]))
+            self.text_startD_temp_training.setText(str(input_temp_training[1]))
+            self.text_endD_temp_training.setText(str(input_temp_training[2]))
+            self.text_awardD.setText(str(input_temp_training[3]))
 
-            self.key_dict["기수"] = str(input_tempTrain[0])
+            self.key_dict["기수"] = str(input_temp_training[0])
 
-        elif db.main.curTable == "temptrainingteacher":
-            self.targetTable = "temptrainingteacher"
+        elif db.main.current_table == "temptrainingteacher":
+            self.target_table = "temptrainingteacher"
             self.setWindowTitle("데이터 수정 - 대체실습 강사")
             cnt_row = 2
             cnt_col = 2
             self.resize(300, 200)
-            self.labelClsN_tempTrainT = QLabel("기수", self)
-            self.labelClsN_tempTrainT.setFixedWidth(90)
-            self.labelClsN_tempTrainT.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelClsN_tempTrainT, 0, 0)
-            self.textClsN_tempTrainT = QLineEdit()
-            self.textClsN_tempTrainT.setFixedWidth(90)
-            self.grid.addWidget(self.textClsN_tempTrainT, 0, 1)
-            self.lineEditList.append(self.textClsN_tempTrainT)
-            self.labelTeach = QLabel("강사", self)
-            self.labelTeach.setFixedWidth(90)
-            self.labelTeach.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelTeach, 1, 0)
-            self.textTeach = QLineEdit()
-            self.textTeach.setFixedWidth(90)
-            self.grid.addWidget(self.textTeach, 1, 1)
-            self.lineEditList.append(self.textTeach)
+            self.label_clsN_temp_training_teacher = QLabel("기수", self)
+            self.label_clsN_temp_training_teacher.setFixedWidth(90)
+            self.label_clsN_temp_training_teacher.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_clsN_temp_training_teacher, 0, 0)
+            self.text_clsN_temp_training_teacher = QLineEdit()
+            self.text_clsN_temp_training_teacher.setFixedWidth(90)
+            self.grid.addWidget(self.text_clsN_temp_training_teacher, 0, 1)
+            self.line_edit_list.append(self.text_clsN_temp_training_teacher)
+            self.label_teacher = QLabel("강사", self)
+            self.label_teacher.setFixedWidth(90)
+            self.label_teacher.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_teacher, 1, 0)
+            self.text_teacher = QLineEdit()
+            self.text_teacher.setFixedWidth(90)
+            self.grid.addWidget(self.text_teacher, 1, 1)
+            self.line_edit_list.append(self.text_teacher)
 
-            input_tempTrainT = []
+            input_temp_training_teacher = []
             for i in range(2):
-                input_tempTrainT.append(db.main.readDB.index(db.main.table.currentIndex().row(), i).data())
+                input_temp_training_teacher.append(db.main.readDB.index(db.main.table.currentIndex().row(), i).data())
+                
+                if input_temp_training_teacher[i] == "NULL":
+                    input_temp_training_teacher[i] = ""
 
-                if input_tempTrainT[i] == None or input_tempTrainT[i] == NULL or input_tempTrainT[i] == "" or input_tempTrainT[i] == "None" or input_tempTrainT[i] == "NULL":
-                    input_tempTrainT[i] = ""
+            self.text_clsN_temp_training_teacher.setText(str(input_temp_training_teacher[0]))
+            self.text_teacher.setText(str(input_temp_training_teacher[1]))
 
-            self.textClsN_tempTrainT.setText(str(input_tempTrainT[0]))
-            self.textTeach.setText(str(input_tempTrainT[1]))
-
-            self.key_dict["기수"] = str(input_tempTrainT[0])
-            self.key_dict["강사"] = str(input_tempTrainT[1])
+            self.key_dict["기수"] = str(input_temp_training_teacher[0])
+            self.key_dict["강사"] = str(input_temp_training_teacher[1])
         
         # 4. 재생성된 버튼 추가
-        self.grid.addWidget(self.btnUpdate, cnt_row, cnt_col - 2)
-        self.grid.addWidget(self.btnCancel, cnt_row, cnt_col - 1)
-        for lineEdit in self.lineEditList:
+        self.grid.addWidget(self.btn_update, cnt_row, cnt_col - 2)
+        self.grid.addWidget(self.btn_cancel, cnt_row, cnt_col - 1)
+        for lineEdit in self.line_edit_list:
             lineEdit.returnPressed.connect(self.dataUpdate)
 
 
@@ -964,8 +1009,9 @@ class INSERT(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
-        self.targetTable = ""
+        self.target_table = ""
         self.base_path = "D:\\남양노아요양보호사교육원\\교육생관리"
+        self.setWindowIcon(QIcon("D:\\남양노아요양보호사교육원\\행정서식\\남양노아요양보호사.jpg"))
 
     def initUI(self):
         self.setWindowTitle("데이터 삽입")
@@ -995,34 +1041,34 @@ class INSERT(QWidget):
             os.makedirs(path)
 
     def dataInsert(self):
-        if self.targetTable == "user":
-            if self.textID_user.text().strip() == "" or self.textName_user.text().strip() == "":
+        if self.target_table == "user":
+            if self.text_id_user.text().strip() == "" or self.text_name_user.text().strip() == "":
                 QMessageBox.warning(self, "오류", "ID, 이름값을 입력해야 합니다!")
                 return
 
             user_list = []
-            user_list.append(self.textID_user.text().strip())
-            user_list.append(self.textName_user.text().strip())
-            user_list.append(self.textRRN.text().strip())
-            user_list.append(self.textPhone.text().strip())
-            user_list.append(self.textLicen_user.text().strip())
-            user_list.append(self.textAdr.text().strip())
-            user_list.append(self.textOriginAdr.text().strip())
-            user_list.append(self.textClsN_user.text().strip())
-            user_list.append(self.textClsT_user.text().strip())
+            user_list.append(self.text_id_user.text().strip())
+            user_list.append(self.text_name_user.text().strip())
+            user_list.append(self.text_RRN.text().strip())
+            user_list.append(self.text_phone.text().strip())
+            user_list.append(self.text_licen_user.text().strip())
+            user_list.append(self.text_adr.text().strip())
+            user_list.append(self.text_origin_adr.text().strip())
+            user_list.append(self.text_clsN_user.text().strip())
+            user_list.append(self.text_clsT_user.text().strip())
             # 총 이수, 이론, 실기, 실습 시간으로 NULL값 추가
             user_list.append(NULL)
             user_list.append(NULL)
             user_list.append(NULL)
             user_list.append(NULL)
-            user_list.append(self.textTemp.text().strip())
+            user_list.append(self.text_temp.text().strip())
             # 시험 회차 정보는 데이터 수정에서 입력
             user_list.append(NULL)
 
             query = ""
             for i in range(len(user_list)):
                 # 값이 없거나 NULL값인 경우는 그냥('없이) query문에 들어가고, 아닌 경우는 '를 붙혀서 query문에 넣는다!
-                if user_list[i] == "" or user_list[i] == NULL or user_list[i] == None:
+                if user_list[i] == "" or user_list[i] == NULL:
                     user_list[i] = NULL
                     query += user_list[i]
 
@@ -1036,20 +1082,20 @@ class INSERT(QWidget):
                 .format(user_list[0], user_list[1], user_list[2], user_list[3], user_list[4], user_list[5], user_list[6], user_list[7], user_list[8], user_list[13], user_list[9], user_list[10], user_list[11], user_list[12])
             ask += "\n해당 정보를 데이터베이스에 추가합니다."
                 
-        elif self.targetTable == "lecture":
-            if self.textClsN_lecture.text().strip() == "" or self.textClsT_lecture.text().strip() == "":
+        elif self.target_table == "lecture":
+            if self.text_clsN_lecture.text().strip() == "" or self.text_clsT_lecture.text().strip() == "":
                 QMessageBox.warning(self, "오류", "기수, 반을 입력해야 합니다!")
                 return
 
             lect_list = []
-            lect_list.append(self.textClsN_lecture.text().strip())
-            lect_list.append(self.textClsT_lecture.text().strip())
-            lect_list.append(self.textStartD_lecture.text().strip())
-            lect_list.append(self.textEndD_lecture.text().strip())
+            lect_list.append(self.text_clsN_lecture.text().strip())
+            lect_list.append(self.text_clsT_lecture.text().strip())
+            lect_list.append(self.text_startD_lecture.text().strip())
+            lect_list.append(self.text_endD_lecture.text().strip())
 
             query = ""
             for i in range(len(lect_list)):
-                if lect_list[i] == "" or lect_list[i] == NULL or lect_list[i] == None:
+                if lect_list[i] == "" or lect_list[i] == NULL:
                     lect_list[i] = NULL
                     query += lect_list[i]
 
@@ -1062,23 +1108,23 @@ class INSERT(QWidget):
             ask = "기수: {}\t반: {}\n시작일: {}\n종료일: {}\n".format(lect_list[0], lect_list[1], lect_list[2], lect_list[3])
             ask += "\n해당 정보를 데이터베이스에 추가합니다."
 
-        elif self.targetTable == "teacher":
-            if self.textID_teacher.text().strip() == "" or self.textName_teacher.text().strip() == "":
+        elif self.target_table == "teacher":
+            if self.text_id_teacher.text().strip() == "" or self.text_name_teacher.text().strip() == "":
                 QMessageBox.warning(self, "오류", "ID, 이름값을 입력해야 합니다!")
                 return
             
             teach_list = []
-            teach_list.append(self.textID_teacher.text().strip())
-            teach_list.append(self.textCateg.text().strip())
-            teach_list.append(self.textName_teacher.text().strip())
-            teach_list.append(self.textDOB.text().strip())
-            teach_list.append(self.textLicen_teacher.text().strip())
-            teach_list.append(self.textMinC.text().strip())
-            teach_list.append(self.textACK.text().strip())
+            teach_list.append(self.text_id_teacher.text().strip())
+            teach_list.append(self.text_category.text().strip())
+            teach_list.append(self.text_name_teacher.text().strip())
+            teach_list.append(self.text_DOB.text().strip())
+            teach_list.append(self.text_licen_teacher.text().strip())
+            teach_list.append(self.text_min_career.text().strip())
+            teach_list.append(self.text_ACK.text().strip())
 
             query = ""
             for i in range(len(teach_list)):
-                if teach_list[i] == "" or teach_list[i] == NULL or teach_list[i] == None:
+                if teach_list[i] == "" or teach_list[i] == NULL:
                     teach_list[i] = NULL
                     query += teach_list[i]
 
@@ -1092,20 +1138,20 @@ class INSERT(QWidget):
                 .format(teach_list[0], teach_list[1], teach_list[2], teach_list[3], teach_list[4], teach_list[5], teach_list[6])
             ask += "\n해당 정보를 데이터베이스에 추가합니다."
 
-        elif self.targetTable == "temptraining":
-            if self.textClsN_tempTrain.text().strip() == "":
+        elif self.target_table == "temptraining":
+            if self.text_clsN_temp_training.text().strip() == "":
                 QMessageBox.warning(self, "오류", "기수를 입력해야 합니다!")
                 return
 
             temp_list = []
-            temp_list.append(self.textClsN_tempTrain.text().strip())
-            temp_list.append(self.textStartD_tempTrain.text().strip())
-            temp_list.append(self.textEndD_tempTrain.text().strip())
-            temp_list.append(self.textAwardD.text().strip())
+            temp_list.append(self.text_clsN_temp_training.text().strip())
+            temp_list.append(self.text_startD_temp_training.text().strip())
+            temp_list.append(self.text_endD_temp_training.text().strip())
+            temp_list.append(self.text_awardD.text().strip())
 
             query = ""
             for i in range(len(temp_list)):
-                if temp_list[i] == "" or temp_list[i] == NULL or temp_list[i] == None:
+                if temp_list[i] == "" or temp_list[i] == NULL:
                     temp_list[i] = NULL
                     query += temp_list[i]
 
@@ -1118,39 +1164,39 @@ class INSERT(QWidget):
             ask = "기수: {}\n시작일: {}\n종료일: {}\n수여일: {}\n".format(temp_list[0], temp_list[1], temp_list[2], temp_list[3])
             ask += "\n해당 정보를 데이터베이스에 추가합니다."
 
-        elif self.targetTable == "temptrainingteacher":
-            if self.textClsN_tempTrainT.text().strip() == "" or self.textTeach.text().strip() == "":
+        elif self.target_table == "temptrainingteacher":
+            if self.text_clsN_temp_training_teacher.text().strip() == "" or self.text_teacher.text().strip() == "":
                 QMessageBox.warning(self, "오류", "기수, 담당강사를 입력해야 합니다!")
                 return
 
-            tempT_list = []
-            tempT_list.append(self.textClsN_tempTrainT.text().strip())
-            tempT_list.append(self.textTeach.text().strip())
+            temp_training_teacher_list = []
+            temp_training_teacher_list.append(self.text_clsN_temp_training_teacher.text().strip())
+            temp_training_teacher_list.append(self.text_teacher.text().strip())
 
             query = ""
-            for i in range(len(tempT_list)):
-                if tempT_list[i] == "" or tempT_list[i] == NULL or tempT_list[i] == None:
-                    tempT_list[i] = NULL
-                    query += tempT_list[i]
+            for i in range(len(temp_training_teacher_list)):
+                if temp_training_teacher_list[i] == "" or temp_training_teacher_list[i] == NULL:
+                    temp_training_teacher_list[i] = NULL
+                    query += temp_training_teacher_list[i]
 
                 else:
-                    query += "'" + tempT_list[i] + "'"
+                    query += "'" + temp_training_teacher_list[i] + "'"
 
-                if i != len(tempT_list) - 1:
+                if i != len(temp_training_teacher_list) - 1:
                     query += ", "
 
-            ask = "기수: {}\n강사: {}\n".format(tempT_list[0], tempT_list[1])
+            ask = "기수: {}\n강사: {}\n".format(temp_training_teacher_list[0], temp_training_teacher_list[1])
             ask += "\n해당 정보를 데이터베이스에 추가합니다."
 
 
         ans = QMessageBox.question(self, "데이터 삽입 확인", ask, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
-            db.main.dbPrograms.INSERT(self.targetTable, query)
+            db.main.dbPrograms.INSERT(self.target_table, query)
             QMessageBox.about(self, "완료", "데이터를 성공적으로 추가했습니다.")
-            if self.targetTable == "user":
-                name = self.textName_user.text().strip()
-                number = self.textClsN_user.text().strip()
-                time = self.textClsT_user.text().strip()
+            if self.target_table == "user":
+                name = self.text_name_user.text().strip()
+                number = self.text_clsN_user.text().strip()
+                time = self.text_clsT_user.text().strip()
 
                 if not (number == "" or time == ""):
                     self.generateDirectory(number, time, name)
@@ -1166,7 +1212,7 @@ class INSERT(QWidget):
             self.close()
 
     def showEvent(self, QShowEvent):
-        self.lineEditList = []
+        self.line_edit_list = []
 
         cnt_row = 0
         cnt_col = 0
@@ -1176,252 +1222,256 @@ class INSERT(QWidget):
                 # self.grid.itemAt(i).widget().hide()
 
         # 2. 공통으로 들어갈 insert 버튼과 close 버튼 생성
-        self.btnInsert = QPushButton("Insert", self)
-        self.btnInsert.clicked.connect(self.dataInsert)
-        self.btnCancel = QPushButton("Close", self)
-        self.btnCancel.clicked.connect(self.close)
+        self.btn_insert = QPushButton("Insert", self)
+        self.btn_insert.clicked.connect(self.dataInsert)
+        self.btn_cancel = QPushButton("Close", self)
+        self.btn_cancel.clicked.connect(self.close)
         
         # 3. 현재 테이블에 맞는 label 및 Line Edit 생성 및 추가
-        if db.main.curTable == "user":
-            self.targetTable = "user"
+        if db.main.current_table == "user":
+            self.target_table = "user"
             self.setWindowTitle("데이터 삽입 - 수강생")
             cnt_row = 5
             cnt_col = 6
             self.resize(600, 400)
 
-            self.labelID_user = QLabel("ID", self)
-            self.labelID_user.setFixedWidth(90)
-            self.labelID_user.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelID_user, 0, 0)
-            self.textID_user = QLineEdit()
-            self.grid.addWidget(self.textID_user, 0, 1)
-            self.lineEditList.append(self.textID_user)
-            self.labelName_user = QLabel("이름", self)
-            self.labelName_user.setFixedWidth(90)
-            self.labelName_user.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelName_user, 0, 2)
-            self.textName_user = QLineEdit()
-            self.grid.addWidget(self.textName_user, 0, 3)
-            self.lineEditList.append(self.textName_user)
-            self.labelLicen_user = QLabel("자격증", self)
-            self.labelLicen_user.setFixedWidth(90)
-            self.labelLicen_user.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelLicen_user, 0, 4)
-            self.textLicen_user = QLineEdit()
-            self.grid.addWidget(self.textLicen_user, 0, 5)
-            self.lineEditList.append(self.textLicen_user)
+            self.label_id_user = QLabel("ID", self)
+            self.label_id_user.setFixedWidth(90)
+            self.label_id_user.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_id_user, 0, 0)
+            self.text_id_user = QLineEdit()
+            next_id = str(int(db.main.dbPrograms.SELECT("id", "user", orderBy="id desc limit 1")[0][0]) + 1)
+            self.text_id_user.setText(next_id)
+            self.grid.addWidget(self.text_id_user, 0, 1)
+            self.line_edit_list.append(self.text_id_user)
+            self.label_name_user = QLabel("이름", self)
+            self.label_name_user.setFixedWidth(90)
+            self.label_name_user.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_name_user, 0, 2)
+            self.text_name_user = QLineEdit()
+            self.grid.addWidget(self.text_name_user, 0, 3)
+            self.line_edit_list.append(self.text_name_user)
+            self.label_licen_user = QLabel("자격증", self)
+            self.label_licen_user.setFixedWidth(90)
+            self.label_licen_user.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_licen_user, 0, 4)
+            self.text_licen_user = QLineEdit()
+            self.grid.addWidget(self.text_licen_user, 0, 5)
+            self.line_edit_list.append(self.text_licen_user)
 
-            self.labelClsN_user = QLabel("기수", self)
-            self.labelClsN_user.setFixedWidth(90)
-            self.labelClsN_user.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelClsN_user, 1, 0)
-            self.textClsN_user = QLineEdit()
-            self.grid.addWidget(self.textClsN_user, 1, 1)
-            self.lineEditList.append(self.textClsN_user)
-            self.labelClsT_user = QLabel("반", self)
-            self.labelClsT_user.setFixedWidth(90)
-            self.labelClsT_user.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelClsT_user, 1, 2)
-            self.textClsT_user = QLineEdit()
-            self.grid.addWidget(self.textClsT_user, 1, 3)
-            self.lineEditList.append(self.textClsT_user)
-            self.labelTemp = QLabel("대체실습", self)
-            self.labelTemp.setFixedWidth(90)
-            self.labelTemp.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelTemp, 1, 4)
-            self.textTemp = QLineEdit()
-            self.grid.addWidget(self.textTemp, 1, 5)
-            self.lineEditList.append(self.textTemp)
+            self.label_clsN_user = QLabel("기수", self)
+            self.label_clsN_user.setFixedWidth(90)
+            self.label_clsN_user.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_clsN_user, 1, 0)
+            self.text_clsN_user = QLineEdit()
+            self.grid.addWidget(self.text_clsN_user, 1, 1)
+            self.line_edit_list.append(self.text_clsN_user)
+            self.label_clsT_user = QLabel("반", self)
+            self.label_clsT_user.setFixedWidth(90)
+            self.label_clsT_user.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_clsT_user, 1, 2)
+            self.text_clsT_user = QLineEdit()
+            self.grid.addWidget(self.text_clsT_user, 1, 3)
+            self.line_edit_list.append(self.text_clsT_user)
+            self.label_temp = QLabel("대체실습", self)
+            self.label_temp.setFixedWidth(90)
+            self.label_temp.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_temp, 1, 4)
+            self.text_temp = QLineEdit()
+            self.grid.addWidget(self.text_temp, 1, 5)
+            self.line_edit_list.append(self.text_temp)
 
-            self.labelRRN = QLabel("주민등록번호", self)
-            self.labelRRN.setFixedWidth(90)
-            self.labelRRN.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelRRN, 2, 0)
-            self.textRRN = QLineEdit()
-            self.grid.addWidget(self.textRRN, 2, 1, 1, 2)
-            self.lineEditList.append(self.textRRN)
-            self.labelPhone = QLabel("전화번호", self)
-            self.labelPhone.setFixedWidth(90)
-            self.labelPhone.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelPhone, 2, 3)
-            self.textPhone = QLineEdit()
-            self.grid.addWidget(self.textPhone, 2, 4, 1, 2)
-            self.lineEditList.append(self.textPhone)
+            self.label_RRN = QLabel("주민등록번호", self)
+            self.label_RRN.setFixedWidth(90)
+            self.label_RRN.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_RRN, 2, 0)
+            self.text_RRN = QLineEdit()
+            self.grid.addWidget(self.text_RRN, 2, 1, 1, 2)
+            self.line_edit_list.append(self.text_RRN)
+            self.label_phone = QLabel("전화번호", self)
+            self.label_phone.setFixedWidth(90)
+            self.label_phone.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_phone, 2, 3)
+            self.text_phone = QLineEdit()
+            self.grid.addWidget(self.text_phone, 2, 4, 1, 2)
+            self.line_edit_list.append(self.text_phone)
             
             
-            self.labelAdr = QLabel("주소", self)
-            self.labelAdr.setFixedWidth(90)
-            self.labelAdr.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelAdr, 3, 0)
-            self.textAdr = QLineEdit()
-            self.grid.addWidget(self.textAdr, 3, 1, 1, 5)
-            self.lineEditList.append(self.textAdr)
-            self.labelOriginAdr = QLabel("본적주소", self)
-            self.labelOriginAdr.setFixedWidth(90)
-            self.labelOriginAdr.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelOriginAdr, 4, 0)
-            self.textOriginAdr = QLineEdit()
-            self.grid.addWidget(self.textOriginAdr, 4, 1, 1, 5)
-            self.lineEditList.append(self.textOriginAdr)
+            self.label_adr = QLabel("주소", self)
+            self.label_adr.setFixedWidth(90)
+            self.label_adr.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_adr, 3, 0)
+            self.text_adr = QLineEdit()
+            self.grid.addWidget(self.text_adr, 3, 1, 1, 5)
+            self.line_edit_list.append(self.text_adr)
+            self.label_origin_adr = QLabel("본적주소", self)
+            self.label_origin_adr.setFixedWidth(90)
+            self.label_origin_adr.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_origin_adr, 4, 0)
+            self.text_origin_adr = QLineEdit()
+            self.grid.addWidget(self.text_origin_adr, 4, 1, 1, 5)
+            self.line_edit_list.append(self.text_origin_adr)
 
-            self.textID_user.setFocus()
+            self.text_id_user.setFocus()
 
-        elif db.main.curTable == "lecture":
-            self.targetTable = "lecture"
+        elif db.main.current_table == "lecture":
+            self.target_table = "lecture"
             self.setWindowTitle("데이터 삽입 - 기수")
             cnt_row = 2
             cnt_col = 4
             self.resize(300, 200)
-            self.labelClsN_lecture = QLabel("기수", self)
-            self.labelClsN_lecture.setFixedWidth(90)
-            self.labelClsN_lecture.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelClsN_lecture, 0, 0)
-            self.textClsN_lecture = QLineEdit()
-            self.textClsN_lecture.setFixedWidth(120)
-            self.grid.addWidget(self.textClsN_lecture, 0, 1)
-            self.lineEditList.append(self.textClsN_lecture)
-            self.labelClsT_lecture = QLabel("반", self)
-            self.labelClsT_lecture.setFixedWidth(90)
-            self.labelClsT_lecture.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelClsT_lecture, 0, 2)
-            self.textClsT_lecture = QLineEdit()
-            self.textClsT_lecture.setFixedWidth(120)
-            self.grid.addWidget(self.textClsT_lecture, 0, 3)
-            self.lineEditList.append(self.textClsT_lecture)
-            self.labelStartD_lecture = QLabel("시작일", self)
-            self.labelStartD_lecture.setFixedWidth(90)
-            self.labelStartD_lecture.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelStartD_lecture, 1, 0)
-            self.textStartD_lecture = QLineEdit()
-            self.textStartD_lecture.setFixedWidth(120)
-            self.grid.addWidget(self.textStartD_lecture, 1, 1)
-            self.lineEditList.append(self.textStartD_lecture)
-            self.labelEndD_lecture = QLabel("종료일", self)
-            self.labelEndD_lecture.setFixedWidth(90)
-            self.labelEndD_lecture.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelEndD_lecture, 1, 2)
-            self.textEndD_lecture = QLineEdit()
-            self.textEndD_lecture.setFixedWidth(120)
-            self.grid.addWidget(self.textEndD_lecture, 1, 3)
-            self.lineEditList.append(self.textEndD_lecture)
+            self.label_clsN_lecture = QLabel("기수", self)
+            self.label_clsN_lecture.setFixedWidth(90)
+            self.label_clsN_lecture.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_clsN_lecture, 0, 0)
+            self.text_clsN_lecture = QLineEdit()
+            self.text_clsN_lecture.setFixedWidth(120)
+            self.grid.addWidget(self.text_clsN_lecture, 0, 1)
+            self.line_edit_list.append(self.text_clsN_lecture)
+            self.label_clsT_lecture = QLabel("반", self)
+            self.label_clsT_lecture.setFixedWidth(90)
+            self.label_clsT_lecture.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_clsT_lecture, 0, 2)
+            self.text_clsT_lecture = QLineEdit()
+            self.text_clsT_lecture.setFixedWidth(120)
+            self.grid.addWidget(self.text_clsT_lecture, 0, 3)
+            self.line_edit_list.append(self.text_clsT_lecture)
+            self.label_startD_lecture = QLabel("시작일", self)
+            self.label_startD_lecture.setFixedWidth(90)
+            self.label_startD_lecture.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_startD_lecture, 1, 0)
+            self.text_startD_lecture = QLineEdit()
+            self.text_startD_lecture.setFixedWidth(120)
+            self.grid.addWidget(self.text_startD_lecture, 1, 1)
+            self.line_edit_list.append(self.text_startD_lecture)
+            self.label_endD_lecture = QLabel("종료일", self)
+            self.label_endD_lecture.setFixedWidth(90)
+            self.label_endD_lecture.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_endD_lecture, 1, 2)
+            self.text_endD_lecture = QLineEdit()
+            self.text_endD_lecture.setFixedWidth(120)
+            self.grid.addWidget(self.text_endD_lecture, 1, 3)
+            self.line_edit_list.append(self.text_endD_lecture)
 
-        elif db.main.curTable == "teacher":
-            self.targetTable = "teacher"
+        elif db.main.current_table == "teacher":
+            self.target_table = "teacher"
             self.setWindowTitle("데이터 삽입 - 강사")
             cnt_row = 3
             cnt_col = 6
             self.resize(400, 200)
-            self.labelID_teacher = QLabel("ID", self)
-            self.labelID_teacher.setFixedWidth(90)
-            self.labelID_teacher.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelID_teacher, 0, 0)
-            self.textID_teacher = QLineEdit()
-            self.grid.addWidget(self.textID_teacher, 0, 1)
-            self.lineEditList.append(self.textID_teacher)
-            self.labelName_teacher = QLabel("이름", self)
-            self.labelName_teacher.setFixedWidth(90)
-            self.labelName_teacher.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelName_teacher, 0, 2)
-            self.textName_teacher = QLineEdit()
-            self.grid.addWidget(self.textName_teacher, 0, 3)
-            self.lineEditList.append(self.textName_teacher)
-            self.labelLicen_teacher = QLabel("자격증", self)
-            self.labelLicen_teacher.setFixedWidth(90)
-            self.labelLicen_teacher.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelLicen_teacher, 0, 4)
-            self.textLicen_teacher = QLineEdit()
-            self.grid.addWidget(self.textLicen_teacher, 0, 5)
-            self.lineEditList.append(self.textLicen_teacher)
-            self.labelDOB = QLabel("생년월일", self)
-            self.labelDOB.setFixedWidth(90)
-            self.labelDOB.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelDOB, 1, 0)
-            self.textDOB = QLineEdit()
-            self.grid.addWidget(self.textDOB, 1, 1, 1, 2)
-            self.lineEditList.append(self.textDOB)
-            self.labelCateg = QLabel("전임/외래", self)
-            self.labelCateg.setFixedWidth(90)
-            self.labelCateg.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelCateg, 1, 3)
-            self.textCateg = QLineEdit()
-            self.grid.addWidget(self.textCateg, 1, 4, 1, 2)
-            self.lineEditList.append(self.textCateg)
-            self.labelMinC = QLabel("최소경력", self)
-            self.labelMinC.setFixedWidth(90)
-            self.labelMinC.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelMinC, 2, 0)
-            self.textMinC = QLineEdit()
-            self.grid.addWidget(self.textMinC, 2, 1, 1, 2)
-            self.lineEditList.append(self.textMinC)
-            self.labelACK = QLabel("도 승인일자")
-            self.labelACK.setFixedWidth(90)
-            self.labelACK.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelACK, 2, 3)
-            self.textACK = QLineEdit()
-            self.grid.addWidget(self.textACK, 2, 4, 1, 2)
-            self.lineEditList.append(self.textACK)
+            self.label_id_teacher = QLabel("ID", self)
+            self.label_id_teacher.setFixedWidth(90)
+            self.label_id_teacher.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_id_teacher, 0, 0)
+            self.text_id_teacher = QLineEdit()
+            next_id = str(int(db.main.dbPrograms.SELECT("id", "teacher", orderBy="id desc limit 1")[0][0]) + 1)
+            self.text_id_teacher.setText(next_id)
+            self.grid.addWidget(self.text_id_teacher, 0, 1)
+            self.line_edit_list.append(self.text_id_teacher)
+            self.label_name_teacher = QLabel("이름", self)
+            self.label_name_teacher.setFixedWidth(90)
+            self.label_name_teacher.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_name_teacher, 0, 2)
+            self.text_name_teacher = QLineEdit()
+            self.grid.addWidget(self.text_name_teacher, 0, 3)
+            self.line_edit_list.append(self.text_name_teacher)
+            self.label_licen_teacher = QLabel("자격증", self)
+            self.label_licen_teacher.setFixedWidth(90)
+            self.label_licen_teacher.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_licen_teacher, 0, 4)
+            self.text_licen_teacher = QLineEdit()
+            self.grid.addWidget(self.text_licen_teacher, 0, 5)
+            self.line_edit_list.append(self.text_licen_teacher)
+            self.label_DOB = QLabel("생년월일", self)
+            self.label_DOB.setFixedWidth(90)
+            self.label_DOB.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_DOB, 1, 0)
+            self.text_DOB = QLineEdit()
+            self.grid.addWidget(self.text_DOB, 1, 1, 1, 2)
+            self.line_edit_list.append(self.text_DOB)
+            self.label_category = QLabel("전임/외래", self)
+            self.label_category.setFixedWidth(90)
+            self.label_category.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_category, 1, 3)
+            self.text_category = QLineEdit()
+            self.grid.addWidget(self.text_category, 1, 4, 1, 2)
+            self.line_edit_list.append(self.text_category)
+            self.label_min_career = QLabel("최소경력", self)
+            self.label_min_career.setFixedWidth(90)
+            self.label_min_career.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_min_career, 2, 0)
+            self.text_min_career = QLineEdit()
+            self.grid.addWidget(self.text_min_career, 2, 1, 1, 2)
+            self.line_edit_list.append(self.text_min_career)
+            self.label_ACK = QLabel("도 승인일자")
+            self.label_ACK.setFixedWidth(90)
+            self.label_ACK.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_ACK, 2, 3)
+            self.text_ACK = QLineEdit()
+            self.grid.addWidget(self.text_ACK, 2, 4, 1, 2)
+            self.line_edit_list.append(self.text_ACK)
 
-        elif db.main.curTable == "temptraining":
-            self.targetTable = "temptraining"
+        elif db.main.current_table == "temptraining":
+            self.target_table = "temptraining"
             self.setWindowTitle("데이터 삽입 - 대체실습")
             cnt_row = 2
             cnt_col = 4
             self.resize(300, 200)
-            self.labelClsN_tempTrain = QLabel("기수", self)
-            self.labelClsN_tempTrain.setFixedWidth(90)
-            self.labelClsN_tempTrain.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelClsN_tempTrain, 0, 0)
-            self.textClsN_tempTrain = QLineEdit()
-            self.textClsN_tempTrain.setFixedWidth(120)
-            self.grid.addWidget(self.textClsN_tempTrain, 0, 1)
-            self.lineEditList.append(self.textClsN_tempTrain)
-            self.labelStartD_tempTrain = QLabel("시작일", self)
-            self.labelStartD_tempTrain.setFixedWidth(90)
-            self.labelStartD_tempTrain.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelStartD_tempTrain, 0, 2)
-            self.textStartD_tempTrain = QLineEdit()
-            self.textStartD_tempTrain.setFixedWidth(120)
-            self.grid.addWidget(self.textStartD_tempTrain, 0, 3)
-            self.lineEditList.append(self.textStartD_tempTrain)
-            self.labelEndD_tempTrain = QLabel("종료일", self)
-            self.labelEndD_tempTrain.setFixedWidth(90)
-            self.labelEndD_tempTrain.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelEndD_tempTrain, 1, 0)
-            self.textEndD_tempTrain = QLineEdit()
-            self.textEndD_tempTrain.setFixedWidth(120)
-            self.grid.addWidget(self.textEndD_tempTrain, 1, 1)
-            self.lineEditList.append(self.textEndD_tempTrain)
-            self.labelAwardD = QLabel("수여일", self)
-            self.labelAwardD.setFixedWidth(90)
-            self.labelAwardD.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelAwardD, 1, 2)
-            self.textAwardD = QLineEdit()
-            self.textAwardD.setFixedWidth(120)
-            self.grid.addWidget(self.textAwardD, 1, 3)
-            self.lineEditList.append(self.textAwardD)
+            self.label_clsN_temp_training = QLabel("기수", self)
+            self.label_clsN_temp_training.setFixedWidth(90)
+            self.label_clsN_temp_training.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_clsN_temp_training, 0, 0)
+            self.text_clsN_temp_training = QLineEdit()
+            self.text_clsN_temp_training.setFixedWidth(120)
+            self.grid.addWidget(self.text_clsN_temp_training, 0, 1)
+            self.line_edit_list.append(self.text_clsN_temp_training)
+            self.label_startD_temp_training = QLabel("시작일", self)
+            self.label_startD_temp_training.setFixedWidth(90)
+            self.label_startD_temp_training.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_startD_temp_training, 0, 2)
+            self.text_startD_temp_training = QLineEdit()
+            self.text_startD_temp_training.setFixedWidth(120)
+            self.grid.addWidget(self.text_startD_temp_training, 0, 3)
+            self.line_edit_list.append(self.text_startD_temp_training)
+            self.label_endD_temp_training = QLabel("종료일", self)
+            self.label_endD_temp_training.setFixedWidth(90)
+            self.label_endD_temp_training.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_endD_temp_training, 1, 0)
+            self.text_endD_temp_training = QLineEdit()
+            self.text_endD_temp_training.setFixedWidth(120)
+            self.grid.addWidget(self.text_endD_temp_training, 1, 1)
+            self.line_edit_list.append(self.text_endD_temp_training)
+            self.label_awardD = QLabel("수여일", self)
+            self.label_awardD.setFixedWidth(90)
+            self.label_awardD.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_awardD, 1, 2)
+            self.text_awardD = QLineEdit()
+            self.text_awardD.setFixedWidth(120)
+            self.grid.addWidget(self.text_awardD, 1, 3)
+            self.line_edit_list.append(self.text_awardD)
             
-        elif db.main.curTable == "temptrainingteacher":
-            self.targetTable = "temptrainingteacher"
+        elif db.main.current_table == "temptrainingteacher":
+            self.target_table = "temptrainingteacher"
             self.setWindowTitle("데이터 삽입 - 대체실습 강사")
             cnt_row = 2
             cnt_col = 2
             self.resize(300, 200)
-            self.labelClsN_tempTrainT = QLabel("기수", self)
-            self.labelClsN_tempTrainT.setFixedWidth(90)
-            self.labelClsN_tempTrainT.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelClsN_tempTrainT, 0, 0)
-            self.textClsN_tempTrainT = QLineEdit()
-            self.textClsN_tempTrainT.setFixedWidth(90)
-            self.grid.addWidget(self.textClsN_tempTrainT, 0, 1)
-            self.lineEditList.append(self.textClsN_tempTrainT)
-            self.labelTeach = QLabel("강사", self)
-            self.labelTeach.setFixedWidth(90)
-            self.labelTeach.setAlignment(Qt.AlignRight)
-            self.grid.addWidget(self.labelTeach, 1, 0)
-            self.textTeach = QLineEdit()
-            self.textTeach.setFixedWidth(90)
-            self.grid.addWidget(self.textTeach, 1, 1)
-            self.lineEditList.append(self.textTeach)
+            self.label_clsN_temp_training_teacher = QLabel("기수", self)
+            self.label_clsN_temp_training_teacher.setFixedWidth(90)
+            self.label_clsN_temp_training_teacher.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_clsN_temp_training_teacher, 0, 0)
+            self.text_clsN_temp_training_teacher = QLineEdit()
+            self.text_clsN_temp_training_teacher.setFixedWidth(90)
+            self.grid.addWidget(self.text_clsN_temp_training_teacher, 0, 1)
+            self.line_edit_list.append(self.text_clsN_temp_training_teacher)
+            self.label_teacher = QLabel("강사", self)
+            self.label_teacher.setFixedWidth(90)
+            self.label_teacher.setAlignment(Qt.AlignRight)
+            self.grid.addWidget(self.label_teacher, 1, 0)
+            self.text_teacher = QLineEdit()
+            self.text_teacher.setFixedWidth(90)
+            self.grid.addWidget(self.text_teacher, 1, 1)
+            self.line_edit_list.append(self.text_teacher)
 
         # 4. 버튼을 추가하기 위한 row와 column check
         # 이거 왜 자꾸 증가하냐;
@@ -1429,9 +1479,9 @@ class INSERT(QWidget):
         # totalCol = self.grid.columnCount()
         
         # 5. 재생성된 버튼 추가
-        self.grid.addWidget(self.btnInsert, cnt_row, cnt_col - 2)
-        self.grid.addWidget(self.btnCancel, cnt_row, cnt_col - 1)
-        for lineEdit in self.lineEditList:
+        self.grid.addWidget(self.btn_insert, cnt_row, cnt_col - 2)
+        self.grid.addWidget(self.btn_cancel, cnt_row, cnt_col - 1)
+        for lineEdit in self.line_edit_list:
             lineEdit.returnPressed.connect(self.dataInsert)
 
     # def closeEvent(self, QCloseEvent):
@@ -1474,7 +1524,7 @@ class mainLayout(QWidget, DB):
 
         second_hbox = QHBoxLayout()
 
-        self.curTable = ""
+        self.current_table = ""
 
         self.table = QTreeView(self)
         self.table.setAlternatingRowColors(True)
@@ -1526,7 +1576,7 @@ class mainLayout(QWidget, DB):
         self.setLayout(vbox)
 
     def selected(self):
-        if self.curTable == "user":
+        if self.current_table == "user":
             self.textInfo.clear()
 
             ID = "ID: " + str(self.readDB.index(self.table.currentIndex().row(), 0).data())
@@ -1548,7 +1598,7 @@ class mainLayout(QWidget, DB):
             send_string = ID + "\n\n" + name + "\n\n" + RRN + "\n\n" + phone + "\n\n" + licen + "\n\n" + adr + "\n\n" + oAdr + "\n\n" +\
                 clsN + "\n\n" + clsT + "\n\n" + totalH + "\n\n" + theH + "\n\n" + pracH + "\n\n" + trainH + "\n\n" + tempC + "\n\n" + exam
 
-        elif self.curTable == "lecture":
+        elif self.current_table == "lecture":
             self.textInfo.clear()
 
             clsN = "기수: " + str(self.readDB.index(self.table.currentIndex().row(), 0).data())
@@ -1558,7 +1608,7 @@ class mainLayout(QWidget, DB):
 
             send_string = clsN + "\n\n" + clsT + "\n\n" + startD + "\n\n" + endD
             
-        elif self.curTable == "teacher":
+        elif self.current_table == "teacher":
             self.textInfo.clear()
             
             ID = "ID: " + str(self.readDB.index(self.table.currentIndex().row(), 0).data())
@@ -1571,7 +1621,7 @@ class mainLayout(QWidget, DB):
 
             send_string = ID + "\n\n" + categ + "\n\n" + DOB + "\n\n" + licen + "\n\n" + career + "\n\n" + ACKDate
 
-        elif self.curTable == "temptraining":
+        elif self.current_table == "temptraining":
             self.textInfo.clear()
 
             clsN = "기수: " + str(self.readDB.index(self.table.currentIndex().row(), 0).data())
@@ -1581,7 +1631,7 @@ class mainLayout(QWidget, DB):
 
             send_string = clsN + "\n\n" + startD + "\n\n" + endD + "\n\n" + awardD
             
-        elif self.curTable == "temptrainingteacher":
+        elif self.current_table == "temptrainingteacher":
             self.textInfo.clear()
 
             clsN = "기수: " + str(self.readDB.index(self.table.currentIndex().row(), 0).data())
@@ -1591,25 +1641,24 @@ class mainLayout(QWidget, DB):
 
         self.textInfo.setText(send_string)
 
-
     def selectTable(self):
-        if self.curTable == "user":
+        if self.current_table == "user":
             self.readDB.setColumnCount(15)
             self.readDB.setHorizontalHeaderLabels(self.select_list_user)
 
-        elif self.curTable == "lecture":
+        elif self.current_table == "lecture":
             self.readDB.setColumnCount(4)
             self.readDB.setHorizontalHeaderLabels(self.select_list_lecture)
 
-        elif self.curTable == "teacher":
+        elif self.current_table == "teacher":
             self.readDB.setColumnCount(7)
             self.readDB.setHorizontalHeaderLabels(self.select_list_teacher)
 
-        elif self.curTable == "temptraining":
+        elif self.current_table == "temptraining":
             self.readDB.setColumnCount(4)
             self.readDB.setHorizontalHeaderLabels(self.select_list_temptraining)
 
-        elif self.curTable == "temptrainingteacher":
+        elif self.current_table == "temptrainingteacher":
             self.readDB.setColumnCount(2)
             self.readDB.setHorizontalHeaderLabels(self.select_list_temptrainingteacher)
 
@@ -1621,21 +1670,21 @@ class mainLayout(QWidget, DB):
 
         if Refresh == False:
             if source.text() == "수강생 관리":
-                self.curTable = "user"
+                self.current_table = "user"
                 order = "id"
 
                 self.readDB.setColumnCount(15)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_user)
 
             elif source.text() == "기수 관리":
-                self.curTable = "lecture"
+                self.current_table = "lecture"
                 order = "classNumber"
 
                 self.readDB.setColumnCount(4)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_lecture)
 
             elif source.text() == "강사 관리":
-                self.curTable = "teacher"
+                self.current_table = "teacher"
                 order = "id"
 
                 self.readDB.setColumnCount(7)
@@ -1643,51 +1692,52 @@ class mainLayout(QWidget, DB):
 
 
             elif source.text() == "대체실습":
-                self.curTable = "temptraining"
+                self.current_table = "temptraining"
                 order = "classNumber"
 
                 self.readDB.setColumnCount(4)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_temptraining)
 
             elif source.text() == "대체실습 담당강사":
-                self.curTable = "temptrainingteacher"
+                self.current_table = "temptrainingteacher"
                 order = "classNumber"
 
                 self.readDB.setColumnCount(2)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_temptrainingteacher)
 
         elif Refresh == True:
-            if self.curTable == "user":
+            if self.current_table == "user":
                 order = "id"
 
                 self.readDB.setColumnCount(15)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_user)
 
-            elif self.curTable == "lecture":
+            elif self.current_table == "lecture":
                 order = "classNumber"
 
                 self.readDB.setColumnCount(4)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_lecture)
 
-            elif self.curTable == "teacher":
+            elif self.current_table == "teacher":
                 order = "id"
 
                 self.readDB.setColumnCount(7)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_teacher)
 
-            elif self.curTable == "temptraining":
+            elif self.current_table == "temptraining":
                 order = "classNumber"
 
                 self.readDB.setColumnCount(4)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_temptraining)
 
-            elif self.curTable == "temptrainingteacher":
+            elif self.current_table == "temptrainingteacher":
                 order = "classNumber"
 
                 self.readDB.setColumnCount(2)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_temptrainingteacher)
 
-        rs = self.dbPrograms.SELECT("*", self.curTable, orderBy=order)
+        order += " *1"
+        rs = self.dbPrograms.SELECT("*", self.current_table, orderBy=order)
 
         if rs == "error":
             QMessageBox.information(self, "SQL query Error", "SQL query returns error!", QMessageBox.Yes, QMessageBox.Yes)
@@ -1740,7 +1790,7 @@ class mainLayout(QWidget, DB):
                 self.R_category.addItem("SQL")
 
         elif Refresh == True:
-            if self.curTable == "user":
+            if self.current_table == "user":
                 self.R_category.addItem("ID")
                 self.R_category.addItem("이름")
                 self.R_category.addItem("자격증")
@@ -1749,17 +1799,17 @@ class mainLayout(QWidget, DB):
                 self.R_category.addItem("시험회차")
                 self.R_category.addItem("SQL")
 
-            elif self.curTable == "lecture":
+            elif self.current_table == "lecture":
                 self.R_category.addItem("기수/반")
                 self.R_category.addItem("SQL")
 
-            elif self.curTable == "teacher":
+            elif self.current_table == "teacher":
                 self.R_category.addItem("ID")
                 self.R_category.addItem("이름")
                 self.R_category.addItem("자격증")
                 self.R_category.addItem("SQL")
 
-            elif self.curTable == "temptraining":
+            elif self.current_table == "temptraining":
                 self.R_category.addItem("기수")
                 # 시작일은 검색어 "이후"의 날짜들 모두, 종료일은 검색어 "이전"의 날짜들 모두
                 # (시작일을 2022-01-01로 검색할 경우 1월 1일 이후에 시작하는 기수 검색)
@@ -1769,7 +1819,7 @@ class mainLayout(QWidget, DB):
                 self.R_category.addItem("수여일")
                 self.R_category.addItem("SQL")
 
-            elif self.curTable == "temptrainingteacher":
+            elif self.current_table == "temptrainingteacher":
                 self.R_category.addItem("기수")
                 self.R_category.addItem("강사")
                 self.R_category.addItem("SQL")
@@ -1780,7 +1830,7 @@ class mainLayout(QWidget, DB):
             QMessageBox.information(self, "검색어 오류", "검색어가 존재하지 않습니다!", QMessageBox.Yes, QMessageBox.Yes)
             return
 
-        curTable = self.curTable
+        current_table = self.current_table
         curCategory = self.R_category.currentText()
 
         if curCategory == "ID":
@@ -1851,9 +1901,9 @@ class mainLayout(QWidget, DB):
             self.readDB.clear()
             self.selectTable()
             if curCategory == "name" or curCategory == "teacherName":
-                rs = self.dbPrograms.SELECT("*", curTable, where=f"{curCategory} LIKE '%{keyWord}%'")
+                rs = self.dbPrograms.SELECT("*", current_table, where=f"{curCategory} LIKE '%{keyWord}%'")
             else:
-                rs = self.dbPrograms.SELECT("*", curTable, where=f"{curCategory} = '{keyWord}'")
+                rs = self.dbPrograms.SELECT("*", current_table, where=f"{curCategory} = '{keyWord}'")
                 
             if rs == "error":
                 QMessageBox.information(self, "SQL query Error", "SQL query returns error!", QMessageBox.Yes, QMessageBox.Yes)
@@ -1864,16 +1914,19 @@ class mainLayout(QWidget, DB):
                 for i in range(len(rs)):
                     self.readDB.insertRows(self.readDB.rowCount(), 1)
                     for j in range(cols):
-                        self.readDB.setData(self.readDB.index(i, j), str(rs[i][j]))
+                        string = str(rs[i][j])
+                        if string == "None":
+                            string = NULL
+                        self.readDB.setData(self.readDB.index(i, j), string)
         except:
             QMessageBox.information(self, "검색 오류", "잘못된 검색입니다.", QMessageBox.Yes, QMessageBox.Yes)
             return
 
     def DELETE(self):
-        targetTable = ""
+        target_table = ""
         check = ""
-        if self.curTable == "user":
-            targetTable = "user"
+        if self.current_table == "user":
+            target_table = "user"
             ID = str(self.readDB.index(self.table.currentIndex().row(), 0).data())
             name = str(self.readDB.index(self.table.currentIndex().row(), 1).data())
             RRN = str(self.readDB.index(self.table.currentIndex().row(), 2).data())
@@ -1895,8 +1948,8 @@ class mainLayout(QWidget, DB):
                 .format(ID, name, RRN, phone, licen, adr, oAdr, clsN, clsT, tempC, totalH, theH, pracH, trainH)
             check += "\n해당 정보를 데이터베이스에서 삭제합니다."
 
-        elif self.curTable == "lecture":
-            targetTable = "lecture"
+        elif self.current_table == "lecture":
+            target_table = "lecture"
             clsN = str(self.readDB.index(self.table.currentIndex().row(), 0).data())
             clsT = str(self.readDB.index(self.table.currentIndex().row(), 1).data())
             startD = str(self.readDB.index(self.table.currentIndex().row(), 2).data())
@@ -1907,8 +1960,8 @@ class mainLayout(QWidget, DB):
             check = "기수: {}\t반: {}\n시작일: {}\n종료일: {}\n".format(clsN, clsT, startD, endD)
             check += "\n해당 정보를 데이터베이스에서 삭제합니다."
             
-        elif self.curTable == "teacher":
-            targetTable = "teacher"
+        elif self.current_table == "teacher":
+            target_table = "teacher"
             ID = str(self.readDB.index(self.table.currentIndex().row(), 0).data())
             categ = str(self.readDB.index(self.table.currentIndex().row(), 1).data())
             name = str(self.readDB.index(self.table.currentIndex().row(), 2).data())
@@ -1923,8 +1976,8 @@ class mainLayout(QWidget, DB):
                 .format(ID, name, licen, DOB, categ, career, ACKDate)
             check += "\n해당 정보를 데이터베이스에서 삭제합니다."
 
-        elif self.curTable == "temptraining":
-            targetTable = "temptraining"
+        elif self.current_table == "temptraining":
+            target_table = "temptraining"
             clsN = str(self.readDB.index(self.table.currentIndex().row(), 0).data())
             startD = str(self.readDB.index(self.table.currentIndex().row(), 1).data())
             endD = str(self.readDB.index(self.table.currentIndex().row(), 2).data())
@@ -1935,8 +1988,8 @@ class mainLayout(QWidget, DB):
 
             query = "classNumber = '{}'".format(clsN)
             
-        elif self.curTable == "temptrainingteacher":
-            targetTable = "temptrainingteacher"
+        elif self.current_table == "temptrainingteacher":
+            target_table = "temptrainingteacher"
             clsN = str(self.readDB.index(self.table.currentIndex().row(), 0).data())
             teacher = str(self.readDB.index(self.table.currentIndex().row(), 1).data())
 
@@ -1948,7 +2001,7 @@ class mainLayout(QWidget, DB):
 
         ans = QMessageBox.question(self, "데이터 삭제 확인", check, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
-            db.main.dbPrograms.DELETE(targetTable, query)
+            db.main.dbPrograms.DELETE(target_table, query)
             QMessageBox.about(self, "완료", "데이터를 성공적으로 삭제했습니다.")
             self.showTable(Refresh=True)
             self.textInfo.clear()
@@ -1956,34 +2009,37 @@ class mainLayout(QWidget, DB):
             pass
 
     def isNULL(self):
+        self.changeCategory(Refresh=True)
         self.readDB.clear()
+        self.R_searchBox.clear()
         self.selectTable()
 
-        if self.curTable == "":
+        if self.current_table == "":
             QMessageBox.information(self, "객체 오류", "테이블을 먼저 선택해주세요.", QMessageBox.Yes, QMessageBox.Yes)
             return
 
-        elif self.curTable == "user":
+        elif self.current_table == "user":
             query = "id IS null or name IS null or RRN IS null or phoneNumber IS null or license IS null or address IS null or originAddress IS null or classNumber IS null or classTime IS null or totalCreditHour IS null or theoryCreditHour IS null or practicalCreditHour IS null or trainingCreditHour IS null or temporaryClassNumber IS null or exam IS null"
             order = "id"
             
-        elif self.curTable == "lecture":
+        elif self.current_table == "lecture":
             query = "classNumber IS null or classTime IS null or startDate IS null or endDate IS null"
             order = "classNumber"
 
-        elif self.curTable == "teacher":
+        elif self.current_table == "teacher":
             query = "id IS null or category IS null or name IS null or dateOfBirth IS null or license IS null or minCareer IS null or ACKDate IS null"
             order = "id"
 
-        elif self.curTable == "temptraining":
+        elif self.current_table == "temptraining":
             query = "classNumber IS null or startDate IS null or endDate IS null or awardDate IS null"
             order = "classNumber"
 
-        elif self.curTable == "temptrainingteacher":
+        elif self.current_table == "temptrainingteacher":
             query = "classNumber IS null or teacherName IS null"
             order = "classNumber"
 
-        rs = self.dbPrograms.SELECT("*", self.curTable, where=query, orderBy=order)
+        order += " *1"
+        rs = self.dbPrograms.SELECT("*", self.current_table, where=query, orderBy=order)
         if rs == "error":
             QMessageBox.information(self, "SQL query Error", "SQL query returns error!", QMessageBox.Yes, QMessageBox.Yes)
         else:
@@ -2038,58 +2094,80 @@ class mainLayout(QWidget, DB):
         self.backUpWbook = Workbook()
         ws = self.backUpWbook.active
         col = []
+        dimension_lst = []
 
-        if self.curTable == "":
+        if self.current_table == "":
             QMessageBox.information(self, "오류", "테이블을 먼저 선택해주세요.", QMessageBox.Yes, QMessageBox.Yes)
             return
 
-        if self.curTable == "user":
+        if self.current_table == "user":
             col = self.select_list_user
+            dimension_lst = [9, 10, 20, 20, 15, 73, 63, 10, 10, 10, 5, 5, 5, 10, 9]
             file_name = "수강생DB"
 
-        elif self.curTable == "lecture":
+        elif self.current_table == "lecture":
             col = self.select_list_lecture
+            dimension_lst = [10, 10, 15, 15]
             file_name = "기수,반DB"
 
-        elif self.curTable == "teacher":
+        elif self.current_table == "teacher":
             col = self.select_list_teacher
+            dimension_lst = [9, 12, 10, 15, 15, 15, 15]
             file_name = "강사DB"
 
-        elif self.curTable == "temptraining":
+        elif self.current_table == "temptraining":
             col = self.select_list_temptraining
+            dimension_lst = [10, 15, 15, 15]
             file_name = "대체실습DB"
 
-        elif self.curTable == "temptrainingteacher":
+        elif self.current_table == "temptrainingteacher":
             col = self.select_list_temptrainingteacher
+            dimension_lst = [10, 10]
             file_name = "대체실습 강사DB"
 
         for i, val in enumerate(col, start=1):
             ws.cell(row=1, column=i).value = val
+            ws.column_dimensions[get_column_letter(i)].width = dimension_lst[i - 1]
 
-        if self.curTable == "user":
+        if self.current_table == "user":
             for i in range(self.readDB.rowCount()):
-                for j in range(15):
-                    ws.cell(row=i + 2, column=j + 1).value = str(self.readDB.index(i, j).data())
+                for j in range(len(col)):
+                    if str(self.readDB.index(i, j).data()) == "NULL":
+                        continue
+                    else:
+                        ws.cell(row=i + 2, column=j + 1).value = str(self.readDB.index(i, j).data())
 
-        elif self.curTable == "lecture":
+        elif self.current_table == "lecture":
             for i in range(self.readDB.rowCount()):
-                for j in range(4):
-                    ws.cell(row=i + 2, column=j + 1).value = str(self.readDB.index(i, j).data())
+                for j in range(len(col)):
+                    if str(self.readDB.index(i, j).data()) == "NULL":
+                        continue
+                    else:
+                        ws.cell(row=i + 2, column=j + 1).value = str(self.readDB.index(i, j).data())
             
-        elif self.curTable == "teacher":
+        elif self.current_table == "teacher":
             for i in range(self.readDB.rowCount()):
-                for j in range(7):
-                    ws.cell(row=i + 2, column=j + 1).value = str(self.readDB.index(i, j).data())
+                for j in range(len(col)):
+                    if str(self.readDB.index(i, j).data()) == "NULL":
+                        continue
+                    else:
+                        ws.cell(row=i + 2, column=j + 1).value = str(self.readDB.index(i, j).data())
 
-        elif self.curTable == "temptraining":
+        elif self.current_table == "temptraining":
             for i in range(self.readDB.rowCount()):
-                for j in range(4):
-                    ws.cell(row=i + 2, column=j + 1).value = str(self.readDB.index(i, j).data())
+                for j in range(len(col)):
+                    if str(self.readDB.index(i, j).data()) == "NULL":
+                        continue
+                    else:
+                        ws.cell(row=i + 2, column=j + 1).value = str(self.readDB.index(i, j).data())
             
-        elif self.curTable == "temptrainingteacher":
+        elif self.current_table == "temptrainingteacher":
             for i in range(self.readDB.rowCount()):
-                for j in range(2):
-                    ws.cell(row=i + 2, column=j + 1).value = str(self.readDB.index(i, j).data())
+                for j in range(len(col)):
+                    if str(self.readDB.index(i, j).data()) == "NULL":
+                        continue
+                    else:
+                        ws.cell(row=i + 2, column=j + 1).value = str(self.readDB.index(i, j).data())
 
         save_path = f"D:\\남양노아요양보호사교육원\\데이터베이스 백업\\{today}_{file_name}.xlsx"
 
@@ -2107,6 +2185,8 @@ class DBMS(QMainWindow):
     global insert
     global update
     global batch
+    global report_lecture
+
     global scanner
 
     def __init__(self):
@@ -2115,7 +2195,7 @@ class DBMS(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle("NYNOA DBMS")
-        # self.setWindowIcon(QIcon("D:\\user\\Desktop\\자동화파일\\0_남양로고_211220\\남양로고.png"))
+        self.setWindowIcon(QIcon("D:\\남양노아요양보호사교육원\\행정서식\\남양노아요양보호사.jpg"))
         self.resize(1200, 800)
         # self.setFixedSize(1200, 800)
 
@@ -2173,6 +2253,19 @@ class DBMS(QMainWindow):
         file_backUp = QAction("Back up", self)
         file_backUp.setStatusTip("현재 선택된 데이터베이스 테이블을 엑셀 파일로 생성해 백업합니다.")
         file_backUp.triggered.connect(self.main.backupToExcel)
+
+        file_report = QMenu("경기도청", self)
+        beginning_lecture = QAction("개강보고", self)
+        implement_temp_class = QAction("대체실습 실시보고", self)
+        complete_temp_class = QAction("대체실습 수료보고", self)
+
+        file_report.addAction(beginning_lecture)
+        file_report.addAction(implement_temp_class)
+        file_report.addAction(complete_temp_class)
+
+        beginning_lecture.triggered.connect(self.report_lecture_show)
+        # implement_temp_class.triggered.connect()
+        # complete_temp_class.triggered.connect()
         
         # menu에 addAction 할 경우, 이렇게 하면 안되고, 함수를 따로 생성해서 넘겨주어야 한다. 이유는 모름.
         # new_data.triggered.connect(insert.show())
@@ -2201,6 +2294,7 @@ class DBMS(QMainWindow):
         view_stat.triggered.connect(self.triState)
 
         menu_file.addAction(file_backUp)
+        menu_file.addMenu(file_report)
         menu_file.addMenu(file_scan)
         menu_file.addMenu(file_new)     # sub menu 등록
         menu_file.addAction(file_exit)  # menu 등록(액션 추가)
@@ -2234,6 +2328,9 @@ class DBMS(QMainWindow):
         scanner.file_list = file_list
         scanner.show()
 
+    def report_lecture_show(self):
+        report_lecture.show()
+
     def batch_show(self):
         batch.show()
 
@@ -2247,7 +2344,7 @@ class DBMS(QMainWindow):
 
 
     def INSERT_show(self):
-        if self.main.curTable == "":
+        if self.main.current_table == "":
             QMessageBox.information(self, "테이블 오류", "테이블을 먼저 선택해주세요.\n상단 메뉴에 테이블이 존재합니다.",
             QMessageBox.Yes, QMessageBox.Yes)
 
@@ -2299,5 +2396,7 @@ if __name__ == '__main__':
     insert = INSERT()
     update = UPDATE()
     batch = batchUpdate()
+    report_lecture = reportLecture()
+
     scanner = scanFile()
     sys.exit(app.exec_())

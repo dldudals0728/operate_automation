@@ -48,7 +48,7 @@ class DB():
                 if orderBy == None:
                     pass
                 else:
-                    sql += " ORDER BY {} *1".format(orderBy)
+                    sql += " ORDER BY {}".format(orderBy)
 
                 sql += ";"
 
