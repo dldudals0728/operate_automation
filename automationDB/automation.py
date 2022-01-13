@@ -1,15 +1,21 @@
+import os
+import random
+from openpyxl import Workbook
 from openpyxl import load_workbook
+from openpyxl.styles import Alignment, Font
 from openpyxl.drawing.image import Image
 from database import DB
-import random
 
 class Automation:
     def __init__(self):
         self.wbPath = "D:\\Master\\mkfile\\"
         self.basePath = "D:\\남양노아요양보호사교육원\\교육생관리\\"
+        self.imsi_workbook_path = "D:\\Master\\PythonWorkspace\\imsi.xlsx"
         self.wb = None
         self.ws = None
         self.DB = DB()
+        self.wb_imsi = None
+        self.ws_imsi = None
 
     """
     교육수료증명서를 어떻게 일괄적으로 출력 할 것인가!
@@ -332,6 +338,116 @@ class Automation:
             except:
                 self.DB.conn.close()
 
+    def report(self, doc_type, number, time=None):
+        """
+        개강보고
+        대체실습 실시보고
+        대체실습 수료보고
+        """
+        if time == "":
+            time == None
+
+        if doc_type == "개강보고":
+            self.wb_imsi = Workbook()
+            self.ws_imsi = self.wb_imsi.active
+            rs = self.DB.SELECT("license, name, RRN, address, phoneNumber", "user", "classNumber='{}' and classTime='{}'".format(number, time), orderBy="FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1")
+            for indexX, rows in enumerate(rs, start=1):
+                license = rows[0]
+                if license == "일반":
+                    category = "신규\n(일반)"
+                else:
+                    category = "자격증\n"
+                    if license == "간호사" or license == "물리치료사":
+                        category += "({})".format(license[:2])
+                    else:
+                        category += "({}{})".format(license[0], license[2])
+
+                name = rows[1]
+                DOB = rows[2][:7]
+                DOB = DOB[:2] + ". " + DOB[2:4] + ". " + DOB[4:]
+                address = rows[3]
+                phone = rows[4]
+
+                data_list = [category, name, DOB, address, phone]
+
+                self.ws_imsi.cell(row=indexX, column=1).value = indexX
+                self.ws_imsi.cell(row=indexX, column=1).alignment = Alignment(horizontal="center", vertical="center")
+                self.ws_imsi.cell(row=indexX, column=1).font = Font(size=10)
+                for indexY, value in enumerate(data_list, start=2):
+                    self.ws_imsi.cell(row=indexX, column=indexY).value = value
+                    self.ws_imsi.cell(row=indexX, column=indexY).alignment = Alignment(horizontal="center", vertical="center")
+                    self.ws_imsi.cell(row=indexX, column=indexY).font = Font(size=10)
+
+        elif doc_type == "대체실습 실시보고":
+            self.wb_imsi = Workbook()
+            self.ws_imsi = self.wb_imsi.active
+            rs = self.DB.SELECT("license, name, RRN, phoneNumber, classTime, classNumber", "user", "temporaryClassNumber='{}'".format(number), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1")
+            for indexX, rows in enumerate(rs, start=1):
+                license = rows[0]
+                if license == "일반":
+                    category = "신규"
+                    time = 80
+                else:
+                    category = "자격증"
+                    time = 8
+
+                name = rows[1]
+                DOB = rows[2][:6]
+                DOB = DOB[:2] + ". " + DOB[2:4] + ". " + DOB[4:]
+                phone = rows[3]
+                class_info = rows[4] + "반 " + rows[5]
+                rs_lecture = self.DB.SELECT("endDate", "lecture", "classNumber='{}' and classTime='{}'".format(rows[5], rows[4]))
+                class_end_date = rs_lecture[0][0].strftime("%Y.%m.%d")
+                time = str(time) + "시간"
+
+                data_list = [category, name, DOB, phone, class_info, class_end_date, time]
+
+                self.ws_imsi.cell(row=indexX, column=1).value = indexX
+                self.ws_imsi.cell(row=indexX, column=1).alignment = Alignment(horizontal="center", vertical="center")
+                self.ws_imsi.cell(row=indexX, column=1).font = Font(size=10)
+                for indexY, value in enumerate(data_list, start=2):
+                    self.ws_imsi.cell(row=indexX, column=indexY).value = value
+                    self.ws_imsi.cell(row=indexX, column=indexY).alignment = Alignment(horizontal="center", vertical="center")
+                    self.ws_imsi.cell(row=indexX, column=indexY).font = Font(size=10)
+
+
+
+        elif doc_type == "대체실습 수료보고":
+            self.wb_imsi = Workbook()
+            self.ws_imsi = self.wb_imsi.active
+            rs = self.DB.SELECT("classTime, classNumber, totalCreditHour, theoryCreditHour, practicalCreditHour, trainingCreditHour, name, RRN, address, phoneNumber", "user", "temporaryClassNumber='{}'".format(number), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1")
+            rs_temp_lecture = self.DB.SELECT("awardDate", "temptraining", "classNumber='{}'".format(number))
+            award_date = rs_temp_lecture[0][0].strftime("%Y.%m.%d")
+            for indexX, rows in enumerate(rs, start=1):
+                class_info = rows[0] + "반\n" + rows[1]
+
+                total_time = rows[2]
+                theory_time = rows[3]
+                practice_time = rows[4]
+                training_time = rows[5]
+                name = rows[6]
+                RRN = rows[7][:6] + "\n" + rows[7][6:]
+                address = rows[8]
+                phone = rows[9]
+
+                data_list = [class_info, total_time, theory_time, practice_time, "", training_time, name, RRN, address, phone, award_date]
+
+                self.ws_imsi.cell(row=indexX, column=1).value = indexX
+                self.ws_imsi.cell(row=indexX, column=1).alignment = Alignment(horizontal="center", vertical="center")
+                self.ws_imsi.cell(row=indexX, column=1).font = Font(size=10)
+                for indexY, value in enumerate(data_list, start=2):
+                    self.ws_imsi.cell(row=indexX, column=indexY).value = value
+                    self.ws_imsi.cell(row=indexX, column=indexY).alignment = Alignment(horizontal="center", vertical="center")
+                    self.ws_imsi.cell(row=indexX, column=indexY).font = Font(size=10)
+
+
+        self.wb_imsi.save(self.imsi_workbook_path)
+        self.wb_imsi.close()
+        os.system(self.imsi_workbook_path)
+
+
+
+
         
     def examPassList(self, exam):
         pass
@@ -340,4 +456,4 @@ class Automation:
 if __name__ == '__main__':
     auto = Automation()
 
-    auto.mkDoc("교육수료증명서", 38)
+    auto.report("개강보고", "12기", "주간")
