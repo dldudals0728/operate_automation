@@ -1,5 +1,6 @@
 import os
 import random
+import shutil
 from openpyxl import Workbook
 from openpyxl import load_workbook
 from openpyxl.styles import Alignment, Font
@@ -23,11 +24,12 @@ class Automation:
     2. 시험 회차에 따라 일괄 생성 및 출력한다.  O
     3. 개인적으로 생성 및 출력한다. (일일이!!! ) ==> 이건 좀 필요할 듯. 누군가 누락됐을 때 생성할 필요 있음!    O
     """
-    def mkDoc(self, doc_type, exam):
+    def makeDocument(self, doc_type, exam):
         self.wbPath += "\\{}.xlsx".format(doc_type)
+        print(self.wbPath)
         if doc_type == "교육수료증명서":
             try:
-                where = "exam={};".format(exam)
+                where = "exam={}".format(exam)
                 user_rs = self.DB.SELECT("*", "user", where)
 
                 user_query_list = ["id", "name", "RRN", "phoneNumber", "license", "address", "originAddress", "classNumber", "classTime", \
@@ -109,18 +111,19 @@ class Automation:
                     string = "                                      {}".format(item_dict["awardDate"])
                     self.ws.cell(row=23, column=1).value = string
 
-                    self.wb.save(save_path + "\\{}_{}xlsx".format(item_dict["name"], doc_type))
+                    self.wb.save(save_path + "\\{}_{}.xlsx".format(item_dict["name"], doc_type))
                     self.wb.close()
 
             except:
                 self.DB.conn.close()
+                print("error")
 
         elif doc_type == "대체실습확인서":
             try:
-                where = "exam={};".format(exam)
-                user_rs = self.DB.SELECT("id, name, RRN, phoneNumber, classNumber, trainingCreditHour, temporaryClassNumber", "user", where)
+                where = "exam={}".format(exam)
+                user_rs = self.DB.SELECT("id, name, RRN, phoneNumber, classNumber, classTime, trainingCreditHour, temporaryClassNumber", "user", where)
 
-                user_query_list = ["id", "name", "RRN", "phoneNumber", "classNumber", "trainingCreditHour", "temporaryClassNumber"]
+                user_query_list = ["id", "name", "RRN", "phoneNumber", "classNumber", "classTime", "trainingCreditHour", "temporaryClassNumber"]
                 item_dict = {}
 
                 for rows in user_rs:
@@ -155,8 +158,8 @@ class Automation:
                     self.ws.cell(row=7, column=2).value = string
 
                     # 생년월일
-                    BoD = item_dict["RRN"][:7]
-                    string = ". ".join(BoD)
+                    DOB = item_dict["RRN"][:6]
+                    string = DOB[:2] + ". " + DOB[2:4] + ". " + DOB[4:]
                     self.ws.cell(row=7, column=3).value = string
 
                     # 연락처
@@ -172,10 +175,12 @@ class Automation:
                     self.ws.cell(row=7, column=7).value = string
 
                     # 강사
+                    teacher_start_row = 12
                     for teacher in temp_teacher_list:
-                        for i in range(7):
+                        for i in range(1, 7):
                             string = teacher_dict[teacher][i]
-                            self.ws.cell(row=12, column=i + 1).value = string                        
+                            self.ws.cell(row=teacher_start_row, column=i + 1).value = string    
+                        teacher_start_row += 1                    
 
                     # 대체실습 기간
                     string = "{}  ~    {}".format(item_dict["startDate_temp"], item_dict["endDate_temp"])
@@ -189,15 +194,7 @@ class Automation:
                     self.ws.cell(row=22, column=3).value = "합격"
 
                     # 자체시험 점수
-                    name = self.ws_members.cell(row=idx, column=18).value
-                    for cell in self.ws_score["C"]:
-                        if cell.value == name:
-                            temp_row = cell.row
-                    temp_score = self.ws_score.cell(row=temp_row, column=7).value
-                    if temp_score == None:
-                        temp_score = random.randint(85, 100)
-                    else:
-                        pass
+                    temp_score = random.randint(85, 100)
                     self.ws.cell(row=22, column=6).value = temp_score
 
                     # 비고 
@@ -208,22 +205,26 @@ class Automation:
                     string = "                                      {}".format(item_dict["awardDate"])
                     self.ws.cell(row=27, column=1).value = string
 
-                    self.wb.save(save_path + "\\{}_{}xlsx".format(item_dict["name"], doc_type))
+                    self.wb.save(save_path + "\\{}_{}.xlsx".format(item_dict["name"], doc_type))
+                    print(save_path + "\\{}_{}.xlsx".format(item_dict["name"], doc_type))
                     self.wb.close()
 
             except:
                 self.DB.conn.close()
+                print("error")
 
         elif doc_type == "요양보호사 자격증 발급,재발급 신청서":
             try:
                 item_dict = {}
 
-                where = "exam={};".format(exam)
+                where = "round={}".format(exam)
                 exam_rs = self.DB.SELECT("*", "exam", where, fetchone=True)
-                item_dict["examDate"] = exam_rs[3].strftime("%Y년 %m월 %d일")
-                item_dict["passDate"] = exam_rs[4].strftime("%Y년 %m월 %d일")
-                item_dict["submitDate"] = exam_rs[5].strftime("     %Y  년     %m  월    %d   일    ")
 
+                item_dict["examDate"] = exam_rs[4].strftime("%Y년 %m월 %d일")
+                item_dict["passDate"] = exam_rs[5].strftime("%Y년 %m월 %d일")
+                item_dict["submitDate"] = exam_rs[6].strftime("     %Y  년     %m  월    %d   일    ")
+
+                where = "exam={}".format(exam)
                 user_rs = self.DB.SELECT("id, name, RRN, phoneNumber, address, classNumber, classTime, temporaryClassNumber", "user", where)
 
                 user_query_list = ["id", "name", "RRN", "phoneNumber", "address", "classNumber", "classTime", "temporaryClassNumber"]
@@ -332,7 +333,7 @@ class Automation:
                     string = "{} (서명 또는 인)".format(item_dict["name"])
                     self.ws.cell(row=20, column=4).value = string
 
-                    self.wb.save(save_path + "\\{}_{}xlsx".format(item_dict["name"], doc_type))
+                    self.wb.save(save_path + "\\{}_{}.xlsx".format(item_dict["name"], doc_type))
                     self.wb.close()
 
             except:
@@ -363,7 +364,7 @@ class Automation:
                         category += "({}{})".format(license[0], license[2])
 
                 name = rows[1]
-                DOB = rows[2][:7]
+                DOB = rows[2][:6]
                 DOB = DOB[:2] + ". " + DOB[2:4] + ". " + DOB[4:]
                 address = rows[3]
                 phone = rows[4]
@@ -446,11 +447,108 @@ class Automation:
         os.system(self.imsi_workbook_path)
 
 
-
-
-        
     def examPassList(self, exam):
+        # NO	합격번호	시험시행기관	시험시행일	시험합격일	교육이수일자	교육시작일자	교육마감일자	대상구분	교육과정명	총교육시간	이론	실기	실습	자격/면허 취득 정보	자격면허코드	자격면허 번호	교부기관	교부기관코드	교부일자	주민등록번호	성명	주소	등록기준지(본적)	전화번호	핸드폰번호
+        # 1     2           3             4          5          6              7              8              9          10         11          12     13      14      15                16             17             18         19             20         21             22      23     24                 25          26
+        pass_list_path = r"D:\Master\files\화성시-남양노아요양보호사교육원-00회합격자명단_작성용.xlsx"
+        wb_pass = load_workbook(pass_list_path)
+        ws_pass = wb_pass.active
+        if not os.path.exists("D:\\남양노아요양보호사교육원\\경기도청\\03_시험준비 및 자격증발급관련\\{}회_제출용"):
+            os.makedirs("D:\\남양노아요양보호사교육원\\경기도청\\03_시험준비 및 자격증발급관련\\{}회_제출용")
+
+        if not os.path.exists("D:\\남양노아요양보호사교육원\\경기도청\\03_시험준비 및 자격증발급관련\\{}회_제출용\\화성시-남양노아요양보호사교육원-{}회합격자명단_제출용.xlsx".format(exam, exam)):
+            shutil.copy("D:\\Master\\files\\화성시-남양노아요양보호사교육원-00회합격자명단_제출용.xlsx", "D:\\남양노아요양보호사교육원\\경기도청\\03_시험준비 및 자격증발급관련\\{}회_제출용\\화성시-남양노아요양보호사교육원-{}회합격자명단_제출용.xlsx".format(exam, exam))
+        
+        save_path = "D:\\남양노아요양보호사교육원\\경기도청\\03_시험준비 및 자격증발급관련\\{}회_제출용\\화성시-남양노아요양보호사교육원-{}회합격자명단_작성용.xlsx".format(exam, exam)
+
+        where = "round={}".format(exam)
+        exam_rs = self.DB.SELECT("*", "exam", where, fetchone=True)
+
+        exam_dict = {}
+        exam_dict["round"] = exam_rs[0]
+        exam_dict["examDate"] = str(exam_rs[4]).replace("-", "")
+        exam_dict["passDate"] = str(exam_rs[5]).replace("-", "")
+
+        where = "exam={}".format(exam)
+        user_rs = self.DB.SELECT("name, RRN, phoneNumber, license, address, originAddress, classNumber, classTime, totalCreditHour, theoryCreditHour, practicalCreditHour, trainingCreditHour, temporaryClassNumber, exam", "user", where)
+
+        user_query_list = ["name", "RRN", "phoneNumber", "license", "address", "originAddress", "classNumber", "classTime", "totalCreditHour", "theoryCreditHour", "practicalCreditHour", "trainingCreditHour", "temporaryClassNumber", "exam"]
+        member_dict = {}
+        temp_class_list= []
+        class_dict = {}
+
+        for idx, rows in enumerate(user_rs, start=1):
+            for index in range(len(user_rs)):
+                member_dict[idx][user_query_list[index]] = rows[index]
+
+            ws_pass.cell(row=idx + 4, column=1).value = idx
+            ws_pass.cell(row=idx + 4, column=3).value = "한국의료보험인국가시험원"
+
+            exam_rs = self.DB.SELECT("examDate, passDate", "exam", "round={}".format(member_dict[idx]["exam"]), fetchone=True)
+            ws_pass.cell(row=idx + 4, column=4).value = str(exam_rs[0]).replace("-", "")
+            ws_pass.cell(row=idx + 4, column=5).value = str(exam_rs[1]).replace("-", "")
+
+            class_rs = self.DB.SELECT("endDate, startDate", "lecture", "classNumber='{}' and classTime='{}'".format(member_dict[idx]["classNumber"], member_dict[idx]["classTime"]), fetchone=True)
+            ws_pass.cell(row=idx + 4, column=6).value = str(class_rs[0]).replace("-", "")
+            ws_pass.cell(row=idx + 4, column=7).value = str(class_rs[1]).replace("-", "")
+
+            temp_class_rs = self.DB.SELECT("endDate", "temptraining", "classNumber='{}'".format(member_dict[idx]["temporaryClassNumber"]), fetchone=True)
+            ws_pass.cell(row=idx + 4, column=8).value = str(temp_class_rs[0]).replace("-", "")
+
+            string_license = "일반"
+            if member_dict[idx]["license"] != "일반":
+                if member_dict[idx]["license"] == "사회복지사":
+                    string_license = "자격증(간조)"
+                    license_code = "25811"
+
+                elif member_dict[idx]["license"] == "간호조무사":
+                    string_license = "자격증(간조)"
+                    license_code = "24260"
+
+                elif member_dict[idx]["license"] == "물리치료사":
+                    string_license = "자격증(물리)"
+                    license_code = "24135"
+
+                elif member_dict[idx]["license"] == "작업치료사":
+                    string_license = "자격증(작업)"
+                    license_code = "24120"
+                    
+                elif member_dict[idx]["license"] == "간호사":
+                    string_license = "자격증(간호)"
+                    license_code = "24060"
+
+                elif member_dict[idx]["license"] == "경력자":
+                    string_license = "경력자"
+            
+            ws_pass.cell(row=idx + 4, column=9).value = string_license
+            ws_pass.cell(row=idx + 4, column=10).value = "{}반 {}".format(member_dict[idx]["classTime"], member_dict[idx]["classNumber"])
+            ws_pass.cell(row=idx + 4, column=11).value = member_dict[idx]["totalCreditHour"]
+            ws_pass.cell(row=idx + 4, column=12).value = member_dict[idx]["theoryCreditHour"]
+            ws_pass.cell(row=idx + 4, column=13).value = member_dict[idx]["practicalCreditHour"]
+            ws_pass.cell(row=idx + 4, column=14).value = member_dict[idx]["trainingCreditHour"]
+
+            if member_dict[idx]["license"] != "일반" or member_dict[idx]["license"] != "경력자":
+                ws_pass.cell(row=idx + 4, column=15).value = member_dict[idx]["license"]
+                ws_pass.cell(row=idx + 4, column=16).value = license_code
+
+            ws_pass.cell(row=idx + 4, column=21).value = member_dict[idx]["RRN"]
+            ws_pass.cell(row=idx + 4, column=22).value = member_dict[idx]["name"]
+            ws_pass.cell(row=idx + 4, column=23).value = member_dict[idx]["address"]
+            ws_pass.cell(row=idx + 4, column=24).value = member_dict[idx]["originAddress"]
+
+            ws_pass.cell(row=idx + 4, column=24).value = member_dict[idx]["phoneNumber"]
+
+        wb_pass.save(save_path)
+        wb_pass.close()
+
+    def account_list(self, exam):
+        # seq, 이름, id, pw, 주민등록번호(생년월일), 전화번호(연락처), 주소, 가상계좌, 비고(입금완료)
         pass
+            
+
+
+
+
 
 
 if __name__ == '__main__':

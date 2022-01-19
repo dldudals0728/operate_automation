@@ -37,6 +37,7 @@ class workingImformation(QWidget):
 
         self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사.jpg"))
         self.setWindowTitle("업무 안내서")
+        # self.setFixedSize(1200, 800)
 
         self.main_box = QVBoxLayout()
         title = "<b style='font-size: 30px; font-weight: bold;'>남양노아요양보호사교육원 기관장 업무</b>"
@@ -47,9 +48,14 @@ class workingImformation(QWidget):
 
         self.script_box = QHBoxLayout()
         self.left_box = QVBoxLayout()
+        self.line_frame = QFrame()
+        self.line_frame.setFrameShape(QFrame.VLine)
+        self.line_frame.setFrameShadow(QFrame.Plain)
+        self.line_frame.setLineWidth(2)
         self.right_box = QVBoxLayout()
 
         self.script_box.addLayout(self.left_box)
+        self.script_box.addWidget(self.line_frame)
         self.script_box.addLayout(self.right_box)
 
         self.main_box.addLayout(self.script_box)
@@ -75,17 +81,54 @@ class workingImformation(QWidget):
     def initUI(self):
         rule_title = "<br><b style='font-size: 20px; font-weight: bold; color: blue;'>교육기관장의 교육 운영</b><br>"
 
-        rule_1_basic = """<b style='font-size: 20px; font-weight: bold; color: red; text-decoration: underline;'>업무 중 가장 우선순위는 \"원장님이 시키신 업무\"입니다!<br>
+        rule_0_basic = """<b style='font-size: 20px; font-weight: bold; color: red; text-decoration: underline;'>업무 중 가장 우선순위는 \"원장님이 시키신 업무\"입니다!<br>
         급한 일이 있을 경우, 원장님께 업무 후에 하겠다고 미리 말씀드려야 합니다!<br>"""
 
-        rule_2_normal = """<h3>출퇴근 시</h3>
-        <br>출근 후에는 전화를 기관으로 돌려 놓고 출퇴근 명부를 작성합니다.<br>
-        그 후 주간 출석부를 교실에 올려놓습니다.<span style='color: blue; text-decoration: underline;'>(전날 야간 출석부가 교실에 있는 경우 사무실로 가져옵니다.)</span><br>
+        rule_1_summary = """<b><h3>아침</h3>
+        <br>전화 돌리기 & 출근부 작성, 발열체크 ➜ 강의실 시건 해제 ➜ 출석부 교체(야간 → 주간) ➜ 청소상태 & 쓰레기통 확인<br>
+        ➜ 화장실 청소상태 & 휴지 여분 확인 ➜ 실내화 정리 ➜ 포털사이트 학원 검색 ➜ 프로그램 실행
+        <h3>점심</h3>
+        <br>강의실 전기장치 OFF(에어컨(선풍기) or 히터(온풍기)) ➜ 화장실 점검 ➜ 신발장 점검
+        <h3>저녁</h3>
+        <br>간판 불 ON ➜ 출석부 교체(주간 → 야간) ➜ 강의실 휴지통 및 책상 정리 & 환기 ➜ 화장실 점검 ➜ 신발장 점검<br>
+        ➜ 컴퓨터 전원 OFF and 스위치(모니터 뒤) OFF ➜ 전화 돌리기 ➜ 책상 정리정돈 ➜ <span style='color: red;'>★퇴근!!!★</span><b>
+        """
+
+        rule_2_work_start = """<h3>출근 시</h3>
+        <br>출근 후에는 <span style='text-decoration: underline;'>전화를 기관으로 돌려 놓고 출근부 작성과 발열체크</span>를 합니다.<br>
+        먼저 <span style='color: blue;'>강의실</span>입니다.<br>
+        그리고 강의실 문 <span style='text-decoration: underline;'>시건장치를 해제하여 문을 열고 주간 출석부를 교실에</span> 올려놓습니다.<br>
+        <span style='color: blue; text-decoration: underline;'>(전날 야간 출석부가 교실에 있는 경우 사무실로 가져옵니다.)</span><br>
+        그 후 <span style='text-decoration: underline;'>교실 쓰레기통과 청소상태를 확인</span>합니다.<br>
+        다음은 <span style='color: blue;'>화장실과 현관</span>입니다.<br>
+        화장실의 청소 상태와 <b>휴지 & 휴지 여분</b>이 충분한지 확인합니다.<br>
+        현관에서는 <span style='text-decoration: underline;'>신발장의 실내화를 한 쪽으로</span> 몰아놓습니다.<br>
+        컴퓨터를 키고 <b>남양노아간호학원</b>과 <b>남양노아요양보호사교육원</b>을 <span style='text-decoration: underline;'>검색</span>합니다.<br>
         그리고 프로그램을 실행시켜 <b style='color: red;'>오늘 해야 할 업무를 정리합니다.</b>"""
 
+        rule_3_lunch = """<h3>점심시간</h3>
+        <br>점심시간에는 강의실의 전기장치를 확인합니다.<br>
+        강의실의 <b style='color: red;'>에어컨(혹은 히터)를 끄고</b>, <span style='text-decoration: underline;'>화장실과 신발장을 한번 더 점검</span>합니다.
+        """
+
+        rule_4_work_end = """<h3>퇴근 전 시간</h3>
+        <br>날이 어두워지면 <span style='text-decoration: underline;'>간판의 불을 켭니다.</span><br>
+        수업이 끝나고 모두 퇴근하시면, <span style='text-decoration: underline;'>출석부를 교체(주간 → 야간)하면서 강의실의 휴지통 및 책상 배열을 정리정돈하고, 강의실을 <b>환기</b></span>합니다.<br>
+        마찬가지로 <span style='text-decoration: underline;'>화장실과 신발장을 점검</span>합니다.<br>
+        퇴근 시에는 <b style='color: red; text-decoration: underline;'>컴퓨터 전원을 끈 후에 모니터 뒤 스위치를 OFF 합니다.<br>
+        그리고 전화를 돌리고 책상 위에 개인정보 서류가 없도록 정리정돈한 후에 퇴근합니다.</b>
+        """
+
+        """
+        대체실습 확인 서류(사진)
+        """
+
         self.left_text_list.append(rule_title)
-        self.left_text_list.append(rule_1_basic)
-        self.left_text_list.append(rule_2_normal)
+        self.left_text_list.append(rule_0_basic)
+        self.left_text_list.append(rule_1_summary)
+        self.left_text_list.append(rule_2_work_start)
+        self.left_text_list.append(rule_3_lunch)
+        self.left_text_list.append(rule_4_work_end)
 
         for i in range(len(self.left_text_list)):
             self.left_text_list[i] = "<p style='font-size: 15px;'>" + self.left_text_list[i] + "</p>"
@@ -98,10 +141,11 @@ class workingImformation(QWidget):
         
         task_1_normal = """<h3>평상시(D-n)</h3>
         <br><b>전담 암무: 입학생 면담 및 데이터 입력</b><br>
-        우선적으로 개강이 예정되어 있는 반(ex. 10기 야간 또는 대체실습 12기)에 대한 데이터를 각각 기수 관리, 혹은 대체실습 탭에 자료를 입력합니다.<br> 
+        <b style='color: red; text-decoration: underline;'>(필수!)우선적으로 개강이 예정되어 있는 반(ex. 10기 야간 또는 대체실습 12기)에 대한 데이터를 각각 기수 관리, 혹은 대체실습 탭에 자료를 입력합니다.<b><br> 
         면담 후 입학자(원서를 작성한 자)는 DBMS에 정보를 입력합니다. <b style='color: red; text-decoration: underline;'>(오타가 나오지 않게 주의!)</b><br>
         수강생이 가져온 서류(사진, 주민등록등본, 기본증명서, 자격증 등)가 있다면 <b style='color: red; text-decoration: underline;'>먼저 DBMS에 신상정보를 입력한 후에 scan을 떠서 해당 수강생 폴더로 옮겨 줍니다.</b><br>
         <span style='color: blue;'>(DBMS에 학생 정보를 입력하게되면 해당 학생의 폴더가 생성됩니다!)</span><br>
+        <b style='color: red; text-decoration: underline;'>!주의!(파일 이름은 각각 [01기주간_이영민(or 01기야간_이영민) / 이영민_주민등록등본 / 이영민_기본증명서] 의 양식을 따릅니다!)</b><br>
         전화 상담 시에는 <b style='color: blue; text-decoration: underline;'>전화번호와 이름을 받은 후 문자안내</b>를 진행합니다."""
 
         task_2_ready = """<br><h3>개강 일주일 전(개강 D-7)</h3>
@@ -120,16 +164,24 @@ class workingImformation(QWidget):
 
         task_4_report = """<br><h3>개강 보고(개강 D+2)</h3>
         <br><b>경기도청 개강 보고</b><br>
-        <b style='font-size: 15; color: red; text-decoration: underline;'>경기도청에 개강을 보고하는 것은 실제 개강 후 2일 뒤 입니다.(업무보고 메뉴에 반영된 대로.)</b><br>
+        <b style='font-size: 15; color: red; text-decoration: underline;'>경기도청에 개강을 보고하는 것은 실제 개강 후 2일 뒤, 16시 입니다.(업무보고 메뉴에 반영된 대로.)</b><br>
         DBMS의 개강보고 명단 생성 작업을 통해 생성된 명단(Excel)을 복사하여 붙여넣기 함으로 번거로운 과정을 줄일 수 있습니다!.<br>
+        <b style='color: red; text-decoration: underline;'>만약 명단을 만들었는데 프로그램이 비정상적으로 종료된다면, 해당 기수에 모든 데이터가 입력되어 있는지 확인해주세요!</b><br>
         그 후에 <b style='color: red; text-decoration: underline;'>명단 수가 맞는지, 누락자 혹은 추가 인원이 없는지 꼭 확인한 후에 보고 메일을 발송해야 합니다!.<br>
         """
 
-        task_5_temp_open = """<br><h3>대체실습 실시 보고</h3>
+        task_5_temp_open = """<br><h3>대체실습 실시 보고와 수료보고</h3>
         <br><b>경기도청 대체실습 실시 보고</b><br>
         실시보고는 주중 개강반, 주말 개강반에 따라 나뉩니다.<br>
         대체실습 기수가 <b style='text-decoration: underline'>주중에 개강</b>할 시 <b style='color: blue;'>전날에 실시 보고를 올립니다.</b><br>
-        대체실습 기수가 <b style='text-decoration: underline'>주말에 개강</b>할 시 <b style='color: blue;'>전주 금요일에 실시 보고를 올립니다.</b><br>"""
+        대체실습 기수가 <b style='text-decoration: underline'>주말에 개강</b>할 시 <b style='color: blue;'>전주 금요일에 실시 보고를 올립니다.</b><br>
+        <br><br><b>경기도청 대체실습 수료 보고</b><br>
+        수료보고는 주중 개강반, 주말 개강반에 따라 나뉩니다.<br>
+        대체실습 기수가 <b style='text-decoration: underline'>주중에 종강</b>할 시 <b style='color: blue;'>다음날에 실시 보고를 올립니다.</b><br>
+        대체실습 기수가 <b style='text-decoration: underline'>주말에 종강</b>할 시 <b style='color: blue;'>다음주 월요일에 실시 보고를 올립니다.</b><br>"""
+
+        task_5_temp_picture = """<br><h3>대체실습 사진</h3>
+        <br><b>경기도청 대체실습 실시 보고</b><br>"""
 
         self.right_text_list.append(main_task_title)
         self.right_text_list.append(task_1_normal)
@@ -156,10 +208,12 @@ class ToDoList(QWidget):
         self.main_box = QVBoxLayout()
         self.setLayout(self.main_box)
 
+        self.base_path = "D:\\남양노아요양보호사교육원"
+
         self.deadline_label_list = []
         self.schedule_label_list = []
 
-        self.doc_type_list = ["개강보고", "대체실습 실시보고", "대체실습 수료보고", "응시원서 접수시작", "응시원서 접수마감", "시험 합격자 서류"]
+        self.doc_type_list = ["개강보고", "대체실습 실시보고", "대체실습 수료보고", "응시원서 접수시작", "응시원서 접수마감", "응시표 출력", "시험 합격자 서류"]
         self.deadline_dict = {}
         self.deadline_priority_list = []
         self.schedule_dict = {}
@@ -175,6 +229,11 @@ class ToDoList(QWidget):
 
         self.initUI()
         self.show()
+
+    def exam_pass_list(self, exam_round):
+        db.main.auto.makeDocument("교육수료증명서", exam_round)
+        db.main.auto.makeDocument("대체실습확인서", exam_round)
+        db.main.auto.makeDocument("요양보호사 자격증 발급,재발급 신청서", exam_round)
 
     def initUI(self):
         for doc_type in self.doc_type_list:
@@ -204,18 +263,18 @@ class ToDoList(QWidget):
                             due_date = rs[1] - datetime.timedelta(days=day)
                             self.deadline_dict[name] = {"마감일자":due_date.strftime("%m월 %d일")}
 
-                        dday = rs[-1] - day
+                        dday = rs[-1] + day
 
                     elif doc_type == "대체실습 수료보고":
                         name = "대체실습 " + rs[0] + " 수료보고"
                         week_day = rs[2].weekday()
                         if week_day >= 5:
-                            # 주말에 개강 시, 금요일에 보고
+                            # 주말에 종강 시, 다음 주 월요일에 보고
                             day = int((week_day - 7) * -1)
                             due_date = rs[2] + datetime.timedelta(days=day)
                             self.deadline_dict[name] = {"마감일자":due_date.strftime("%m월 %d일")}
                         else:
-                            # 주중에 개강 시, 개강 전날에 보고
+                            # 주중에 종강 시, 종강 다음날에 보고
                             day = 1
                             due_date = rs[2] + datetime.timedelta(days=day)
                             self.deadline_dict[name] = {"마감일자":due_date.strftime("%m월 %d일")}
@@ -232,36 +291,58 @@ class ToDoList(QWidget):
                         self.deadline_dict[name] = {"마감일자":rs[2].strftime("%m월 %d일")}
                         dday = rs[-1]
 
+                    elif doc_type == "응시표 출력":
+                        name = str(rs[0]) + "회 응시표 출력(D+2까지 출력 가능!)"
+                        self.deadline_dict[name] = {"마감일자":rs[3].strftime("%m월 %d일")}
+                        dday = rs[-1]
+
                     elif doc_type == "시험 합격자 서류":
                         name = str(rs[0]) + "회 합격자 서류"
-                        self.deadline_dict[name] = {"마감일자":rs[5].strftime("%m월 %d일")}
+                        self.deadline_dict[name] = {"마감일자":rs[6].strftime("%m월 %d일")}
                         dday = rs[-1]
+                        path = self.base_path + "\\경기도청\\03_시험준비 및 자격증발급관련\\{}회_제출용".format(str(rs[0]))
+                        write_file_path = path + "\\화성시-남양노아요양보호사교육원-{}회합격자명단_작성용.xlsx".format(str(rs[0]))
+                        submit_file_path = path + "\\화성시-남양노아요양보호사교육원-{}회합격자명단_작성용_제출용.xls".format(str(rs[0]))
+                        if not os.path.exists(path):
+                            os.makedirs(path)
+                        
+                        if not os.path.exists(write_file_path):
+                            origin_file = "D:\\Master\\files\\화성시-남양노아요양보호사교육원-00회합격자명단.xlsx"
+                            shutil.copy(origin_file, write_file_path)
+
+                        if not os.path.exists(submit_file_path):
+                            origin_file = "D:\\Master\\files\\화성시-남양노아요양보호사교육원-00회합격자명단.xlsx"
+                            shutil.copy(origin_file, submit_file_path)
 
                     self.deadline_dict[name]["D-day"] = dday
 
-        for i in range(len(self.deadline_dict) * 2):
+        if len(self.deadline_dict) != 0:
+            for i in range(len(self.deadline_dict) * 2):
+                self.deadline_label_list.append(QLabel(self))
+                self.deadline_label_list[i].setStyleSheet("font-size: 15px;")
+
+            self.deadline_priority_list = sorted(self.deadline_dict, key=lambda name: self.deadline_dict[name]["D-day"], reverse=True)
+
+            for idx, name in enumerate(self.deadline_priority_list):
+                idx *= 2
+                self.deadline_label_list[idx].setText(name + "<b style='color: blue; font-size: 15px;'> " + self.deadline_dict[name]["마감일자"] + " </b>")
+                self.deadline_label_list[idx + 1].setText("<b style='font-size: 15px;'>D-day : D" + str(self.deadline_dict[name]["D-day"]) + "</b>")
+                if int(self.deadline_dict[name]["D-day"]) > -3:
+                    if int(self.deadline_dict[name]["D-day"]) == 0:
+                        self.deadline_dict[name]["D-day"] = "D-day!"
+                        self.deadline_label_list[idx + 1].setText("<b style='font-size: 15px;'>D-day : " + str(self.deadline_dict[name]["D-day"]) + "</b>")
+                    self.deadline_label_list[idx + 1].setStyleSheet("color: red; font-weight: bold")
+                else:
+                    self.deadline_label_list[idx + 1].setStyleSheet("color: blue; font-weight: bold")
+
+            for lbl in self.deadline_label_list:
+                self.main_box.addWidget(lbl)
+
+                self.main_box.addWidget(self.label_schedule)
+        else:
             self.deadline_label_list.append(QLabel(self))
-            self.deadline_label_list[i].setStyleSheet("font-size: 15px;")
-
-        self.deadline_priority_list = sorted(self.deadline_dict, key=lambda name: self.deadline_dict[name]["D-day"], reverse=True)
-
-        for idx, name in enumerate(self.deadline_priority_list):
-            idx *= 2
-            self.deadline_label_list[idx].setText(name + "<b style='color: blue;'> " + self.deadline_dict[name]["마감일자"] + " </b>")
-            self.deadline_label_list[idx + 1].setText("<b>D-day : D" + str(self.deadline_dict[name]["D-day"]) + "</b>")
-            if int(self.deadline_dict[name]["D-day"]) > -3:
-                if int(self.deadline_dict[name]["D-day"]) == 0:
-                    self.deadline_dict[name]["D-day"] = "D-day!"
-                self.deadline_label_list[idx + 1].setStyleSheet("color: red; font-weight: bold")
-            else:
-                self.deadline_label_list[idx + 1].setStyleSheet("color: blue; font-weight: bold")
-
-        for lbl in self.deadline_label_list:
-            self.main_box.addWidget(lbl)
-
-
-        self.main_box.addWidget(self.label_schedule)
-
+            self.deadline_label_list[0].setStyleSheet("font-size: 15px;")
+            self.deadline_label_list[0].setText("마감 임박 일정이 존재하지 않습니다.")
 
         for doc_type in self.doc_type_list:
             res = db.main.dbPrograms.ddayCheck(doc_type, isDeadline=False)
@@ -290,18 +371,18 @@ class ToDoList(QWidget):
                             due_date = rs[1] - datetime.timedelta(days=day)
                             self.schedule_dict[name] = {"마감일자":due_date.strftime("%m월 %d일")}
 
-                        dday = rs[-1] - day
+                        dday = rs[-1] + day
 
                     elif doc_type == "대체실습 수료보고":
                         name = "대체실습 " + rs[0] + " 수료보고"
                         week_day = rs[2].weekday()
                         if week_day >= 5:
-                            # 주말에 개강 시, 금요일에 보고
+                            # 주말에 종강 시, 다음 주 월요일에 보고
                             day = int((week_day - 7) * -1)
                             due_date = rs[2] + datetime.timedelta(days=day)
                             self.schedule_dict[name] = {"마감일자":due_date.strftime("%m월 %d일")}
                         else:
-                            # 주중에 개강 시, 개강 전날에 보고
+                            # 주중에 종강 시, 종강 다음날에 보고
                             day = 1
                             due_date = rs[2] + datetime.timedelta(days=day)
                             self.schedule_dict[name] = {"마감일자":due_date.strftime("%m월 %d일")}
@@ -318,9 +399,14 @@ class ToDoList(QWidget):
                         self.schedule_dict[name] = {"마감일자":rs[2].strftime("%m월 %d일")}
                         dday = rs[-1]
 
+                    elif doc_type == "응시표 출력":
+                        name = str(rs[0]) + "회 응시표 출력"
+                        self.schedule_dict[name] = {"마감일자":rs[3].strftime("%m월 %d일")}
+                        dday = rs[-1] - 2
+
                     elif doc_type == "시험 합격자 서류":
                         name = str(rs[0]) + "회 합격자 서류"
-                        self.schedule_dict[name] = {"마감일자":rs[5].strftime("%m월 %d일")}
+                        self.schedule_dict[name] = {"마감일자":rs[6].strftime("%m월 %d일")}
                         dday = rs[-1]
 
                     self.schedule_dict[name]["D-day"] = dday
@@ -345,7 +431,6 @@ class ToDoList(QWidget):
 
 class report(QWidget):
     global db
-    global auto
 
     def __init__(self):
         super().__init__()
@@ -429,7 +514,7 @@ class report(QWidget):
         ans = QMessageBox.question(self, "확인", "{}기{} {} 데이터를 생성합니다.".format(class_number, class_time, self.doc_type), QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
             QMessageBox.about(self, "안내", "OK버튼을 눌러 작업을 진행해 주세요.\n생성이 완료되면 엑셀 파일이 열립니다.")
-            auto.report(self.doc_type, class_number, class_time)
+            db.main.auto.report(self.doc_type, class_number, class_time)
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Escape:
@@ -457,12 +542,12 @@ class report(QWidget):
             self.combobox_T.addItem("선택")
             self.combobox_T.addItem("주간")
             self.combobox_T.addItem("야간")
-            rs = db.main.dbPrograms.SELECT("classNumber", "lecture", orderBy="classNumber *1")
+            rs = db.main.dbPrograms.SELECT("classNumber", "lecture", where="TIMESTAMPDIFF(DAY, startDate, CURDATE()) < 7", orderBy="classNumber *1")
 
         else:
             self.label_time.setText("대체실습")
             self.combobox_T.setEnabled(False)
-            rs = db.main.dbPrograms.SELECT("classNumber", "temptraining", orderBy="classNumber *1")
+            rs = db.main.dbPrograms.SELECT("classNumber", "temptraining", where="TIMESTAMPDIFF(DAY, startDate, CURDATE()) < 7", orderBy="classNumber *1")
         
         if rs == "error":
             QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
@@ -1859,6 +1944,8 @@ class mainLayout(QWidget, DB):
         self.select_list_temptraining = ["기수", "시작일", "종료일", "수여일"]
         self.select_list_temptrainingteacher = ["기수", "강사"]
 
+        self.auto = Automation()
+
         self.today = datetime.date.today()
 
         vbox = QVBoxLayout()
@@ -1929,47 +2016,7 @@ class mainLayout(QWidget, DB):
         vbox.addLayout(first_hbox)
         vbox.addLayout(second_hbox)
 
-        self.setLayout(vbox)
-        self.checkTodoList()
-
-    def checkTodoList(self):
-        schedule_lecture = {}
-        schedule_temporary = {}
-        schedule_exam = {}
-        "select *, TIMESTAMPDIFF(DAY, startDate, CURDATE()) as 'D-day' from lecture where TIMESTAMPDIFF(DAY, startDate, CURDATE()) <= 0;"
-
-        check_deadline = {"lecture":{}, "temporary":{}, "exam":{}}
-
-        rs = self.dbPrograms.SELECT("classNumber, classTime, startDate, endDate", "lecture")
-        for rows in rs:
-            diff_start = (self.today - rows[2]).days
-            diff_end = (self.today - rows[3]).days
-            if diff_end < 0:
-                continue
-            schedule_lecture[str(rows[0]) + str(rows[1])] = {"시작일":rows[2], "종료일":rows[3], "start d-day":diff_start, "end d-day":diff_end}
-            if diff_start <= 7 and diff_start >= 0:
-                check_deadline["lecture"]
-
-        rs = self.dbPrograms.SELECT("classNumber, startDate, endDate", "temptraining")
-        for rows in rs:
-            diff_start = (self.today - rows[1]).days
-            diff_end = (self.today - rows[2]).days
-            if diff_end < 0:
-                continue
-            schedule_temporary["대체실습 " + str(rows[0])] = {"시작일":rows[1], "종료일":rows[2], "start d-day":diff_start, "end d-day":diff_end}
-
-        rs = self.dbPrograms.SELECT("round, startAcceptance, endAcceptance, passDate", "exam")
-        for rows in rs:
-            diff_accept_start = (self.today - rows[1]).days
-            diff_accept_end = (self.today - rows[2]).days
-            diff_pass = (self.today - rows[3]).days
-            if diff_pass < 0:
-                continue
-            schedule_exam[str(rows[0]) + "회"] = {"응시원서 접수시작":rows[1], "응시원서 접수종료":rows[2], "합격자 발표":rows[3], "accept start d-day":diff_accept_start, "accept end d-day":diff_accept_end, "pass d-day":diff_accept_pass}
-        
-
-
-        
+        self.setLayout(vbox)        
 
     def selected(self):
         if self.current_table == "user":
@@ -2152,11 +2199,11 @@ class mainLayout(QWidget, DB):
         self.R_category.clear()
         if Refresh == False:
             if source.text() == "수강생 관리":
-                self.R_category.addItem("ID")
                 self.R_category.addItem("이름")
-                self.R_category.addItem("자격증")
                 self.R_category.addItem("기수/반")
                 self.R_category.addItem("대체실습")
+                self.R_category.addItem("ID")
+                self.R_category.addItem("자격증")
                 self.R_category.addItem("시험회차")
                 self.R_category.addItem("SQL")
 
@@ -2187,11 +2234,11 @@ class mainLayout(QWidget, DB):
 
         elif Refresh == True:
             if self.current_table == "user":
-                self.R_category.addItem("ID")
                 self.R_category.addItem("이름")
-                self.R_category.addItem("자격증")
                 self.R_category.addItem("기수/반")
                 self.R_category.addItem("대체실습")
+                self.R_category.addItem("ID")
+                self.R_category.addItem("자격증")
                 self.R_category.addItem("시험회차")
                 self.R_category.addItem("SQL")
 
@@ -2810,8 +2857,9 @@ if __name__ == '__main__':
     update = UPDATE()
     batch = batchUpdate()
     report_gov = report()
-    auto = Automation()
     wi = workingImformation()
+
+
 
     # scanner = scanFile()
     sys.exit(app.exec_())

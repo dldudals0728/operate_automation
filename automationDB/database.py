@@ -170,6 +170,10 @@ class DB():
                     comparison = "endAcceptance"
                     sql = "select *, TIMESTAMPDIFF(DAY, endAcceptance, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, endAcceptance, CURDATE()) <= 0"
 
+                elif doc_type == "응시표 출력":
+                    comparison = "announceDate"
+                    sql = "select *, TIMESTAMPDIFF(DAY, announceDate, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, announceDate, CURDATE()) <= 2"
+
                 elif doc_type == "시험 합격자 서류":
                     comparison = "submitDate"
                     sql = "select *, TIMESTAMPDIFF(DAY, submitDate, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, submitDate, CURDATE()) <= 0"
