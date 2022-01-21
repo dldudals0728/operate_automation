@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # Non-UTF-8 code starting with '\xeb' in file 해결방법: file 의 encoding을 utf-8로 바꾸는 것을 소스코드 맨 위에 추가.
 import pymysql
+import os
+import datetime
 
 class DB():
     def __init__(self):
@@ -182,7 +184,7 @@ class DB():
                     sql +=  " and TIMESTAMPDIFF(DAY, {}, CURDATE()) >= -7".format(comparison)
                     # 합격자 명단 + 3서류
                 else:
-                    sql +=  " and TIMESTAMPDIFF(DAY, {}, CURDATE()) < -7".format(comparison)
+                    sql +=  " and TIMESTAMPDIFF(DAY, {}, CURDATE()) > -100".format(comparison)
 
                 sql += ";"
                 curs.execute(sql)
@@ -196,7 +198,20 @@ class DB():
             print(e)
             return "error"
 
+    def dumpDatabase(self):
+        today = datetime.date.today().strftime("%Y-%m-%d")
+        os.chdir(r"C:\Bitnami\wampstack-8.1.1-0\mariadb\bin")
+        os.system("mysqldump -u root -p123456 --databases ac > C:/Bitnami/wampstack-8.1.1-0/mariadb/bin/database_dump/ac_bak_{}.sql".format(today))
+
+    def applyDatabase(self, dump_file_path):
+        os.chdir(r"C:\Bitnami\wampstack-8.1.1-0\mariadb\bin")
+        os.system("mysqldump -u root -p123456 --databases ac < C:/Bitnami/wampstack-8.1.1-0/mariadb/bin/database_dump/{}.sql".format(dump_file_path))
+
 
         # finally는 DBGUI에서 구현!
         # finally:
         #     self.conn.close()
+
+if __name__ == "__main__":
+    db = DB()
+    db.dumpDatabase()

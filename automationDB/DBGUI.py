@@ -37,46 +37,109 @@ class workingImformation(QWidget):
 
         self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사.jpg"))
         self.setWindowTitle("업무 안내서")
+        self.setStyleSheet("background-color: #FFFFF0;")
         # self.setFixedSize(1200, 800)
 
         self.main_box = QVBoxLayout()
+        self.setLayout(self.main_box)
+        self.main_tab = QTabWidget()
+        self.tab_basic = QWidget()
+        self.tab_report_summary = QWidget()
+
+        self.main_tab.addTab(self.tab_basic, "기관 운영")
+        self.main_tab.addTab(self.tab_report_summary, "개강과 종강")
+
+        self.main_tab.layout = QVBoxLayout(self)
+        self.tab_basic.layout = QVBoxLayout(self)
+        self.tab_report_summary.layout = QVBoxLayout(self)
+
+        
+
+        self.scroll_area = QScrollArea()
+        self.label_rule = QLabel(self)
+        self.scroll_area.setWidget(self.label_rule)
+
+        self.tab_basic.layout.addWidget(self.scroll_area)
+
+        self.main_tab.setLayout(self.main_tab.layout)
+        self.tab_basic.setLayout(self.tab_basic.layout)
+        self.tab_report_summary.setLayout(self.tab_report_summary.layout)
+        
+
+
         title = "<b style='font-size: 30px; font-weight: bold;'>남양노아요양보호사교육원 기관장 업무</b>"
         self.label_title = QLabel(title, self)
-        self.main_box.addWidget(self.label_title)
-        this_is_auto_program = """이 프로그램은 <b>데이터베이스에 입력된 정보를 기반으로 파일을 자동으로 생성하는 프로그램</b>입니다!<br>
+        this_is_auto_program = """이 프로그램은 <b style='font-size: 15px; color: red; text-decoration: underline;'>데이터베이스에 입력된 정보를 기반으로 파일을 자동으로 생성하는 프로그램</b>입니다!<br>
         데이터를 입력하실 때 오타가 나지 않도록 조심해주세요!"""
+        self.label_warning = QLabel(this_is_auto_program, self)
 
-        self.script_box = QHBoxLayout()
-        self.left_box = QVBoxLayout()
+        self.main_box.addWidget(self.label_title)
+        self.main_box.addWidget(self.label_warning)
+
         self.line_frame = QFrame()
-        self.line_frame.setFrameShape(QFrame.VLine)
+        self.line_frame.setFrameShape(QFrame.HLine)
         self.line_frame.setFrameShadow(QFrame.Plain)
         self.line_frame.setLineWidth(2)
-        self.right_box = QVBoxLayout()
 
-        self.script_box.addLayout(self.left_box)
-        self.script_box.addWidget(self.line_frame)
-        self.script_box.addLayout(self.right_box)
+        self.main_box.addWidget(self.line_frame)
 
-        self.main_box.addLayout(self.script_box)
-        self.setLayout(self.main_box)
+        self.main_box.addWidget(self.main_tab)
+        
 
-        # self.btn_next = QPushButton("다음", self)
-        # self.btn_pre = QPushButton("이전", self)
-        # self.current_page = QLineEdit(self)
-        # self.total_page = QLabel("10", self)
+        self.label_list = []
 
-        self.right_text_list = []
-        self.right_label_list = []
-        self.left_text_list = []
-        self.left_label_list = []
+        self.rule_text_list = []
+        self.report_summary_text_list = []
+
+        self.page_dict = {1:"", 2:"", 3:"", 4:"", 5:"", 6:"", 7:"", 8:"", 9:"", 10:""}
+
+
+        self.btn_next = QPushButton("다음", self)
+        self.btn_pre = QPushButton("이전", self)
+        self.current_page = QLabel("1 / 10", self)
+
+        self.btn_next.clicked.connect(self.next_page)
+        self.btn_pre.clicked.connect(self.pre_page)
+
+        self.func_layout = QHBoxLayout()
+        self.func_layout.addWidget(self.current_page)
+        self.func_layout.addStretch(1)
+        self.func_layout.addWidget(self.btn_pre)
+        self.func_layout.addWidget(self.btn_next)
+
+        self.main_box.addLayout(self.func_layout)
+        
         self.page_number = 1
 
         self.show()
         self.initUI()
 
     def next_page(self):
+        return
+        if self.page_number == 10:
+            return
+        self.labelClear()
         self.page_number += 1
+        for i in range(len(self.page_dict[self.page_number])):
+            self.label_list[i].setText(self.page_dict[self.page_number][i])
+
+        self.current_page.setText("{} / 10".format(self.page_number))
+
+    def pre_page(self):
+        return
+        if self.page_number == 1:
+            return
+        self.labelClear()
+        self.page_number -= 1
+        for i in range(len(self.page_dict[self.page_number])):
+            self.label_list[i].setText(self.page_dict[self.page_number][i])
+
+        self.current_page.setText("{} / 10".format(self.page_number))
+
+
+    def labelClear(self):
+        for label in self.label_list:
+            label.setText("")
 
     def initUI(self):
         rule_title = "<br><b style='font-size: 20px; font-weight: bold; color: blue;'>교육기관장의 교육 운영</b><br>"
@@ -85,7 +148,7 @@ class workingImformation(QWidget):
         급한 일이 있을 경우, 원장님께 업무 후에 하겠다고 미리 말씀드려야 합니다!<br>"""
 
         rule_1_summary = """<b><h3>아침</h3>
-        <br>전화 돌리기 & 출근부 작성, 발열체크 ➜ 강의실 시건 해제 ➜ 출석부 교체(야간 → 주간) ➜ 청소상태 & 쓰레기통 확인<br>
+        <br>간판 불 OFF ➜ 전화 돌리기 & 출근부 작성, 발열체크 ➜ 강의실 시건 해제 ➜ 출석부 교체(야간 → 주간) ➜ 청소상태 & 쓰레기통 확인<br>
         ➜ 화장실 청소상태 & 휴지 여분 확인 ➜ 실내화 정리 ➜ 포털사이트 학원 검색 ➜ 프로그램 실행
         <h3>점심</h3>
         <br>강의실 전기장치 OFF(에어컨(선풍기) or 히터(온풍기)) ➜ 화장실 점검 ➜ 신발장 점검
@@ -123,25 +186,26 @@ class workingImformation(QWidget):
         대체실습 확인 서류(사진)
         """
 
-        self.left_text_list.append(rule_title)
-        self.left_text_list.append(rule_0_basic)
-        self.left_text_list.append(rule_1_summary)
-        self.left_text_list.append(rule_2_work_start)
-        self.left_text_list.append(rule_3_lunch)
-        self.left_text_list.append(rule_4_work_end)
+        self.rule_text_list.append(rule_title)
+        self.rule_text_list.append(rule_0_basic)
+        self.rule_text_list.append(rule_1_summary)
+        self.rule_text_list.append(rule_2_work_start)
+        self.rule_text_list.append(rule_3_lunch)
+        self.rule_text_list.append(rule_4_work_end)
 
-        for i in range(len(self.left_text_list)):
-            self.left_text_list[i] = "<p style='font-size: 15px;'>" + self.left_text_list[i] + "</p>"
-            self.left_label_list.append(QLabel())
-            self.left_label_list[i].setText(self.left_text_list[i])
-            self.left_box.addWidget(self.left_label_list[i])
+        for i in range(len(self.rule_text_list)):
+            self.rule_text_list[i] = "<p style='font-size: 15px;'>" + self.rule_text_list[i] + "</p>"
+            # self.label_list[i].setText(self.rule_text_list[i])
+            # self.page_dict[1].append(self.rule_text_list[i])
+            self.page_dict[1] += self.rule_text_list[i]
+
 
 
         main_task_title = "<br><b style='font-size: 20px; font-weight: bold; color: blue;'>개강과 종강</b>"
         
         task_1_normal = """<h3>평상시(D-n)</h3>
         <br><b>전담 암무: 입학생 면담 및 데이터 입력</b><br>
-        <b style='color: red; text-decoration: underline;'>(필수!)우선적으로 개강이 예정되어 있는 반(ex. 10기 야간 또는 대체실습 12기)에 대한 데이터를 각각 기수 관리, 혹은 대체실습 탭에 자료를 입력합니다.<b><br> 
+        <b style='color: red; text-decoration: underline;'>(필수!)우선적으로 개강이 예정되어 있는 반(ex. 10기 야간 또는 대체실습 12기)에 대한 데이터를 각각 기수 관리, 혹은 대체실습 탭에 자료를 입력합니다.</b><br> 
         면담 후 입학자(원서를 작성한 자)는 DBMS에 정보를 입력합니다. <b style='color: red; text-decoration: underline;'>(오타가 나오지 않게 주의!)</b><br>
         수강생이 가져온 서류(사진, 주민등록등본, 기본증명서, 자격증 등)가 있다면 <b style='color: red; text-decoration: underline;'>먼저 DBMS에 신상정보를 입력한 후에 scan을 떠서 해당 수강생 폴더로 옮겨 줍니다.</b><br>
         <span style='color: blue;'>(DBMS에 학생 정보를 입력하게되면 해당 학생의 폴더가 생성됩니다!)</span><br>
@@ -183,18 +247,19 @@ class workingImformation(QWidget):
         task_5_temp_picture = """<br><h3>대체실습 사진</h3>
         <br><b>경기도청 대체실습 실시 보고</b><br>"""
 
-        self.right_text_list.append(main_task_title)
-        self.right_text_list.append(task_1_normal)
-        self.right_text_list.append(task_2_ready)
-        self.right_text_list.append(task_3_open)
-        self.right_text_list.append(task_4_report)
-        self.right_text_list.append(task_5_temp_open)
+        self.report_summary_text_list.append(main_task_title)
+        self.report_summary_text_list.append(task_1_normal)
+        self.report_summary_text_list.append(task_2_ready)
+        self.report_summary_text_list.append(task_3_open)
+        self.report_summary_text_list.append(task_4_report)
+        self.report_summary_text_list.append(task_5_temp_open)
 
-        for i in range(len(self.right_text_list)):
-            self.right_text_list[i] = "<p style='font-size: 15px;'>" + self.right_text_list[i] + "</p>"
-            self.right_label_list.append(QLabel(self))
-            self.right_label_list[i].setText(self.right_text_list[i])
-            self.right_box.addWidget(self.right_label_list[i])
+        for i in range(len(self.report_summary_text_list)):
+            self.report_summary_text_list[i] = "<p style='font-size: 15px;'>" + self.report_summary_text_list[i] + "</p>"
+            # self.page_dict[2].append(self.report_summary_text_list[i])
+            self.page_dict[2] += self.report_summary_text_list[i]
+
+        self.label_rule.setText(self.page_dict[1])
 
 class ToDoList(QWidget):
     global db
@@ -223,7 +288,7 @@ class ToDoList(QWidget):
         self.label_deadline.setStyleSheet("font-size: 20px; font-weight: bold; color: green; text-decoration: underline;")
         #  border-style: solid; border-width: 2px;
         self.main_box.addWidget(self.label_deadline)
-        self.label_schedule = QLabel("남은 일정", self)
+        self.label_schedule = QLabel("남은 일정(~D-100)", self)
         self.label_schedule.setStyleSheet("font-size: 20px; font-weight: bold; color: green; text-decoration: underline;")
         self.main_box.addWidget(self.label_schedule)
 
@@ -331,7 +396,12 @@ class ToDoList(QWidget):
                     if int(self.deadline_dict[name]["D-day"]) == 0:
                         self.deadline_dict[name]["D-day"] = "D-day!"
                         self.deadline_label_list[idx + 1].setText("<b style='font-size: 15px;'>D-day : " + str(self.deadline_dict[name]["D-day"]) + "</b>")
-                    self.deadline_label_list[idx + 1].setStyleSheet("color: red; font-weight: bold")
+                        self.deadline_label_list[idx + 1].setStyleSheet("color: red; font-weight: bold")
+
+                    elif int(self.deadline_dict[name]["D-day"]) > 0:
+                        self.deadline_dict[name]["D-day"] = "D+" + str(self.deadline_dict[name]["D-day"])
+                        self.deadline_label_list[idx + 1].setText("<b style='font-size: 15px;'>D-day : " + str(self.deadline_dict[name]["D-day"]) + "</b>")
+                        self.deadline_label_list[idx + 1].setStyleSheet("color: purple; font-weight: bold")
                 else:
                     self.deadline_label_list[idx + 1].setStyleSheet("color: blue; font-weight: bold")
 
@@ -425,8 +495,6 @@ class ToDoList(QWidget):
 
     def showEvent(self, QShowEvent):
         pass
-
-        
 
 
 class report(QWidget):
@@ -787,6 +855,8 @@ class batchUpdate(QWidget):
         self.setWindowTitle("시험 회차 변경")
         self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사.jpg"))
 
+        self.mode = "시험회차"
+
     def initUI(self):
         self.box = QVBoxLayout()
         self.setLayout(self.box)
@@ -811,11 +881,10 @@ class batchUpdate(QWidget):
         box_top.addWidget(self.label_T)
         box_top.addWidget(self.combobox_T)
 
-        self.label_exam = QLabel("시험 회차")
-        box_middle.addWidget(self.label_exam)
-        self.text_exam = QLineEdit(self)
-        box_middle.addWidget(self.text_exam)
-        self.text_exam.returnPressed.connect(self.batch)
+        self.label_exam_or_temp = QLabel("시험 회차")
+        box_middle.addWidget(self.label_exam_or_temp)
+        self.combobox_exam_or_temp = QComboBox(self)
+        box_middle.addWidget(self.combobox_exam_or_temp)
 
         self.btn_update = QPushButton("일괄 변경", self)
         self.btn_update.clicked.connect(self.batch)
@@ -826,38 +895,86 @@ class batchUpdate(QWidget):
         box_bottom.addWidget(self.btn_cancel)
 
     def batch(self):
-        if self.combobox_N.currentText() == "선택" or self.combobox_T.currentText() == "선택" or not(self.text_exam.text().isdigit()) or self.text_exam.text() == "":
+        if self.combobox_N.currentText() == "선택" or self.combobox_T.currentText() == "선택" or self.combobox_exam_or_temp.currentText() == "선택":
             QMessageBox.warning(self, "오류", "입력값 오류")
             return
 
-        query = "exam={}".format(self.text_exam.text())
-        where = "classNumber='{}' and classTime='{}'".format(self.combobox_N.currentText(), self.combobox_T.currentText())
+        if self.mode == "시험회차 일괄 변경":
+            exam = self.combobox_exam_or_temp.currentText()
+            exam = exam[:-1]
+            query = "exam={}".format(exam)
+            where = "classNumber='{}' and classTime='{}'".format(self.combobox_N.currentText(), self.combobox_T.currentText())
 
-        db.main.dbPrograms.UPDATE("user", query, where)
-        QMessageBox.about(self, "완료", "데이터를 성공적으로 수정했습니다.")
-        db.main.showTable(Refresh=True)
-        db.main.textInfo.clear()
+            res = db.main.dbPrograms.UPDATE("user", query, where)
+            if res == "error":
+                QMessageBox.warning(self, "오류", "데이터 수정에 오류가 발생했습니다!")
+            else:
+                QMessageBox.about(self, "완료", "데이터를 성공적으로 수정했습니다.")
+            db.main.showTable(Refresh=True)
+            db.main.textInfo.clear()
+            
+        elif self.mode == "대체실습 일괄 변경":
+            temp_class_number = self.combobox_exam_or_temp.currentText()
+            query = "temporaryClassNumber={}".format(temp_class_number)
+            where = "classNumber='{}' and classTime='{}'".format(self.combobox_N.currentText(), self.combobox_T.currentText())
+
+            res = db.main.dbPrograms.UPDATE("user", query, where)
+            if res == "error":
+                QMessageBox.warning(self, "오류", "데이터 수정에 오류가 발생했습니다!")
+            else:
+                QMessageBox.about(self, "완료", "데이터를 성공적으로 수정했습니다.")
+            db.main.showTable(Refresh=True)
+            db.main.textInfo.clear()
+
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Escape:
+            self.close()
+        
+        elif e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
+            self.batch()
 
     def showEvent(self, QShowEvent):
         self.combobox_N.clear()
         self.combobox_T.clear()
-        self.text_exam.clear()
+        self.combobox_exam_or_temp.clear()
         self.class_num_list = []
         
         self.combobox_N.addItem("선택")
         self.combobox_T.addItem("선택")
         self.combobox_T.addItem("주간")
         self.combobox_T.addItem("야간")
+        self.combobox_exam_or_temp.addItem("선택")
 
-        rs = db.main.dbPrograms.SELECT("classNumber, classTime", "lecture", orderBy="classNumber *1")
+        rs = db.main.dbPrograms.SELECT("classNumber, classTime", "lecture", where="TIMESTAMPDIFF(DAY, startDate, CURDATE()) < 90", orderBy="classNumber *1")
         if rs == "error":
             QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
+            self.close()
         else:
             for row in rs:
                 if not row[0] in self.class_num_list:
                     self.class_num_list.append(row[0])
             
             self.combobox_N.addItems(self.class_num_list)
+
+        if self.mode == "시험회차 일괄 변경":
+            self.label_exam_or_temp.setText("시험 회차")
+            rs = db.main.dbPrograms.SELECT("round", "exam", "TIMESTAMPDIFF(DAY, startAcceptance, CURDATE()) < 90", orderBy="round *1")
+            if rs == "error":
+                QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
+                self.close()
+            else:
+                for row in rs:            
+                    self.combobox_exam_or_temp.addItem(str(row[0]) + "회")
+
+        elif self.mode == "대체실습 일괄 변경":
+            self.label_exam_or_temp.setText("대체실습")
+            rs = db.main.dbPrograms.SELECT("classNumber", "temptraining", "TIMESTAMPDIFF(DAY, startDate, CURDATE()) < 30", orderBy="classNumber *1")
+            if rs == "error":
+                QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
+                self.close()
+            else:
+                for row in rs:            
+                    self.combobox_exam_or_temp.addItem(str(row[0]))
 
 class UPDATE(QWidget):
     # 새 창을 띄우기 위해 서로 global로 연결
@@ -2727,13 +2844,21 @@ class DBMS(QMainWindow):
         read_data.setStatusTip("폴더를 스켄하여 데이터베이스에 데이터를 삽입합니다.")
         read_data.triggered.connect(self.scan_show)
         
-        batch_data = QAction("시험회차 일괄 수정", self)
-        batch_data.setShortcut("Ctrl+Shift+D")
-        batch_data.setStatusTip("특정 기수, 반의 시험 회차를 일괄적으로 설정합니다.")
-        batch_data.triggered.connect(self.batch_show)
+        edit_batch = QMenu("일괄 변경", self)
+        batch_data_exam = QAction("시험회차 일괄 변경", self)
+        batch_data_exam.setStatusTip("특정 기수, 반의 시험 회차를 일괄적으로 설정합니다.")
+
+        batch_data_temp = QAction("대체실습 일괄 변경", self)
+        batch_data_temp.setStatusTip("특정 기수, 반의 대체실습 기수를 일괄적으로 변경합니다.")
+
+        batch_data_exam.triggered.connect(self.batch_show)
+        batch_data_temp.triggered.connect(self.batch_show)
+
+        edit_batch.addAction(batch_data_exam)
+        edit_batch.addAction(batch_data_temp)
 
         mod_data = QAction("데이터 수정", self)
-        mod_data.setShortcut("Ctrl+D")
+        mod_data.setShortcut("F2")
         mod_data.setStatusTip("테이블에서 선택된 데이터를 수정합니다.")
         mod_data.triggered.connect(self.UPDATE_show)
 
@@ -2753,7 +2878,7 @@ class DBMS(QMainWindow):
         menu_file.addAction(file_exit)  # menu 등록(액션 추가)
         menu_view.addAction(view_stat)
 
-        menu_edit.addAction(batch_data)
+        menu_edit.addMenu(edit_batch)
         menu_edit.addAction(mod_data)
         menu_edit.addAction(del_data)
 
@@ -2791,6 +2916,8 @@ class DBMS(QMainWindow):
         report_gov.show()
 
     def batch_show(self):
+        source = self.sender()
+        batch.mode = source.text()
         batch.show()
 
     def UPDATE_show(self):
