@@ -29,42 +29,35 @@ from PIL import Image
 
 from automation import Automation
 
-class workingImformation(QWidget):
+class WorkingInformation(QWidget):
     global db
 
     def __init__(self):
         super().__init__()
 
-        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사.jpg"))
+        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
         self.setWindowTitle("업무 안내서")
         self.setStyleSheet("background-color: #FFFFF0;")
-        # self.setFixedSize(1200, 800)
+        self.setGeometry(400, 200, 1200, 800)
 
         self.main_box = QVBoxLayout()
-        self.setLayout(self.main_box)
+
         self.main_tab = QTabWidget()
-        self.tab_basic = QWidget()
-        self.tab_report_summary = QWidget()
+        self.tab_list = []
+        self.scroll_area_list = []
+        self.tab_title_list = ["기관 운영", "개강과 종강", "대체실습", "국시원 - 응시원서 접수 및 응시표 출력", "국시원 - 합격자 명단"]
 
-        self.main_tab.addTab(self.tab_basic, "기관 운영")
-        self.main_tab.addTab(self.tab_report_summary, "개강과 종강")
+        # tab 생성
+        for i in range(len(self.tab_title_list)):
+            self.tab_list.append(QWidget())
 
-        self.main_tab.layout = QVBoxLayout(self)
-        self.tab_basic.layout = QVBoxLayout(self)
-        self.tab_report_summary.layout = QVBoxLayout(self)
+        # main tab에 tab 추가 (with title)
+        for tab, title in zip(self.tab_list, self.tab_title_list):
+            self.main_tab.addTab(tab, title)
 
-        
-
-        self.scroll_area = QScrollArea()
-        self.label_rule = QLabel(self)
-        self.scroll_area.setWidget(self.label_rule)
-
-        self.tab_basic.layout.addWidget(self.scroll_area)
-
-        self.main_tab.setLayout(self.main_tab.layout)
-        self.tab_basic.setLayout(self.tab_basic.layout)
-        self.tab_report_summary.setLayout(self.tab_report_summary.layout)
-        
+        # 각 tab의 layout을 QVBoxLayout으로 지정
+        for tab in self.tab_list:
+            tab.layout = QVBoxLayout(self)        
 
 
         title = "<b style='font-size: 30px; font-weight: bold;'>남양노아요양보호사교육원 기관장 업무</b>"
@@ -81,17 +74,18 @@ class workingImformation(QWidget):
         self.line_frame.setFrameShadow(QFrame.Plain)
         self.line_frame.setLineWidth(2)
 
-        self.main_box.addWidget(self.line_frame)
+        self.main_box.addWidget(self.line_frame)        
 
-        self.main_box.addWidget(self.main_tab)
-        
+        self.text_list = []
 
+        self.page_list = []
         self.label_list = []
 
-        self.rule_text_list = []
-        self.report_summary_text_list = []
+        for i in range(len(self.tab_list)):
+            self.page_list.append("")
+            self.label_list.append(QLabel(self))
 
-        self.page_dict = {1:"", 2:"", 3:"", 4:"", 5:"", 6:"", 7:"", 8:"", 9:"", 10:""}
+
 
 
         self.btn_next = QPushButton("다음", self)
@@ -111,8 +105,25 @@ class workingImformation(QWidget):
         
         self.page_number = 1
 
-        self.show()
+
         self.initUI()
+
+        for i in range(len(self.tab_list)):
+            self.scroll_area_list.append(QScrollArea())
+            self.scroll_area_list[i].setStyleSheet("background-color: white;")
+            self.label_list[i].setText(self.page_list[i])
+            self.label_list[i].setStyleSheet("""QLabel[class="middle_title"] {
+                font-size: 25px;
+            }
+            """)
+            self.scroll_area_list[i].setWidget(self.label_list[i])
+            self.tab_list[i].layout.addWidget(self.scroll_area_list[i])
+
+            self.tab_list[i].setLayout(self.tab_list[i].layout)
+
+        self.main_box.addWidget(self.main_tab)
+        self.setLayout(self.main_box)
+        self.show()
 
     def next_page(self):
         return
@@ -137,17 +148,13 @@ class workingImformation(QWidget):
         self.current_page.setText("{} / 10".format(self.page_number))
 
 
-    def labelClear(self):
-        for label in self.label_list:
-            label.setText("")
-
     def initUI(self):
-        rule_title = "<br><b style='font-size: 20px; font-weight: bold; color: blue;'>교육기관장의 교육 운영</b><br>"
+        rule_title = "<br><b style='font-size: 20px; font-weight: bolder; color: blue;'>교육기관장의 교육 운영</b><br>"
 
         rule_0_basic = """<b style='font-size: 20px; font-weight: bold; color: red; text-decoration: underline;'>업무 중 가장 우선순위는 \"원장님이 시키신 업무\"입니다!<br>
         급한 일이 있을 경우, 원장님께 업무 후에 하겠다고 미리 말씀드려야 합니다!<br>"""
 
-        rule_1_summary = """<b><h3>아침</h3>
+        rule_1_summary = """<b><b>아침</b>
         <br>간판 불 OFF ➜ 전화 돌리기 & 출근부 작성, 발열체크 ➜ 강의실 시건 해제 ➜ 출석부 교체(야간 → 주간) ➜ 청소상태 & 쓰레기통 확인<br>
         ➜ 화장실 청소상태 & 휴지 여분 확인 ➜ 실내화 정리 ➜ 포털사이트 학원 검색 ➜ 프로그램 실행
         <h3>점심</h3>
@@ -157,27 +164,27 @@ class workingImformation(QWidget):
         ➜ 컴퓨터 전원 OFF and 스위치(모니터 뒤) OFF ➜ 전화 돌리기 ➜ 책상 정리정돈 ➜ <span style='color: red;'>★퇴근!!!★</span><b>
         """
 
-        rule_2_work_start = """<h3>출근 시</h3>
-        <br>출근 후에는 <span style='text-decoration: underline;'>전화를 기관으로 돌려 놓고 출근부 작성과 발열체크</span>를 합니다.<br>
+        rule_2_work_start = """<b>출근 시</b>
+        <br>출근 후에는 <b>전화를 기관으로 돌려 놓고 출근부 작성과 발열체크</b>를 합니다.<br>
         먼저 <span style='color: blue;'>강의실</span>입니다.<br>
-        그리고 강의실 문 <span style='text-decoration: underline;'>시건장치를 해제하여 문을 열고 주간 출석부를 교실에</span> 올려놓습니다.<br>
+        그리고 강의실 문 <b>시건장치를 해제하여 문을 열고 주간 출석부를 교실에</b> 올려놓습니다.<br>
         <span style='color: blue; text-decoration: underline;'>(전날 야간 출석부가 교실에 있는 경우 사무실로 가져옵니다.)</span><br>
-        그 후 <span style='text-decoration: underline;'>교실 쓰레기통과 청소상태를 확인</span>합니다.<br>
+        그 후 <b>교실 쓰레기통과 청소상태를 확인</b>합니다.<br>
         다음은 <span style='color: blue;'>화장실과 현관</span>입니다.<br>
         화장실의 청소 상태와 <b>휴지 & 휴지 여분</b>이 충분한지 확인합니다.<br>
         현관에서는 <span style='text-decoration: underline;'>신발장의 실내화를 한 쪽으로</span> 몰아놓습니다.<br>
         컴퓨터를 키고 <b>남양노아간호학원</b>과 <b>남양노아요양보호사교육원</b>을 <span style='text-decoration: underline;'>검색</span>합니다.<br>
         그리고 프로그램을 실행시켜 <b style='color: red;'>오늘 해야 할 업무를 정리합니다.</b>"""
 
-        rule_3_lunch = """<h3>점심시간</h3>
+        rule_3_lunch = """<b>점심시간</b>
         <br>점심시간에는 강의실의 전기장치를 확인합니다.<br>
-        강의실의 <b style='color: red;'>에어컨(혹은 히터)를 끄고</b>, <span style='text-decoration: underline;'>화장실과 신발장을 한번 더 점검</span>합니다.
+        강의실의 <b style='color: red;'>에어컨(혹은 히터)를 끄고</b>, <b>화장실과 신발장을 한번 더 점검</b>합니다.
         """
 
-        rule_4_work_end = """<h3>퇴근 전 시간</h3>
-        <br>날이 어두워지면 <span style='text-decoration: underline;'>간판의 불을 켭니다.</span><br>
+        rule_4_work_end = """<b>퇴근 전 시간</b>
+        <br>날이 어두워지면 <span style='color: blue;'>간판의 불을 켭니다.</span><br>
         수업이 끝나고 모두 퇴근하시면, <span style='text-decoration: underline;'>출석부를 교체(주간 → 야간)하면서 강의실의 휴지통 및 책상 배열을 정리정돈하고, 강의실을 <b>환기</b></span>합니다.<br>
-        마찬가지로 <span style='text-decoration: underline;'>화장실과 신발장을 점검</span>합니다.<br>
+        마찬가지로 <b>화장실과 신발장을 점검</b>합니다.<br>
         퇴근 시에는 <b style='color: red; text-decoration: underline;'>컴퓨터 전원을 끈 후에 모니터 뒤 스위치를 OFF 합니다.<br>
         그리고 전화를 돌리고 책상 위에 개인정보 서류가 없도록 정리정돈한 후에 퇴근합니다.</b>
         """
@@ -186,55 +193,109 @@ class workingImformation(QWidget):
         대체실습 확인 서류(사진)
         """
 
-        self.rule_text_list.append(rule_title)
-        self.rule_text_list.append(rule_0_basic)
-        self.rule_text_list.append(rule_1_summary)
-        self.rule_text_list.append(rule_2_work_start)
-        self.rule_text_list.append(rule_3_lunch)
-        self.rule_text_list.append(rule_4_work_end)
+        self.text_list = []
 
-        for i in range(len(self.rule_text_list)):
-            self.rule_text_list[i] = "<p style='font-size: 15px;'>" + self.rule_text_list[i] + "</p>"
-            # self.label_list[i].setText(self.rule_text_list[i])
-            # self.page_dict[1].append(self.rule_text_list[i])
-            self.page_dict[1] += self.rule_text_list[i]
+        self.text_list.append(rule_title)
+        self.text_list.append(rule_0_basic)
+        self.text_list.append(rule_1_summary)
+        self.text_list.append(rule_2_work_start)
+        self.text_list.append(rule_3_lunch)
+        self.text_list.append(rule_4_work_end)
+
+        for i in range(len(self.text_list)):
+            self.text_list[i] = "<p style='font-size: 15px;'>" + self.text_list[i] + "</p>"
+            self.page_list[0] += self.text_list[i]
 
 
 
-        main_task_title = "<br><b style='font-size: 20px; font-weight: bold; color: blue;'>개강과 종강</b>"
+        main_task_title = "<br><b style='font-size: 20px; font-weight: bolder; color: blue;'>개강과 종강</b>"
+
+        file_lotation = """<br><b>파일 경로</b><span style='color: blue;'>기본 경로는 'D:\남양노아요양보호사교육원' 입니다.</span>
+        <br>수강생: 교육생 관리 - 각 기수 / 시간표 및 출석부(저장): 경기도청 - 00_개강준비서류 - 기수 폴더 - 시간표<br>
+        수강료 수납대장 & 사물함 주기: 교육생 관리 - 각 기수 / 커리큘럼: 경기도청 - 00_개강준비서류 / 개강보고서: 경기도청 - 01_개강보고 - 기수<br>
+        """
+
+        task_0_summary = """<b><b class="middle_title">SUMMARY</b>
+        <br>DBMS에 개강 반, 대체실습 반 데이터 입력 ➜ 상담 후 DBMS에 입력 ➜ 생성된 폴더에 스캔 자료 저장 ➜ 시간표 받기 & 검토<br>
+        ➜ 수강료 수납대장[File - New - 수강료 수납대장] & 사물함 주기[File - New - 사물함 주기] ➜ 개강보고 명단 작성[File - 경기도청 - 개강보고]<br>
+        ➜ 커리큘럼 만들기 ➜ 개강보고(D+2) ➜ 출석부 만들기[File - 경기도청 - 출석부]</b><br>
+        """
         
-        task_1_normal = """<h3>평상시(D-n)</h3>
+        task_1_normal = """<b class="middle_title">평상시(D-n)</b>
         <br><b>전담 암무: 입학생 면담 및 데이터 입력</b><br>
         <b style='color: red; text-decoration: underline;'>(필수!)우선적으로 개강이 예정되어 있는 반(ex. 10기 야간 또는 대체실습 12기)에 대한 데이터를 각각 기수 관리, 혹은 대체실습 탭에 자료를 입력합니다.</b><br> 
         면담 후 입학자(원서를 작성한 자)는 DBMS에 정보를 입력합니다. <b style='color: red; text-decoration: underline;'>(오타가 나오지 않게 주의!)</b><br>
         수강생이 가져온 서류(사진, 주민등록등본, 기본증명서, 자격증 등)가 있다면 <b style='color: red; text-decoration: underline;'>먼저 DBMS에 신상정보를 입력한 후에 scan을 떠서 해당 수강생 폴더로 옮겨 줍니다.</b><br>
+        <b style='color: red; font-size: 17px;'>자격증은 추후에 경기도청에 보내야 할 서류이기 때문에, 흐릿하면 안되고, 선명한 스캔 파일이어야 합니다!!!</b><br>
         <span style='color: blue;'>(DBMS에 학생 정보를 입력하게되면 해당 학생의 폴더가 생성됩니다!)</span><br>
         <b style='color: red; text-decoration: underline;'>!주의!(파일 이름은 각각 [01기주간_이영민(or 01기야간_이영민) / 이영민_주민등록등본 / 이영민_기본증명서] 의 양식을 따릅니다!)</b><br>
         전화 상담 시에는 <b style='color: blue; text-decoration: underline;'>전화번호와 이름을 받은 후 문자안내</b>를 진행합니다."""
 
-        task_2_ready = """<br><h3>개강 일주일 전(개강 D-7)</h3>
+        task_2_ready = """<br><b class="middle_title">개강 일주일 전(개강 D-7)</b>
         <br><b>개강보고 시간표 정리 및 검토</b><br>
-        개강보고 시에 사용되는 시간표는 원장님께 받을 수 있습니다. 개강 시간표를 받은 후에 시간이 맞는지 아래의 기준을 통해 확인합니다.<br>
-        <span style='color: blue;'>일반[이론: 80 / 실기: 80], 사회복지사[이론: 32 / 실기: 10], 간호조무사, 물리치료사, 작업치료사[이론: 31 / 실기: 11], 간호사[이론: 26 / 실기: 6], 경력자[이론: 80 / 실기: 40]</span><br>
+        개강보고 시에 사용되는 시간표는 원장님께 받을 수 있습니다. 개강 시간표를 받은 후에 시간, 날짜 등이 맞는지 아래의 기준을 통해 확인합니다.<br>
+        <span style='color: blue;'>일반[이론: 80 / 실기: 80], 사회복지사[이론: 32 / 실기: 10]<br>
+        간호조무사, 물리치료사, 작업치료사[이론: 31 / 실기: 11], 간호사[이론: 26 / 실기: 6], 경력자[이론: 80 / 실기: 40]</span><br>
         """
 
-        task_3_open = """<br><h3>개강 전(개강 D-1)</h3>
-        <br><b>수강료 납부 대장 및 사물함 주기 만들기</b><br>
+        task_3_open = """<br><b class="middle_title">개강 전(개강 D-1)</b>
+        <br><b>수강료 납부 대장 및 사물함 주기, 커리큘럼 만들기</b><br>
         수강료 납부 대장은 원장님이 볼 서류 1부, 경기도청 자료 1부, 총 2부로 나뉩니다.<br>
         원장님이 보는 서류에는 <b style='color: blue;'>학생별 납입 여부, 납입 방법, 납입 금액, 책 수령 여부 등을 표기</b>합니다.<br>
-        사물함 주기는 주간반은 노란색, 야간반은 보라색이며 기수대로 출력하여 사물함에 부착 합니다.<br>
+        ([File - New - 수강료 수납대장])<br>
+        <span style='color: blue;'>사물함 주기는 주간반은 노란색, 야간반은 보라색이며 기수대로 출력하여 사물함에 부착 합니다.</span><br>
+        ([File - New - 사물함 주기])<br>
         <b style='text-decoration: underline'>이 때 책값을 납부한 사람은 사물함에 책을 넣어주고 납부대장에 표기 합니다.</b><br>
+        커리큘럼은 기존에 있는 파일에서 기수, 기간, 시간표만 수정하여 만들 수 있습니다. <span style='color: blue;'>*커리큘럼의 시간표에는 강사님들의 이름을 지워야 합니다!*</span><br>
         <b style='color: greeen;, text-decoration: underline;'>개강보고를 하기 전까지 해당 기수의 입학을 인정할 수 있습니다.(개강보고는 개강 후 3일(D+2)에 진행합니다.</b>"""
 
-        task_4_report = """<br><h3>개강 보고(개강 D+2)</h3>
-        <br><b>경기도청 개강 보고</b><br>
+        task_4_report = """<br><b class="middle_title">개강 보고(개강 D+2)</b>
+        <br><b>경기도청 개강 보고와 출석부 출력</b><br>
         <b style='font-size: 15; color: red; text-decoration: underline;'>경기도청에 개강을 보고하는 것은 실제 개강 후 2일 뒤, 16시 입니다.(업무보고 메뉴에 반영된 대로.)</b><br>
-        DBMS의 개강보고 명단 생성 작업을 통해 생성된 명단(Excel)을 복사하여 붙여넣기 함으로 번거로운 과정을 줄일 수 있습니다!.<br>
+        DBMS의 [File - 경기도청 - 개강보고]를 통해 생성된 명단(Excel)을 복사하여 붙여넣기 함으로 번거로운 과정을 줄일 수 있습니다!<br>
         <b style='color: red; text-decoration: underline;'>만약 명단을 만들었는데 프로그램이 비정상적으로 종료된다면, 해당 기수에 모든 데이터가 입력되어 있는지 확인해주세요!</b><br>
         그 후에 <b style='color: red; text-decoration: underline;'>명단 수가 맞는지, 누락자 혹은 추가 인원이 없는지 꼭 확인한 후에 보고 메일을 발송해야 합니다!.<br>
+        <b style='color: blue; text-decoration: underline;'>경기도청에 보고가 완료되었다면, 더이상 인원이 추가되거나 삭제될 수 없습니다.</b><br>
+        <b>보고가 완료된 후에는 출석부를 만들어 출력합니다.</b>[File - 경기도청 - 출석부]로 <span style='color: blue;'>출석부 명단을 생성할 수 있습니다.</span><br>
         """
 
-        task_5_temp_open = """<br><h3>대체실습 실시 보고와 수료보고</h3>
+        task_5_finish = """<br><b class="middle_title">개강 후 & 종강</b><br>
+        <br>개강 후에는 <b style='color: red;'>받지 않은 서류, 사진, 혹은 흐릿한 자격증 등이 있는지 파악하고, 빠른 시일 내에 받아 DBMS를 최신화 시키고 스캔한 서류를 보관합니다.</b><br>
+        <b style='color: red;'>또, 개강 후에는 수강생들의 수강료 수납 여부, 서류 제출 여부등을 파악하여 빠른 시일 내에 작업을 완료해야 합니다!</b><br>
+        종강 시에는 따로 종강보고가 없습니다.<br>
+        종강이 다가올 경우 종강하는 기수의 학생들에게 <b>대체실습 기수를 부여</b>해야 합니다.<br>
+        각 선생님들의 대체실습 가능 여부(주간 or 야간 or 주말)를 판단하여 적절한 반에 배치하고, <b style='color: red; text-decoration: underline;'>DBMS에 대체실습 란에 대체실습 기수를 작성합니다.</b><br>
+        """
+
+        self.text_list = []
+
+        self.text_list.append(main_task_title)
+        self.text_list.append(file_lotation)
+        self.text_list.append(task_0_summary)
+        self.text_list.append(task_1_normal)
+        self.text_list.append(task_2_ready)
+        self.text_list.append(task_3_open)
+        self.text_list.append(task_4_report)
+        self.text_list.append(task_5_finish)
+
+        for i in range(len(self.text_list)):
+            self.text_list[i] = "<p style='font-size: 15px;'>" + self.text_list[i] + "</p>"
+            self.page_list[1] += self.text_list[i]
+
+        
+        temp_training_title = "<br><b style='font-size: 20px; font-weight: bolder; color: blue;'>대체실습</b>"
+
+        file_lotation = """<br><b>파일 경로</b><span style='color: blue;'>기본 경로는 'D:\남양노아요양보호사교육원\경기도청\\02_대체실습' 입니다.</span>
+        <br>일정 및 명단: 01_1. 대체실습 일정 및 명단 / 실시, 수료 보고: 01. 실시수료보고 / 대체실습 출석부: 평가감상출석서식<br>
+        """
+
+        temp_0_summary = """<b><b>SUMMARY</b>
+        <br>DBMS에 대체실습 기수 입력 ➜ 대체실습 일정 만들기 + 기존 인원 추가!<br>
+        ➜ 대체실습 실시 보고서 작성[File - New - 경기도청 보고 - 대체실습 실시보고] & 검토 + 기존 인원 추가! ➜ 대체실습 출석부 생성<br>
+        대체실습 보고서(사진) 만들기 ➜ 대체실습 수료보고[File - New - 경기도청 보고 - 대체실습 수료보고]
+        """
+
+        temp_1_report = """<br><b>대체실습 실시 보고와 수료보고</b>
         <br><b>경기도청 대체실습 실시 보고</b><br>
         실시보고는 주중 개강반, 주말 개강반에 따라 나뉩니다.<br>
         대체실습 기수가 <b style='text-decoration: underline'>주중에 개강</b>할 시 <b style='color: blue;'>전날에 실시 보고를 올립니다.</b><br>
@@ -244,22 +305,110 @@ class workingImformation(QWidget):
         대체실습 기수가 <b style='text-decoration: underline'>주중에 종강</b>할 시 <b style='color: blue;'>다음날에 실시 보고를 올립니다.</b><br>
         대체실습 기수가 <b style='text-decoration: underline'>주말에 종강</b>할 시 <b style='color: blue;'>다음주 월요일에 실시 보고를 올립니다.</b><br>"""
 
-        task_5_temp_picture = """<br><h3>대체실습 사진</h3>
-        <br><b>경기도청 대체실습 실시 보고</b><br>"""
+        temp_2_open = """<br><b>대체실습 개강 전</b>
+        <br><b>대체실습 시작 전(D-2)</b><br>
+        대체실습이 시작되기 전에, 원장님과의 상의를 통하여 대체실습 기수를 만들어야 합니다.<br>
+        주간, 야간, 주말반 중에서 각 학생들이 참여할 수 있는 반을 조사하여 대체실습 기수를 생성합니다.<br>
+        <b style='color: red; text-decoration: underline;'>생성된 대체실습 기수의 시작날짜, 종료날짜를 DBMS에 기입합니다.</b><br>
+        그 후 대체실습 <b>일정</b>을 작성해야 합니다. <b>대체실습 일정은 각 요일별로 참여하는 인원의 명단을 의미합니다.(파일 있음)</b><br>
+        <span style='color: blue;'>(* 일정을 작성하는 이유는, 자격증반은 대체실습이 1일이고, 일반반은 그렇지 않기 때문입니다.)<br>
+        <br>일정을 작성하고 대체실습 실시 보고서를 작성합니다.([File - New - 경기도청 보고 - 대체실습 실시보고]) 이 때 <b style='color: red;'>교수진의 이름이 정확한지, 명단, 날짜 등은 정확한지 자세한 검토가 필요합니다!</b></span><br>
+        <b style='color: red; font-size: 18px;'>!중요: 별도로 기존에 대체실습을 진행하시다가 넘어오신 분들은 일정 및 보고서에 ★따로★ 추가해야 합니다!</b><br>
+        보고서가 작성이 완료되면 대체실습이 시작하기 하루 전날(D-1)에 보고합니다.<br>
+        대체실습 실시보고가 끝나면 대체실습 출석부를 작성하여 출력합니다.<br>
+        """
 
-        self.report_summary_text_list.append(main_task_title)
-        self.report_summary_text_list.append(task_1_normal)
-        self.report_summary_text_list.append(task_2_ready)
-        self.report_summary_text_list.append(task_3_open)
-        self.report_summary_text_list.append(task_4_report)
-        self.report_summary_text_list.append(task_5_temp_open)
+        temp_3_picture = """<br><b>대체실습 사진</b>
+        <br><b>날짜 별 대체실습 사진 첨부</b><br>
+        대체실습을 진행하는 날마다, 4장의 사진이 필요합니다.<br>
+        사진은 <span style='color: blue;'>1. 전체 인원과 교수, 2. 환기 사진, 3. 시험보는 인원</span>이 찍혀있어야 합니다.<br>
+        <span style='color: blue;'>* 시험을 보는 인원은 자격증 반인 경우입니다. 해당 학생이 시험보는 사진을 게시합니다.<br>
+        * 시험보는 인원이 없다면, 환기 2장, 전체 사진 2장(앞, 뒤)으로 합니다.</span><br>
+        그 후 대체실습 사진을 모아 서류를 작성합니다.<br>
+        """
 
-        for i in range(len(self.report_summary_text_list)):
-            self.report_summary_text_list[i] = "<p style='font-size: 15px;'>" + self.report_summary_text_list[i] + "</p>"
-            # self.page_dict[2].append(self.report_summary_text_list[i])
-            self.page_dict[2] += self.report_summary_text_list[i]
+        temp_4_end = """<br><b>대체실습 수료</b>
+        <br><b>대체실습 수료보고</b><br>
+        대체실습의 수료보고는 요일에 따라 나뉩니다.<br>
+        <b style='text-decoration: underline'>주중에 종강</b>할 시 <b style='color: blue;'>다음날에 실시 보고를 올립니다.</b><br>
+        <b style='text-decoration: underline'>주말에 종강</b>할 시 <b style='color: blue;'>다음주 월요일에 실시 보고를 올립니다.</b><br>
+        ([File - New - 경기도청 보고 - 대체실습 수료보고])<br>
+        <b style='color: red; font-size: 18px;'>!중요: 별도로 기존에 대체실습을 진행하시다가 넘어오신 분들은 일정 및 보고서에 ★따로★ 추가해야 합니다!</b><br>
+        """
 
-        self.label_rule.setText(self.page_dict[1])
+        self.text_list = []
+
+        self.text_list.append(temp_training_title)
+        self.text_list.append(file_lotation)
+        self.text_list.append(temp_0_summary)
+        self.text_list.append(temp_1_report)
+        self.text_list.append(temp_2_open)
+        self.text_list.append(temp_3_picture)
+        self.text_list.append(temp_4_end)
+
+        for i in range(len(self.text_list)):
+            self.text_list[i] = "<p style='font-size: 15px;'>" + self.text_list[i] + "</p>"
+            self.page_list[2] += self.text_list[i]
+
+        exam_start_title = "<br><b style='font-size: 20px; font-weight: bolder; color: blue;'>국시원 - 응시원서 접수 및 응시표 출력</b>"
+
+        file_lotation = """<br><b>파일 경로</b><span style='color: blue;'>: 'D:\남양노아요양보호사교육원\경기도청\\03_시험준비 및 자격증발급관련' 입니다.</span>
+        """
+
+        exam_0_summary = """<b><b>SUMMARY</b>
+        <br>DBMS에 대체실습 기수 입력 ➜ 대체실습 일정 만들기 + 기존 인원 추가!<br>
+        ➜ 대체실습 실시 보고서 작성[File - New - 경기도청 보고 - 대체실습 실시보고] & 검토 + 기존 인원 추가! ➜ 대체실습 출석부 생성<br>
+        대체실습 보고서(사진) 만들기 ➜ 대체실습 수료보고[File - New - 경기도청 보고 - 대체실습 수료보고]
+        """
+
+        exam_1_acceptance = """<br><b>응시원서 접수</b>
+        <br><b>응시원서 접수 및 결제</b><br>
+        <b style='color: red; text-decoration: underline;'>응시원서 접수기간 전에(D-n), 해당 시험에 시험을 보는 사람들의 시험 회차를 입력해야 합니다.</b><br>
+        응시원서 접수기간 전 주에(D-7) <span style='color: blue;'>응시접수 명단[File - 국시원 - 응시접수 명단]을 생성</span>한 후에 해당 인원들 중 <b style='color: red;'>국시원 ID, PW가 있는 사람은 미리 입력해 줍니다.</b><br>
+        <b style='color: blue;'>프로그램으로 기입된 사람들은 시험회차가 해당 회차로 입력된 사람들입니다. 재시험인 분들도 모두 시험 회차를 해당 회차로 변경해야 합니다!</b><br>
+        국시원 ID, PW 파악이 완료되면, 나머지 사람들의 회원가입을 진행합니다. (id: noacw00000 / pw: noa3564626*, id는 순서대로 입력합니다.(1 -> 2 -> 3 -> ...))<br>
+        국시원 계정 파악이 완료된 후 응시원서 접수를 시작합니다. 응시원서 접수 시 <b style='color: red; text-deocration: underline'>생성된 가상계좌번호를 응시접수 명단에 기입해야 합니다!(중요)</b><br>
+        파악한 가상계좌로 응시원서비를 모두 입금하고, 비고란에 입금 여부를 작성하여 파악하기 쉽게 합니다.<br>
+        <span style='color: red;'><span style='text-decoration: underline;'>응시수수료 감면 대상자</span>에 해당하는 사람들을 체크하여 별도로 표기하고, 추후에 환불해줍니다.</span><br>
+        """
+
+        exam_2_print = """<br><b>응시표 출력</b>
+        <br><b>응시표 출력</b><br>
+        응시표 출력 기간이 되면 응시표를 출력할 수 있습니다. 처음 하루, 이틀은 사용자가 많아 국시원 홈페이지가 마비될 수 있습니다.<br>
+        저장된 응시접수 명단에 있는 ID와 PW로 로그인하여 응시표를 출력합니다. <b style='color: red;'>응시표를 출력할 때는 <span style='text-decoration: underline;'>'첫장'</span>만 출력합니다!(응시 지역까지만 출력)</b><br>
+        추가적으로 코로나 자가문진표를 <b>인원수대로</b>출력하여 모두에게 전달할 수 있도록 준비합니다.<br>        
+        """
+
+        exam_3_exam = """<br><b>시험 응시</b>
+        <br><b>교육수료증명서, 대체실습확인서, 요양보호사 자격증 발급, 재발급, 신청서 작성</b><br>
+        시험 응시일이 지나면 각 학생들의 <span style='text-decoration: underline;'>서류</span>를 작성해야 합니다.<br>
+        <span style='text-decoration: underline;'>(교육수료증명서, 대체실습확인서, 요양보호사 자격증 발급, 재발급, 신청서)</span><br>
+        
+        
+        """
+
+        self.text_list = []
+
+        self.text_list.append(exam_start_title)
+        self.text_list.append(file_lotation)
+        self.text_list.append(exam_0_summary)
+        self.text_list.append(exam_1_acceptance)
+        self.text_list.append(exam_3_exam)
+
+        for i in range(len(self.text_list)):
+            self.text_list[i] = "<p style='font-size: 15px;'>" + self.text_list[i] + "</p>"
+            self.page_list[3] += self.text_list[i]
+
+        exam_3_pass = """<br><b>시험 합격 및 자격증 발급</b>
+        <br>시험 합격자 발표일이 되면, 응시접수 명단을 이용하여 개인 계정으로 로그인 한 후, 시험 합격 여부를 조사하여 시험에 떨어진 인원이 있는지 파악합니다.<br>
+        그 다음 합격자 명단을 생성합니다.[File - 국시원 - 합격자 명단] 합격자 명단 파일을 생성하고, <span style='color: red; text-decoration: underline;'>불합격된 인원은 명단에서 제외시킵니다.</span><br>
+        <b style='color: red; font-size: 20px; text-decoration: underline;'>(중요!) 시험을 이전 회차에 응시하고 합격했지만, 건강검진 등의 이유로 자격증 신청이 미루어진 사람도 합격자 명단에 "수기로" 기입합니다!</b><br>
+        """
+
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Escape:
+            self.close()
+
 
 class ToDoList(QWidget):
     global db
@@ -267,10 +416,25 @@ class ToDoList(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사.jpg"))
+        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
         self.setWindowTitle("업무 보고")
+        self.setGeometry(700, 300, 200, 400)
 
-        self.main_box = QVBoxLayout()
+        self.main_box = QHBoxLayout()
+        self.deadline_box = QVBoxLayout()
+        self.schedule_box = QVBoxLayout()
+        self.line_frame = QFrame()
+        self.line_frame.setFrameShape(QFrame.VLine)
+        self.line_frame.setFrameShadow(QFrame.Plain)
+        self.line_frame.setLineWidth(2)
+
+        self.main_box.addLayout(self.deadline_box)
+        self.main_box.addWidget(self.line_frame)        
+        self.main_box.addLayout(self.schedule_box)
+
+        # self.main_box.setAlignment(Qt.AlignTop)
+        self.deadline_box.setAlignment(Qt.AlignTop)
+        self.schedule_box.setAlignment(Qt.AlignTop)
         self.setLayout(self.main_box)
 
         self.base_path = "D:\\남양노아요양보호사교육원"
@@ -279,6 +443,10 @@ class ToDoList(QWidget):
         self.schedule_label_list = []
 
         self.doc_type_list = ["개강보고", "대체실습 실시보고", "대체실습 수료보고", "응시원서 접수시작", "응시원서 접수마감", "응시표 출력", "시험 합격자 서류"]
+        self.todo_dict = {"개강보고":"""
+        시간표 받기 & 검토 ➜ 수강료 수납대장 & 사물함 주기 ➜ 커리큘럼 만들기 ➜ 개강보고(D+2) ➜ 출석부 만들기""", "대체실습 실시보고":"""
+        DBMS에 대체실습 기수 입력 ➜ 대체실습 일정(명단) 만들기 + 기존 인원 추가 ➜ 대체실습 실시 보고서 작성 & 검토 + 기존 인원 추가! ➜ 대체실습 출석부 생성""", "대체실습 수료보고":"""
+        대체실습 보고서(사진) 만들기 ➜ 대체실습 수료보고""", "응시원서 접수시작":"""""", "응시원서 접수마감":"""""", "응시표 출력":"""""", "시험 합격자 서류":""""""}
         self.deadline_dict = {}
         self.deadline_priority_list = []
         self.schedule_dict = {}
@@ -287,10 +455,10 @@ class ToDoList(QWidget):
         self.label_deadline = QLabel("마감 임박 업무", self)
         self.label_deadline.setStyleSheet("font-size: 20px; font-weight: bold; color: green; text-decoration: underline;")
         #  border-style: solid; border-width: 2px;
-        self.main_box.addWidget(self.label_deadline)
+        self.deadline_box.addWidget(self.label_deadline)
         self.label_schedule = QLabel("남은 일정(~D-100)", self)
         self.label_schedule.setStyleSheet("font-size: 20px; font-weight: bold; color: green; text-decoration: underline;")
-        self.main_box.addWidget(self.label_schedule)
+        self.schedule_box.addWidget(self.label_schedule)
 
         self.initUI()
         self.show()
@@ -382,10 +550,11 @@ class ToDoList(QWidget):
                     self.deadline_dict[name]["D-day"] = dday
 
         if len(self.deadline_dict) != 0:
-            for i in range(len(self.deadline_dict) * 2):
+            for i in range(len(self.deadline_dict) * 3):
                 self.deadline_label_list.append(QLabel(self))
                 self.deadline_label_list[i].setStyleSheet("font-size: 15px;")
 
+            # 마감이 임박한 업무들을 앞으로 정렬
             self.deadline_priority_list = sorted(self.deadline_dict, key=lambda name: self.deadline_dict[name]["D-day"], reverse=True)
 
             for idx, name in enumerate(self.deadline_priority_list):
@@ -396,23 +565,27 @@ class ToDoList(QWidget):
                     if int(self.deadline_dict[name]["D-day"]) == 0:
                         self.deadline_dict[name]["D-day"] = "D-day!"
                         self.deadline_label_list[idx + 1].setText("<b style='font-size: 15px;'>D-day : " + str(self.deadline_dict[name]["D-day"]) + "</b>")
-                        self.deadline_label_list[idx + 1].setStyleSheet("color: red; font-weight: bold")
+                        self.deadline_label_list[idx + 1].setStyleSheet("color: red; font-weight: bold;")
 
                     elif int(self.deadline_dict[name]["D-day"]) > 0:
                         self.deadline_dict[name]["D-day"] = "D+" + str(self.deadline_dict[name]["D-day"])
                         self.deadline_label_list[idx + 1].setText("<b style='font-size: 15px;'>D-day : " + str(self.deadline_dict[name]["D-day"]) + "</b>")
-                        self.deadline_label_list[idx + 1].setStyleSheet("color: purple; font-weight: bold")
+                        self.deadline_label_list[idx + 1].setStyleSheet("color: purple; font-weight: bold;")
                 else:
-                    self.deadline_label_list[idx + 1].setStyleSheet("color: blue; font-weight: bold")
+                    self.deadline_label_list[idx + 1].setStyleSheet("color: blue; font-weight: bold;")
+                self.deadline_label_list[idx + 2].setText("<span style='font-size: 12px;>ToDo: '" + self.todo_dict[name] + "</span>")
 
             for lbl in self.deadline_label_list:
-                self.main_box.addWidget(lbl)
+                self.deadline_box.addWidget(lbl)
 
-                self.main_box.addWidget(self.label_schedule)
         else:
             self.deadline_label_list.append(QLabel(self))
-            self.deadline_label_list[0].setStyleSheet("font-size: 15px;")
+            self.deadline_label_list[0].setStyleSheet("font-size: 15px; font-weight: bold;")
             self.deadline_label_list[0].setText("마감 임박 일정이 존재하지 않습니다.")
+
+            self.deadline_box.addWidget(self.deadline_label_list[0])
+
+        self.schedule_box.addWidget(self.label_schedule)
 
         for doc_type in self.doc_type_list:
             res = db.main.dbPrograms.ddayCheck(doc_type, isDeadline=False)
@@ -491,52 +664,199 @@ class ToDoList(QWidget):
             self.schedule_label_list[idx].setText(name + "<b> " + self.schedule_dict[name]["마감일자"] + " </b><b style='color: blue;'> D-day: D" + str(self.schedule_dict[name]["D-day"]) + " </b>")
 
         for lbl in self.schedule_label_list:
-            self.main_box.addWidget(lbl)
+            self.schedule_box.addWidget(lbl)
+
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Escape:
+            self.close()
 
     def showEvent(self, QShowEvent):
         pass
 
+class Kuksiwon(QWidget):
+    global db
 
-class report(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("국시원")
+        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
+
+        self.doc_type = ""
+
+        self.main_box = QVBoxLayout()
+        self.input_box = QHBoxLayout()
+        self.btn_box = QHBoxLayout()
+
+        self.main_box.addLayout(self.input_box)
+        self.main_box.addLayout(self.btn_box)
+
+        self.setLayout(self.main_box)
+
+        self.initUI()
+
+    def initUI(self):
+        self.label_exam = QLabel("시험회차", self)
+        self.input_box.addWidget(self.label_exam)
+        self.combobox_exam = QComboBox(self)
+        self.input_box.addWidget(self.combobox_exam)
+        self.btn_create = QPushButton("생성", self)
+        self.btn_cancel = QPushButton("취소", self)
+
+        self.btn_create.clicked.connect(self.createFile)
+        self.btn_cancel.clicked.connect(self.close)
+
+        self.btn_box.addWidget(self.btn_create)
+        self.btn_box.addWidget(self.btn_cancel)
+
+    def createFile(self):
+        exam_round = self.combobox_exam.currentText()
+        if self.combobox_exam == "선택":
+            QMessageBox.about(self, "안내", "옵션이 선택되지 않았습니다.")
+            return
+        ans = QMessageBox.question(self, "확인", "{}회 {} 파일을 생성합니다.".format(exam_round, self.doc_type), QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if ans == QMessageBox.Yes:
+            if self.doc_type == "응시접수 명단":
+                path = db.main.auto.accountList(exam_round)
+            elif self.doc_type == "합격자 명단":
+                path = db.main.auto.examPassList(exam_round)
+            else:
+                db.main.auto.makeDocument(self.doc_type, exam_round)
+                path = "NULL"
+                
+
+            QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}".format(path))
+            
+
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Escape:
+            self.close()
+        
+        elif e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
+            self.createFile()
+
+    def showEvent(self, QShowEvent):
+        source = self.sender()
+        self.doc_type = source.text()
+        self.combobox_exam.clear()
+        self.exam_list = []
+
+        self.combobox_exam.addItem("선택")
+        rs = db.main.dbPrograms.SELECT("round", "exam", where="TIMESTAMPDIFF(DAY, passDate, CURDATE()) < 90", orderBy="round *1")
+
+        if rs == "error":
+            QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
+        else:
+            for row in rs:
+                if not row[0] in self.exam_list:
+                    self.exam_list.append(row[0])
+            
+            self.combobox_exam.addItems(self.exam_list)
+
+
+class ClassOpening(QWidget):
+    global db
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("요양보호사 기수 opening")
+        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
+
+        self.doc_type = ""
+
+        self.main_box = QVBoxLayout()
+        self.input_box = QHBoxLayout()
+        self.btn_box = QHBoxLayout()
+
+        self.main_box.addLayout(self.input_box)
+        self.main_box.addLayout(self.btn_box)
+
+        self.setLayout(self.main_box)
+
+        self.initUI()
+
+    def initUI(self):
+        self.label_number = QLabel("기수", self)
+        self.input_box.addWidget(self.label_number)
+        self.combobox_N = QComboBox(self)
+        self.combobox_N.setFixedWidth(100)
+        self.input_box.addWidget(self.combobox_N)
+
+        self.label_time = QLabel("반", self)
+        self.input_box.addWidget(self.label_time)
+        self.combobox_T = QComboBox(self)
+        self.combobox_T.setFixedWidth(100)
+        self.input_box.addWidget(self.combobox_T)
+
+        self.btn_create = QPushButton("생성", self)
+        self.btn_box.addWidget(self.btn_create)
+        self.btn_cancel = QPushButton("취소", self)
+        self.btn_box.addWidget(self.btn_cancel)
+
+        self.btn_create.clicked.connect(self.createFile)
+        self.btn_cancel.clicked.connect(self.close)
+
+    def createFile(self):
+        class_number = self.combobox_N.currentText()
+        class_time = self.combobox_T.currentText()
+
+        if class_number == "선택" or class_time == "선택":
+            QMessageBox.about(self, "안내", "옵션이 선택되지 않았습니다.")
+            return
+
+        if self.doc_type == "수강료 수납대장":
+            ans = QMessageBox.question(self, "확인", "{}기{} 수강료 수납대장 파일을 생성합니다.".format(class_number, class_time), QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if ans == QMessageBox.Yes:
+                path = db.main.auto.paymentList(class_number, class_time)
+                QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}".format(path))
+
+        elif self.doc_type == "사물함 주기":
+            ans = QMessageBox.question(self, "확인", "{}기{} 사물함 주기 파일을 생성합니다.".format(class_number, class_time), QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if ans == QMessageBox.Yes:
+                path = db.main.auto.locker(class_number, class_time)
+                QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}".format(path))
+        
+
+
+    def showEvent(self, QShowEvent):
+        source = self.sender()
+        self.doc_type = source.text()
+        self.combobox_N.clear()
+        self.combobox_T.clear()
+        self.class_num_list = []
+
+        self.combobox_N.addItem("선택")
+        self.combobox_T.addItem("선택")
+        self.combobox_T.addItem("주간")
+        self.combobox_T.addItem("야간")
+        rs = db.main.dbPrograms.SELECT("classNumber", "lecture", where="TIMESTAMPDIFF(DAY, startDate, CURDATE()) < 60", orderBy="classNumber *1")
+
+        if rs == "error":
+            QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
+        else:
+            for row in rs:
+                if not row[0] in self.class_num_list:
+                    self.class_num_list.append(row[0])
+            
+            self.combobox_N.addItems(self.class_num_list)
+
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Escape:
+            self.close()
+        
+        elif e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
+            self.createFile()
+
+
+
+class Report(QWidget):
     global db
 
     def __init__(self):
         super().__init__()
         self.initUI()
         self.setWindowTitle("경기도청 보고 데이터")
-        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사.jpg"))
+        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
         self.doc_type = ""
-
-    """
-    def onActivated(self):
-        self.previous_text = self.current_text
-        self.current_text = self.combobox_T.currentText()
-
-        if self.previous_text in self.time_list and self.current_text in self.time_list:
-            # not type changed
-            pass
-        elif self.previous_text == self.current_text:
-            # not changed
-            pass
-        else:
-            self.combobox_N.clear()
-            self.combobox_N.addItem("선택")
-            self.class_num_list.clear()
-
-            if self.current_text == "대체실습":
-                rs = db.main.dbPrograms.SELECT("classNumber", "temptraining", orderBy="classNumber *1")
-            else:
-                rs = db.main.dbPrograms.SELECT("classNumber", "lecture", orderBy="classNumber *1")
-
-            if rs == "error":
-                QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
-            else:
-                for row in rs:
-                    if not row[0] in self.class_num_list:
-                        self.class_num_list.append(row[0])
-                
-                self.combobox_N.addItems(self.class_num_list)
-        """
 
     def initUI(self):
         self.box = QVBoxLayout()
@@ -554,9 +874,7 @@ class report(QWidget):
 
         self.label_time = QLabel("반", self)
         self.label_time.setFixedWidth(48)
-        # self.label_time.setAlignment(Qt.AlignVCenter)
         self.label_time.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        # self.label_time.setStyleSheet("text-align: right;")
         self.hbox1.addWidget(self.label_time)
         self.combobox_T = QComboBox(self)
         self.combobox_T.setFixedWidth(100)
@@ -610,12 +928,21 @@ class report(QWidget):
             self.combobox_T.addItem("선택")
             self.combobox_T.addItem("주간")
             self.combobox_T.addItem("야간")
-            rs = db.main.dbPrograms.SELECT("classNumber", "lecture", where="TIMESTAMPDIFF(DAY, startDate, CURDATE()) < 7", orderBy="classNumber *1")
+            rs = db.main.dbPrograms.SELECT("classNumber", "lecture", where="TIMESTAMPDIFF(DAY, startDate, CURDATE()) < 60", orderBy="classNumber *1")
+
+        elif self.doc_type == "출석부":
+            self.label_time.setText("반")
+            self.combobox_T.setEnabled(True)
+            self.combobox_N.addItem("선택")
+            self.combobox_T.addItem("선택")
+            self.combobox_T.addItem("주간")
+            self.combobox_T.addItem("야간")
+            rs = db.main.dbPrograms.SELECT("classNumber", "lecture", where="TIMESTAMPDIFF(DAY, startDate, CURDATE()) < 60", orderBy="classNumber *1")
 
         else:
             self.label_time.setText("대체실습")
             self.combobox_T.setEnabled(False)
-            rs = db.main.dbPrograms.SELECT("classNumber", "temptraining", where="TIMESTAMPDIFF(DAY, startDate, CURDATE()) < 7", orderBy="classNumber *1")
+            rs = db.main.dbPrograms.SELECT("classNumber", "temptraining", where="TIMESTAMPDIFF(DAY, endDate, CURDATE()) < 60", orderBy="classNumber *1")
         
         if rs == "error":
             QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
@@ -636,7 +963,7 @@ class scanFile(QWidget):
         super().__init__()
         self.initUI()
         self.setWindowTitle("파일 스캔")
-        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사.jpg"))
+        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
         self.file_list = []
         self.file_index = 0
         
@@ -846,14 +1173,14 @@ class scanFile(QWidget):
 일괄 변경 창 클릭 -> 기수, 반 선택 후 바꿀 column 선택 -> 값 입렵 ==> 일괄변경 처리 !
 
 """
-class batchUpdate(QWidget):
+class BatchUpdate(QWidget):
     global db
 
     def __init__(self):
         super().__init__()
         self.initUI()
         self.setWindowTitle("시험 회차 변경")
-        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사.jpg"))
+        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
 
         self.mode = "시험회차"
 
@@ -899,11 +1226,18 @@ class batchUpdate(QWidget):
             QMessageBox.warning(self, "오류", "입력값 오류")
             return
 
+        ans = QMessageBox.question(self, "데이터 수정 확인", "이 기능은 \"데이터가 없는 사람(NULL)만\" 값을 변경해 줍니다. 변경하시겠습니까?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+        if ans == QMessageBox.Yes:
+            pass
+        else:
+            return
+
         if self.mode == "시험회차 일괄 변경":
             exam = self.combobox_exam_or_temp.currentText()
             exam = exam[:-1]
             query = "exam={}".format(exam)
-            where = "classNumber='{}' and classTime='{}'".format(self.combobox_N.currentText(), self.combobox_T.currentText())
+            where = "classNumber='{}' and classTime='{}' and exam=NULL".format(self.combobox_N.currentText(), self.combobox_T.currentText())
 
             res = db.main.dbPrograms.UPDATE("user", query, where)
             if res == "error":
@@ -916,7 +1250,7 @@ class batchUpdate(QWidget):
         elif self.mode == "대체실습 일괄 변경":
             temp_class_number = self.combobox_exam_or_temp.currentText()
             query = "temporaryClassNumber={}".format(temp_class_number)
-            where = "classNumber='{}' and classTime='{}'".format(self.combobox_N.currentText(), self.combobox_T.currentText())
+            where = "classNumber='{}' and classTime='{}' and temporaryClassNumber=NULL".format(self.combobox_N.currentText(), self.combobox_T.currentText())
 
             res = db.main.dbPrograms.UPDATE("user", query, where)
             if res == "error":
@@ -985,7 +1319,7 @@ class UPDATE(QWidget):
         self.initUI()
         self.target_table = ""
         self.base_path = "D:\\남양노아요양보호사교육원\\교육생관리"
-        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사.jpg"))
+        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
 
     def initUI(self):
         self.setWindowTitle("데이터 수정")
@@ -1587,7 +1921,7 @@ class INSERT(QWidget):
         self.initUI()
         self.target_table = ""
         self.base_path = "D:\\남양노아요양보호사교육원\\교육생관리"
-        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사.jpg"))
+        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
 
     def initUI(self):
         self.setWindowTitle("데이터 삽입")
@@ -2573,7 +2907,10 @@ class mainLayout(QWidget, DB):
         if ans == QMessageBox.Yes:
             db.main.dbPrograms.DELETE(target_table, query)
             if path != None and os.path.exists(path):
-                shutil.rmtree(path)
+                ans_dir_delete = QMessageBox.question(self, "폴더 삭제", "해당 데이터의 폴더도 함께 삭제하시겠습니까?\n(해당 작업은 신중해야 합니다.)", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                if ans_dir_delete == QMessageBox.Yes:
+                    shutil.rmtree(path)
+
             QMessageBox.about(self, "완료", "데이터를 성공적으로 삭제했습니다.")
             self.showTable(Refresh=True)
             self.textInfo.clear()
@@ -2758,7 +3095,10 @@ class DBMS(QMainWindow):
     global update
     global batch
     global report_gov
+    global opening
+    global kuksiwon
     global todo_list
+    global wi
 
     global scanner
 
@@ -2768,9 +3108,10 @@ class DBMS(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle("NYNOA DBMS")
-        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사.jpg"))
-        self.resize(1200, 800)
-        # self.setFixedSize(1200, 800)
+        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
+        self.setGeometry(350, 150, 1200, 800)
+
+        self.icon_path = "D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\"
 
         # status Bar
         # self.statusBar()
@@ -2802,53 +3143,90 @@ class DBMS(QMainWindow):
         menu_isNULL.setStatusTip("데이터가 입력되지 않은 컬럼들을 찾습니다.")
         menu_isNULL.setShortcut("Ctrl+Shift+Q")
 
-        file_exit = QAction('Exit', self)   # menu 객체 생성
+        file_exit = QAction(QIcon(self.icon_path + "cross.png"), 'Exit', self)   # menu 객체 생성
         file_exit.setShortcut("Ctrl+Q")
         file_exit.setStatusTip("나가기")
         # file_exit.triggered.connect(QCoreApplication.instance().quit)   # 종료 기능 추가 / self.close()로도 종료 가능
         file_exit.triggered.connect(self.close)      # 위와 같은 기능. 메서드를 전달하는 것이기 때문에 ()없이!
 
+        file_wi = QAction(QIcon(self.icon_path + "ribbon.png"), "인수인계사항", self)
+        file_wi.setStatusTip("기관장이 해야할 일 리스트 입니다.")
+        file_wi.triggered.connect(self.workingInformation_show)
+
         file_new = QMenu("New", self)   # sub menu 객체 생성
-        new_data = QAction("데이터 추가", self)
+        new_data = QAction(QIcon(self.icon_path + "new.png"), "데이터 추가", self)
         new_data.setShortcut("Ctrl+N")
         new_data.setStatusTip("선택된 테이블에 새로운 데이터를 추가합니다.")
 
+        new_payment = QAction(QIcon(self.icon_path + "documents.png"), "수강료 수납대장", self)
+        new_payment.setStatusTip("[수강료 수납대장: 원장님 서류]를 작성합니다.")
+
+        new_locker = QAction(QIcon(self.icon_path + "list.png"), "사물함 주기", self)
+        new_locker.setStatusTip("사물함 주기(명찰)파일을 생성합니다.")
+        
         file_new.addAction(new_data)
+        file_new.addAction(new_payment)
+        file_new.addAction(new_locker)
 
         file_scan = QMenu("Scan", self)
         read_data = QAction("파일 스캔", self)
 
         file_scan.addAction(read_data)
 
-        file_backUp = QAction("Back up", self)
+        file_backUp = QAction(QIcon(self.icon_path + "backUp.png"), "Back up", self)
         file_backUp.setStatusTip("현재 선택된 데이터베이스 테이블을 엑셀 파일로 생성해 백업합니다.")
         file_backUp.triggered.connect(self.main.backupToExcel)
 
         file_report = QMenu("경기도청", self)
-        beginning_lecture = QAction("개강보고", self)
-        implement_temp_class = QAction("대체실습 실시보고", self)
-        complete_temp_class = QAction("대체실습 수료보고", self)
+        beginning_lecture = QAction(QIcon(self.icon_path + "government.png"), "개강보고", self)
+        attendence = QAction(QIcon(self.icon_path + "government.png"), "출석부", self)
+        implement_temp_class = QAction(QIcon(self.icon_path + "government.png"), "대체실습 실시보고", self)
+        complete_temp_class = QAction(QIcon(self.icon_path + "government.png"), "대체실습 수료보고", self)
 
         file_report.addAction(beginning_lecture)
+        file_report.addAction(attendence)
         file_report.addAction(implement_temp_class)
         file_report.addAction(complete_temp_class)
 
         beginning_lecture.triggered.connect(self.report_gov_show)
+        attendence.triggered.connect(self.report_gov_show)
         implement_temp_class.triggered.connect(self.report_gov_show)
         complete_temp_class.triggered.connect(self.report_gov_show)
         
         # menu에 addAction 할 경우, 이렇게 하면 안되고, 함수를 따로 생성해서 넘겨주어야 한다. 이유는 모름.
         # new_data.triggered.connect(insert.show())
         new_data.triggered.connect(self.INSERT_show)
+        new_payment.triggered.connect(self.opening_show)
+        new_locker.triggered.connect(self.opening_show)
+
+        file_kuksiwon = QMenu("국시원", self)
+        members = QAction(QIcon(self.icon_path + "kuksiwon.png"), "응시접수 명단", self)
+        pass_list = QAction(QIcon(self.icon_path + "kuksiwon.png"), "합격자 명단", self)
+        document_1 = QAction(QIcon(self.icon_path + "document.png"), "교육수료증명서", self)
+        document_2 = QAction(QIcon(self.icon_path + "document.png"), "대체실습확인서", self)
+        document_3 = QAction(QIcon(self.icon_path + "document.png"), "요양보호사 자격증 발급,재발급 신청서", self)
+
+        file_kuksiwon.addAction(members)
+        file_kuksiwon.addAction(pass_list)
+        file_kuksiwon.addAction(document_1)
+        file_kuksiwon.addAction(document_2)
+        file_kuksiwon.addAction(document_3)
+
+        members.triggered.connect(self.kuksiwon_show)
+        pass_list.triggered.connect(self.kuksiwon_show)
+        document_1.triggered.connect(self.kuksiwon_show)
+        document_2.triggered.connect(self.kuksiwon_show)
+        document_3.triggered.connect(self.kuksiwon_show)
+
         read_data.setShortcut("Ctrl+F")
         read_data.setStatusTip("폴더를 스켄하여 데이터베이스에 데이터를 삽입합니다.")
         read_data.triggered.connect(self.scan_show)
         
         edit_batch = QMenu("일괄 변경", self)
-        batch_data_exam = QAction("시험회차 일괄 변경", self)
+        batch_data_exam = QAction(QIcon(self.icon_path + "batchEdit.png"), "시험회차 일괄 변경", self)
         batch_data_exam.setStatusTip("특정 기수, 반의 시험 회차를 일괄적으로 설정합니다.")
 
-        batch_data_temp = QAction("대체실습 일괄 변경", self)
+        batch_data_temp = QAction(QIcon(self.icon_path + "batchEdit.png"), "대체실습 일괄 변경", self)
         batch_data_temp.setStatusTip("특정 기수, 반의 대체실습 기수를 일괄적으로 변경합니다.")
 
         batch_data_exam.triggered.connect(self.batch_show)
@@ -2857,12 +3235,12 @@ class DBMS(QMainWindow):
         edit_batch.addAction(batch_data_exam)
         edit_batch.addAction(batch_data_temp)
 
-        mod_data = QAction("데이터 수정", self)
+        mod_data = QAction(QIcon(self.icon_path + "edit.png"), "데이터 수정", self)
         mod_data.setShortcut("F2")
         mod_data.setStatusTip("테이블에서 선택된 데이터를 수정합니다.")
         mod_data.triggered.connect(self.UPDATE_show)
 
-        del_data = QAction("데이터 삭제", self)
+        del_data = QAction(QIcon(self.icon_path + "delete.png"), "데이터 삭제", self)
         del_data.setShortcut(Qt.Key_Delete)
         del_data.setStatusTip("테이블에서 선택된 데이터를 삭제합니다.")
         del_data.triggered.connect(self.main.DELETE)
@@ -2871,7 +3249,9 @@ class DBMS(QMainWindow):
         view_stat.setChecked(True)
         view_stat.triggered.connect(self.triState)
 
+        menu_file.addAction(file_wi)
         menu_file.addAction(file_backUp)
+        menu_file.addMenu(file_kuksiwon)
         menu_file.addMenu(file_report)
         menu_file.addMenu(file_scan)
         menu_file.addMenu(file_new)     # sub menu 등록
@@ -2907,8 +3287,17 @@ class DBMS(QMainWindow):
         scanner.file_list = file_list
         scanner.show()
 
+    def workingInformation_show(self):
+        wi.show()
+
     def todo_show(self):
         todo_list.show()
+
+    def kuksiwon_show(self):
+        kuksiwon.show()
+
+    def opening_show(self):
+        opening.show()
 
     def report_gov_show(self):
         source = self.sender()
@@ -2982,9 +3371,11 @@ if __name__ == '__main__':
     todo_list = ToDoList()
     insert = INSERT()
     update = UPDATE()
-    batch = batchUpdate()
-    report_gov = report()
-    wi = workingImformation()
+    batch = BatchUpdate()
+    report_gov = Report()
+    opening = ClassOpening()
+    kuksiwon = Kuksiwon()
+    wi = WorkingInformation()
 
 
 

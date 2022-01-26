@@ -342,6 +342,7 @@ class Automation:
     def report(self, doc_type, number, time=None):
         """
         개강보고
+        출석부
         대체실습 실시보고
         대체실습 수료보고
         """
@@ -379,6 +380,17 @@ class Automation:
                     self.ws_imsi.cell(row=indexX, column=indexY).alignment = Alignment(horizontal="center", vertical="center")
                     self.ws_imsi.cell(row=indexX, column=indexY).font = Font(size=10)
 
+        elif doc_type == "출석부":
+            self.wb_imsi = Workbook()
+            self.ws_imsi = self.wb_imsi.active
+            rs = self.DB.SELECT("name, RRN", "user", "classNumber='{}' and classTime='{}'".format(number, time))
+            for idx, rows in enumerate(rs, start=1):
+                self.ws_imsi.cell(row=idx, column=1).value = idx
+                self.ws_imsi.cell(row=idx, column=2).value = rows[0]
+                DOB = rows[1][:6]
+                DOB = DOB[:2] + ". " + DOB[2:4] + ". " + DOB[4:]
+                self.ws_imsi.cell(row=idx, column=3).value = DOB
+
         elif doc_type == "대체실습 실시보고":
             self.wb_imsi = Workbook()
             self.ws_imsi = self.wb_imsi.active
@@ -412,7 +424,6 @@ class Automation:
                     self.ws_imsi.cell(row=indexX, column=indexY).font = Font(size=10)
 
 
-
         elif doc_type == "대체실습 수료보고":
             self.wb_imsi = Workbook()
             self.ws_imsi = self.wb_imsi.active
@@ -441,7 +452,6 @@ class Automation:
                     self.ws_imsi.cell(row=indexX, column=indexY).alignment = Alignment(horizontal="center", vertical="center")
                     self.ws_imsi.cell(row=indexX, column=indexY).font = Font(size=10)
 
-
         self.wb_imsi.save(self.imsi_workbook_path)
         self.wb_imsi.close()
         os.system(self.imsi_workbook_path)
@@ -450,7 +460,7 @@ class Automation:
     def examPassList(self, exam):
         # NO	합격번호	시험시행기관	시험시행일	시험합격일	교육이수일자	교육시작일자	교육마감일자	대상구분	교육과정명	총교육시간	이론	실기	실습	자격/면허 취득 정보	자격면허코드	자격면허 번호	교부기관	교부기관코드	교부일자	주민등록번호	성명	주소	등록기준지(본적)	전화번호	핸드폰번호
         # 1     2           3             4          5          6              7              8              9          10         11          12     13      14      15                16             17             18         19             20         21             22      23     24                 25          26
-        pass_list_path = r"D:\Master\files\화성시-남양노아요양보호사교육원-00회합격자명단_작성용.xlsx"
+        pass_list_path = self.wbPath + "화성시-남양노아요양보호사교육원-00회합격자명단_작성용.xlsx"
         wb_pass = load_workbook(pass_list_path)
         ws_pass = wb_pass.active
         if not os.path.exists("D:\\남양노아요양보호사교육원\\경기도청\\03_시험준비 및 자격증발급관련\\{}회_제출용"):
@@ -495,30 +505,26 @@ class Automation:
             temp_class_rs = self.DB.SELECT("endDate", "temptraining", "classNumber='{}'".format(member_dict[idx]["temporaryClassNumber"]), fetchone=True)
             ws_pass.cell(row=idx + 4, column=8).value = str(temp_class_rs[0]).replace("-", "")
 
-            string_license = "일반"
+            string_license = "일반교육 과정"
             if member_dict[idx]["license"] != "일반":
+                string_license = "자격/면허 소지자 과정"
                 if member_dict[idx]["license"] == "사회복지사":
-                    string_license = "자격증(간조)"
                     license_code = "25811"
 
                 elif member_dict[idx]["license"] == "간호조무사":
-                    string_license = "자격증(간조)"
                     license_code = "24260"
 
                 elif member_dict[idx]["license"] == "물리치료사":
-                    string_license = "자격증(물리)"
                     license_code = "24135"
 
                 elif member_dict[idx]["license"] == "작업치료사":
-                    string_license = "자격증(작업)"
                     license_code = "24120"
                     
                 elif member_dict[idx]["license"] == "간호사":
-                    string_license = "자격증(간호)"
                     license_code = "24060"
 
                 elif member_dict[idx]["license"] == "경력자":
-                    string_license = "경력자"
+                    string_license = "경력자 과정"
             
             ws_pass.cell(row=idx + 4, column=9).value = string_license
             ws_pass.cell(row=idx + 4, column=10).value = "{}반 {}".format(member_dict[idx]["classTime"], member_dict[idx]["classNumber"])
@@ -531,20 +537,90 @@ class Automation:
                 ws_pass.cell(row=idx + 4, column=15).value = member_dict[idx]["license"]
                 ws_pass.cell(row=idx + 4, column=16).value = license_code
 
-            ws_pass.cell(row=idx + 4, column=21).value = member_dict[idx]["RRN"]
-            ws_pass.cell(row=idx + 4, column=22).value = member_dict[idx]["name"]
-            ws_pass.cell(row=idx + 4, column=23).value = member_dict[idx]["address"]
-            ws_pass.cell(row=idx + 4, column=24).value = member_dict[idx]["originAddress"]
+            nation = "내국인"
+            if member_dict[idx]["originAddress"] == "외국인":
+                nation = "외국인"
+            ws_pass.cell(row=idx + 4, column=32).value = nation
+            ws_pass.cell(row=idx + 4, column=33).value = member_dict[idx]["RRN"].replace("-", "")
+            ws_pass.cell(row=idx + 4, column=34).value = member_dict[idx]["name"]
+            ws_pass.cell(row=idx + 4, column=35).value = member_dict[idx]["address"]
+            ws_pass.cell(row=idx + 4, column=36).value = member_dict[idx]["originAddress"]
 
-            ws_pass.cell(row=idx + 4, column=24).value = member_dict[idx]["phoneNumber"]
+            ws_pass.cell(row=idx + 4, column=38).value = member_dict[idx]["phoneNumber"]
 
         wb_pass.save(save_path)
         wb_pass.close()
 
-    def account_list(self, exam):
+        return save_path
+
+    def paymentList(self, class_number, class_time):
+        self.wb_imsi = load_workbook("D:\\Master\\files\\00기0간_수강료 납부 대장.xlsx")
+        self.ws_imsi = self.wb_imsi.active
+
+        self.ws_imsi.cell(row=2, column=2).value = "{} {}".format(class_number, class_time)
+
+        rs = self.DB.SELECT("name, RRN, phoneNumber", "user", "classNumber='{}' and classTime='{}'".format(class_number, class_time))
+        for idx, rows in enumerate(rs, start=5):
+            self.ws_imsi.cell(row=idx, column=2).value = rows[0]
+            DOB = rows[1][:6]
+            DOB = DOB[:2] + ". " + DOB[2:4] + ". " + DOB[4:]
+            self.ws_imsi.cell(row=idx, column=3).value = DOB
+            self.ws_imsi.cell(row=idx, column=4).value = rows[2]
+
+        self.wb_imsi.save(self.basePath + "{}\\{}{}\\{}{}_수강료 납부 대장.xlsx".format(class_number, class_number, class_time, class_number, class_time))
+        self.wb_imsi.close()
+
+        if not os.path.exists(self.basePath + "{}\\{}{}\\{}{} 교육기관 수강료 수납대장.hwp".format(class_number, class_number, class_time, class_number, class_time)):
+            shutil.copy(r"D:\Master\files\00기0간 교육기관 수강료 수납대장.hwp", self.basePath + "{}\\{}{}\\{}{} 교육기관 수강료 수납대장.hwp".format(class_number, class_number, class_time, class_number, class_time))
+
+        return self.basePath + "{}\\{}{}\\{}{}_수강료 납부 대장.xlsx".format(class_number, class_number, class_time, class_number, class_time)
+
+    def locker(self, class_number, class_time):
+        if class_time == "주간":
+            self.wb_imsi = load_workbook(self.wbPath + "사물함 주기_주간.xlsx")
+        elif class_time == "야간":
+            self.wb_imsi = load_workbook(self.wbPath + "사물함 주기_야간.xlsx")
+
+        self.ws_imsi = self.wb_imsi.active
+        rs = self.DB.SELECT("name", "user", "classNumber='{}' and classTime='{}'".format(class_number, class_time))
+        rows = 2
+        cols = 1
+        for r in rs:
+            self.ws_imsi.cell(row=rows, column=cols).value = r[0]
+            cols += 1
+            if cols == 3:
+                cols = 1
+                rows += 2
+
+        self.wb_imsi.save(self.basePath + "{}\\{}{}\\{}{}_사물함 주기.xlsx".format(class_number, class_number, class_time, class_number, class_time))
+        self.wb_imsi.close()
+
+        return self.basePath + "{}\\{}{}\\{}{}_사물함 주기.xlsx".format(class_number, class_number, class_time, class_number, class_time)
+
+
+    def accountList(self, exam):
         # seq, 이름, id, pw, 주민등록번호(생년월일), 전화번호(연락처), 주소, 가상계좌, 비고(입금완료)
-        pass
-            
+        self.wb = load_workbook(self.wbPath + "00회_응시접수명단.xlsx")
+        self.ws = self.wb.active
+        save_path = "D:\\남양노아요양보호사교육원\\경기도청\\03_시험준비 및 자격증발급관련\\{}회_제출용\\{}회 응시접수명단.xlsx".format(exam, exam)
+
+        rs = self.DB.SELECT("name, RRN, phoneNumber, address", "user", "exam={}".format(exam))
+        for idx, rows in enumerate(rs, start=1):
+            self.ws.cell(row=idx + 2, column=1).value = idx
+            self.ws.cell(row=idx + 2, column=2).value = rows[0]
+            self.ws.cell(row=idx + 2, column=5).value = rows[1]
+            self.ws.cell(row=idx + 2, column=6).value = rows[2]
+            self.ws.cell(row=idx + 2, column=7).value = rows[3]
+
+        if os.path.exists("D:\\남양노아요양보호사교육원\\경기도청\\03_시험준비 및 자격증발급관련\\{}회_제출용".format(exam)):
+            os.makedirs("D:\\남양노아요양보호사교육원\\경기도청\\03_시험준비 및 자격증발급관련\\{}회_제출용".format(exam))
+        
+
+        self.wb.save(save_path)
+        self.wb.close()
+
+        return save_path
+
 
 
 

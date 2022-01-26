@@ -151,39 +151,68 @@ class DB():
     def ddayCheck(self, doc_type, isDeadline=False):
         try:
             with self.conn.cursor() as curs:
-                if doc_type == "개강보고":
-                    comparison = "startDate"
-                    # 개강보고는 개강 후 3일 이내에 보고해야 하기 때문에 d-day에 3일을 더해준다.
-                    sql = "select *, TIMESTAMPDIFF(DAY, startDate, CURDATE()) as 'D-day' from lecture where TIMESTAMPDIFF(DAY, startDate, CURDATE()) <= 2"
-
-                elif doc_type == "대체실습 실시보고":
-                    comparison = "startDate"
-                    sql = "select *, TIMESTAMPDIFF(DAY, startDate, CURDATE()) as 'D-day' from temptraining where TIMESTAMPDIFF(DAY, startDate, CURDATE()) <= 0"
-
-                elif doc_type == "대체실습 수료보고":
-                    comparison = "endDate"
-                    sql = "select *, TIMESTAMPDIFF(DAY, endDate, CURDATE()) as 'D-day' from temptraining where TIMESTAMPDIFF(DAY, endDate, CURDATE()) <= 0"
-
-                elif doc_type == "응시원서 접수시작":
-                    comparison = "startAcceptance"
-                    sql = "select *, TIMESTAMPDIFF(DAY, startAcceptance, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, startAcceptance, CURDATE()) <= 0"
-
-                elif doc_type == "응시원서 접수마감":
-                    comparison = "endAcceptance"
-                    sql = "select *, TIMESTAMPDIFF(DAY, endAcceptance, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, endAcceptance, CURDATE()) <= 0"
-
-                elif doc_type == "응시표 출력":
-                    comparison = "announceDate"
-                    sql = "select *, TIMESTAMPDIFF(DAY, announceDate, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, announceDate, CURDATE()) <= 2"
-
-                elif doc_type == "시험 합격자 서류":
-                    comparison = "submitDate"
-                    sql = "select *, TIMESTAMPDIFF(DAY, submitDate, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, submitDate, CURDATE()) <= 0"
-
                 if isDeadline == True:
+                    if doc_type == "개강보고":
+                        comparison = "startDate"
+                        # 개강보고는 개강 후 3일 이내에 보고해야 하기 때문에 d-day에 3일을 더해준다.
+                        sql = "select *, TIMESTAMPDIFF(DAY, startDate, CURDATE()) as 'D-day' from lecture where TIMESTAMPDIFF(DAY, startDate, CURDATE()) <= 2"
+
+                    elif doc_type == "대체실습 실시보고":
+                        comparison = "startDate"
+                        sql = "select *, TIMESTAMPDIFF(DAY, startDate, CURDATE()) as 'D-day' from temptraining where TIMESTAMPDIFF(DAY, startDate, CURDATE()) <= 0"
+
+                    elif doc_type == "대체실습 수료보고":
+                        comparison = "endDate"
+                        sql = "select *, TIMESTAMPDIFF(DAY, endDate, CURDATE()) as 'D-day' from temptraining where TIMESTAMPDIFF(DAY, endDate, CURDATE()) <= 2"
+
+                    elif doc_type == "응시원서 접수시작":
+                        comparison = "startAcceptance"
+                        sql = "select *, TIMESTAMPDIFF(DAY, startAcceptance, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, startAcceptance, CURDATE()) <= 0"
+
+                    elif doc_type == "응시원서 접수마감":
+                        comparison = "endAcceptance"
+                        sql = "select *, TIMESTAMPDIFF(DAY, endAcceptance, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, endAcceptance, CURDATE()) <= 0"
+
+                    elif doc_type == "응시표 출력":
+                        comparison = "announceDate"
+                        sql = "select *, TIMESTAMPDIFF(DAY, announceDate, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, announceDate, CURDATE()) <= 2"
+
+                    elif doc_type == "시험 합격자 서류":
+                        comparison = "submitDate"
+                        sql = "select *, TIMESTAMPDIFF(DAY, submitDate, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, submitDate, CURDATE()) <= 0"
+
                     sql +=  " and TIMESTAMPDIFF(DAY, {}, CURDATE()) >= -7".format(comparison)
-                    # 합격자 명단 + 3서류
+                        # 합격자 명단 + 3서류
                 else:
+                    if doc_type == "개강보고":
+                        comparison = "startDate"
+                        # 개강보고는 개강 후 3일 이내에 보고해야 하기 때문에 d-day에 3일을 더해준다.
+                        sql = "select *, TIMESTAMPDIFF(DAY, startDate, CURDATE()) as 'D-day' from lecture where TIMESTAMPDIFF(DAY, startDate, CURDATE()) <= -8"
+
+                    elif doc_type == "대체실습 실시보고":
+                        comparison = "startDate"
+                        sql = "select *, TIMESTAMPDIFF(DAY, startDate, CURDATE()) as 'D-day' from temptraining where TIMESTAMPDIFF(DAY, startDate, CURDATE()) <= -8"
+
+                    elif doc_type == "대체실습 수료보고":
+                        comparison = "endDate"
+                        sql = "select *, TIMESTAMPDIFF(DAY, endDate, CURDATE()) as 'D-day' from temptraining where TIMESTAMPDIFF(DAY, endDate, CURDATE()) <= -8"
+
+                    elif doc_type == "응시원서 접수시작":
+                        comparison = "startAcceptance"
+                        sql = "select *, TIMESTAMPDIFF(DAY, startAcceptance, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, startAcceptance, CURDATE()) <= -8"
+
+                    elif doc_type == "응시원서 접수마감":
+                        comparison = "endAcceptance"
+                        sql = "select *, TIMESTAMPDIFF(DAY, endAcceptance, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, endAcceptance, CURDATE()) <= -8"
+
+                    elif doc_type == "응시표 출력":
+                        comparison = "announceDate"
+                        sql = "select *, TIMESTAMPDIFF(DAY, announceDate, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, announceDate, CURDATE()) <= -8"
+
+                    elif doc_type == "시험 합격자 서류":
+                        comparison = "submitDate"
+                        sql = "select *, TIMESTAMPDIFF(DAY, submitDate, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, submitDate, CURDATE()) <= -8"
+
                     sql +=  " and TIMESTAMPDIFF(DAY, {}, CURDATE()) > -100".format(comparison)
 
                 sql += ";"
