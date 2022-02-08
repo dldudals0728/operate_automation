@@ -210,8 +210,8 @@ class DB():
                         sql = "select *, TIMESTAMPDIFF(DAY, announceDate, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, announceDate, CURDATE()) <= -8"
 
                     elif doc_type == "시험 합격자 서류":
-                        comparison = "submitDate"
-                        sql = "select *, TIMESTAMPDIFF(DAY, submitDate, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, submitDate, CURDATE()) <= -8"
+                        comparison = "passDate"
+                        sql = "select *, TIMESTAMPDIFF(DAY, passDate, CURDATE()) as 'D-day' from exam where TIMESTAMPDIFF(DAY, passDate, CURDATE()) <= -8"
 
                     sql +=  " and TIMESTAMPDIFF(DAY, {}, CURDATE()) > -100".format(comparison)
 
