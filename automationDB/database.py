@@ -234,7 +234,7 @@ class DB():
 
     def applyDatabase(self, dump_file_path):
         os.chdir(r"C:\Bitnami\wampstack-8.1.1-0\mariadb\bin")
-        os.system("mysqldump -u root -p123456 --databases ac < C:/Bitnami/wampstack-8.1.1-0/mariadb/bin/database_dump/{}.sql".format(dump_file_path))
+        os.system("mysqldump -u root -p123456 --databases ac < {}".format(dump_file_path))
 
 
         # finally는 DBGUI에서 구현!

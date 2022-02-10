@@ -1396,6 +1396,8 @@ class BatchUpdate(QWidget):
                 for row in rs:            
                     self.combobox_exam_or_temp.addItem(str(row[0]))
 
+        # self.combobox_exam_or_temp.addItem("Default")
+
 class UPDATE(QWidget):
     # 새 창을 띄우기 위해 서로 global로 연결
     global db
@@ -2847,11 +2849,11 @@ class mainLayout(QWidget, DB):
             
             elif len(words) == 2:
                 if words[0][-1] == "간":
-                    current_category = "classTime = '{}' and classNumber".format(words[0])
+                    current_category = "classTime LIKE '%{}%' and classNumber".format(words[0])
                     keyWord = words[1]
 
                 else:
-                    current_category = "classNumber = '{}' and classTime".format(words[0])
+                    current_category = "classNumber LIKE '%{}%' and classTime".format(words[0])
                     keyWord = words[1]
 
             if current_table == "user":
@@ -2903,7 +2905,7 @@ class mainLayout(QWidget, DB):
             if current_category == "name" or current_category == "teacherName":
                 rs = self.dbPrograms.SELECT("*", current_table, where=f"{current_category} LIKE '%{keyWord}%'", orderBy=order)
             else:
-                rs = self.dbPrograms.SELECT("*", current_table, where=f"{current_category} = '{keyWord}'", orderBy=order)
+                rs = self.dbPrograms.SELECT("*", current_table, where=f"{current_category} LIKE '%{keyWord}%'", orderBy=order)
                 
             if rs == "error":
                 QMessageBox.information(self, "SQL query Error", "SQL query returns error!", QMessageBox.Yes, QMessageBox.Yes)
@@ -3248,6 +3250,19 @@ class DBMS(QMainWindow):
         # file_exit.triggered.connect(QCoreApplication.instance().quit)   # 종료 기능 추가 / self.close()로도 종료 가능
         file_exit.triggered.connect(self.close)      # 위와 같은 기능. 메서드를 전달하는 것이기 때문에 ()없이!
 
+        file_db = QMenu("DataBase", self)
+        db_dump = QAction(QIcon(self.icon_path + "database.png"), "DB 내보내기", self)
+        db_apply = QAction(QIcon(self.icon_path + "database.png"), "DB 가져오기", self)
+        db_sort = QAction(QIcon(self.icon_path + "sort.png"), "id 정렬", self)
+
+        file_db.addAction(db_sort)
+        file_db.addAction(db_dump)
+        file_db.addAction(db_apply)
+
+        db_sort.triggered.connect(self.idSort)
+        db_dump.triggered.connect(self.databaseManagement)
+        db_apply.triggered.connect(self.databaseManagement)
+
         file_wi = QAction(QIcon(self.icon_path + "ribbon.png"), "인수인계사항", self)
         file_wi.setStatusTip("기관장이 해야할 일 리스트 입니다.")
         file_wi.triggered.connect(self.workingInformation_show)
@@ -3361,6 +3376,7 @@ class DBMS(QMainWindow):
         view_stat.setChecked(True)
         view_stat.triggered.connect(self.triState)
 
+        menu_file.addMenu(file_db)
         menu_file.addAction(file_wi)
         menu_file.addAction(file_backUp)
         menu_file.addMenu(file_kuksiwon)
@@ -3398,6 +3414,42 @@ class DBMS(QMainWindow):
         
         scanner.file_list = file_list
         scanner.show()
+
+    def idSort(self):
+        cnt = 0
+        ans = QMessageBox.question(self, "Database", "id 정렬을 시작합니다.", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if ans == QMessageBox.Yes:
+            res = self.main.dbPrograms.SELECT("name, RRN", "user")
+
+        for idx, rows in enumerate(res, start=1):
+            name = rows[0]
+            RRN = rows[1]
+
+            self.main.dbPrograms.UPDATE("user", "id={}".format(idx), "name='{}' and RRN = '{}'".format(name, RRN))
+            print(name, RRN, "완료")
+            cnt = idx
+
+        QMessageBox.information(self, "완료", "{}개의 데이터를 수정하였습니다.".format(cnt), QMessageBox.Yes, QMessageBox.Yes)
+
+    def databaseManagement(self):
+        source = self.sender()
+        msg = ""
+        if source.text() == "DB 내보내기":
+            msg = "DB를 내보냅니다."
+        elif source.text() == "DB 가져오기":
+            msg = "DB를 가져옵니다."
+
+        ans = QMessageBox.question(self, "Database", msg, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if ans == QMessageBox.Yes:
+            if source.text() == "DB 내보내기":
+                self.main.dbPrograms.dumpDatabase()
+            elif source.text() == "DB 가져오기":
+                fname = QFileDialog.getOpenFileName(self)
+                # fname: ('C:/Bitnami/wampstack-8.1.1-0/mariadb/bin/database_dump/ac_bak_2022-02-09.sql', 'All Files (*)')
+                self.main.dbPrograms.applyDatabase(fname[0])
+
+        QMessageBox.information(self, "완료", "완료되었습니다.", QMessageBox.Yes, QMessageBox.Yes)
+            
 
     def workingInformation_show(self):
         wi.show()

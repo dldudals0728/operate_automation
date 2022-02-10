@@ -30,8 +30,13 @@ class Automation:
         print(self.makeFilePath)
         if doc_type == "교육수료증명서":
             try:
+                non_input_user = {}
+
                 where = "exam={}".format(exam)
                 user_rs = self.DB.SELECT("*", "user", where)
+
+                input_list = ["아이디", "이름", "주민등록번호", "전화번호", "자격증", "주소", "본적주소", "기수", "반", \
+                    "총 이수시간", "이론 이수시간", "실습 이수시간", "실기 이수시간", "대체실습", "시험회차"]
 
                 user_query_list = ["id", "name", "RRN", "phoneNumber", "license", "address", "originAddress", "classNumber", "classTime", \
                     "totalCreditHour", "theoryCreditHour", "practicalCreditHour", "trainingCreditHour", "temporaryClassNumber", "exam"]
@@ -41,6 +46,7 @@ class Automation:
                     for index in range(len(rows)):
                         if rows[index] == None:
                             item_dict[user_query_list[index]] = ""
+
                         else:
                             item_dict[user_query_list[index]] = rows[index]
 
