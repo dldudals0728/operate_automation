@@ -1346,6 +1346,10 @@ class BatchUpdate(QWidget):
             db.main.showTable(Refresh=True)
             db.main.textInfo.clear()
 
+        elif self.mode == "이수시간 입력":
+            query = "totalCreditHour=80, theoryCreditHour=80, practicalCreditHour=80, trainingCreditHour=80"
+            where = "classNumber='{}' and classTime='{}' and exam is NULL".format(self.combobox_N.currentText(), self.combobox_T.currentText())
+
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Escape:
             self.close()
