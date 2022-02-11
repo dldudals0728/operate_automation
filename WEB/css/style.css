@@ -50,8 +50,8 @@ body {
 }
 
 .adv-page-selector {
-    border: 2px solid black;
-    background-color: white;
+    border: 2px solid white;
+    background-color: skyblue;
     width: 15px;
     height: 15px;
     border-radius: 50%;
@@ -109,22 +109,13 @@ body {
 }
 
 #notice ul li:first-child {
-    border-bottom: 2px solid navy;
+    border-bottom: 1px solid navy;
 }
 
 #notice ul li:not(:first-child) {
     border-bottom: 1px solid lightgray;
     margin-bottom: 10px;
 }
-
-.flexer {
-    display: flex;
-    justify-content: center;
-}
-
-/* #bottom-section {
-    margin: 0 auto;
-} */
 
 .bottom-menu span {
     position: absolute; background: darkblue;
@@ -133,39 +124,48 @@ body {
     left: 0;
     top: 0;
     width: 0;
-    height: 5px;
-    transition: width 0.1s;
+    height: 3px;
+    transition: width 0.3s;
 }
 .bottom-menu span:nth-child(2) { 
     right: 0;
-    top: 0;
-    width: 5px;
+    bottom: 0;
+    width: 3px;
     height: 0;
-    transition: width 0.1s;
+    transition: height 0.3s;
 }
 .bottom-menu span:nth-child(3) { 
     right: 0;
     bottom: 0;
     width: 0;
-    height: 5px;
-    transition: width 0.1s;
+    height: 3px;
+    transition: width 0.3s;
 }
 .bottom-menu span:nth-child(4) { 
     left: 0;
-    bottom: 0;
-    width: 5px;
+    top: 0;
+    width: 3px;
     height: 0;
-    transition: width 0.1s;
+    transition: height 0.3s;
 }
 
-.bottom-menu:hover span:nth-child(1) {width: 100%;}
-.bottom-menu:hover span:nth-child(2) {height: 100%;}
-.bottom-menu:hover span:nth-child(3) {width: 100%;}
-.bottom-menu:hover span:nth-child(4) {height: 100%;}
+.bottom-menu:hover span:nth-child(1) {
+    width: 100%;
+}
+.bottom-menu:hover span:nth-child(2) {
+    height: 100%;
+}
+.bottom-menu:hover span:nth-child(3) {
+    width: 100%;
+}
+.bottom-menu:hover span:nth-child(4) {
+    height: 100%;
+}
 
 
 .bottom-menu {
-    border: 1px solid lightgray;
+    border: 0.5px solid lightgray;
+    position: relative;
     width: 270px;
     height: 150px;
     text-align: left;

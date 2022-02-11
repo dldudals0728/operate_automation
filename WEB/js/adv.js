@@ -25,8 +25,8 @@ function changeAdv(idx) {
 }
 
 function changeAdvSelector(idx) {
-    advSelector.forEach(s => s.style.backgroundColor = "white");
-    advSelector[idx].style.backgroundColor = "black";
+    advSelector.forEach(s => s.style.opacity = 0.3);
+    advSelector[idx].style.opacity = 1;
 }
 
 for(let i=0; i<advSelector.length; i++) {

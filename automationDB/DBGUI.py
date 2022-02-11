@@ -1383,7 +1383,7 @@ class BatchUpdate(QWidget):
                 QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
                 self.close()
             else:
-                for row in rs:            
+                for row in rs:
                     self.combobox_exam_or_temp.addItem(str(row[0]) + "회")
 
         elif self.mode == "대체실습 일괄 변경":
@@ -1393,8 +1393,12 @@ class BatchUpdate(QWidget):
                 QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
                 self.close()
             else:
-                for row in rs:            
+                for row in rs:
                     self.combobox_exam_or_temp.addItem(str(row[0]))
+
+        elif self.mode == "이수시간 입력":
+            self.label_exam_or_temp.setText("")
+            self.combobox_exam_or_temp.setEnabled(False)
 
         # self.combobox_exam_or_temp.addItem("Default")
 
