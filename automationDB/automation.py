@@ -25,18 +25,29 @@ class Automation:
     2. 시험 회차에 따라 일괄 생성 및 출력한다.  O
     3. 개인적으로 생성 및 출력한다. (일일이!!! ) ==> 이건 좀 필요할 듯. 누군가 누락됐을 때 생성할 필요 있음!    O
     """
+    def inputChecker(self, res):
+        """DB 검색을 통해 반환된 튜플의 입력 여부를 검사합니다."""
+        input_list = []
+        for rows in res:
+            imsi_list = []
+            for rs in rows:
+                if rs == None:
+                    imsi_list.append("")
+                else:
+                    imsi_list.append(rs)
+
+            input_list.append(tuple(imsi_list))
+
+        return tuple(input_list)
+
+
     def makeDocument(self, exam, doc_type):
         self.makeFilePath += "\\{}.xlsx".format(doc_type)
         print(self.makeFilePath)
         if doc_type == "교육수료증명서":
             try:
-                non_input_user = {}
-
                 where = "exam={}".format(exam)
-                user_rs = self.DB.SELECT("*", "user", where)
-
-                input_list = ["아이디", "이름", "주민등록번호", "전화번호", "자격증", "주소", "본적주소", "기수", "반", \
-                    "총 이수시간", "이론 이수시간", "실습 이수시간", "실기 이수시간", "대체실습", "시험회차"]
+                user_rs = self.inputChecker(self.DB.SELECT("*", "user", where))
 
                 user_query_list = ["id", "name", "RRN", "phoneNumber", "license", "address", "originAddress", "classNumber", "classTime", \
                     "totalCreditHour", "theoryCreditHour", "practicalCreditHour", "trainingCreditHour", "temporaryClassNumber", "exam"]
@@ -44,11 +55,7 @@ class Automation:
 
                 for rows in user_rs:
                     for index in range(len(rows)):
-                        if rows[index] == None:
-                            item_dict[user_query_list[index]] = ""
-
-                        else:
-                            item_dict[user_query_list[index]] = rows[index]
+                        item_dict[user_query_list[index]] = rows[index]
 
                     save_path = self.basePath + "{}\\{}{}\\{}".format(item_dict["classNumber"], item_dict["classNumber"], item_dict["classTime"], item_dict["name"])
 
@@ -131,17 +138,14 @@ class Automation:
         elif doc_type == "대체실습확인서":
             try:
                 where = "exam={}".format(exam)
-                user_rs = self.DB.SELECT("id, name, RRN, phoneNumber, classNumber, classTime, trainingCreditHour, temporaryClassNumber", "user", where)
+                user_rs = self.inputChecker(self.DB.SELECT("id, name, RRN, phoneNumber, classNumber, classTime, trainingCreditHour, temporaryClassNumber", "user", where))
 
                 user_query_list = ["id", "name", "RRN", "phoneNumber", "classNumber", "classTime", "trainingCreditHour", "temporaryClassNumber"]
                 item_dict = {}
 
                 for rows in user_rs:
                     for index in range(len(rows)):
-                        if rows[index] == None:
-                            item_dict[user_query_list[index]] = ""
-                        else:
-                            item_dict[user_query_list[index]] = rows[index]
+                        item_dict[user_query_list[index]] = rows[index]
 
                     save_path = self.basePath + "{}\\{}{}\\{}".format(item_dict["classNumber"], item_dict["classNumber"], item_dict["classTime"], item_dict["name"])
 
@@ -238,16 +242,13 @@ class Automation:
                 item_dict["submitDate"] = exam_rs[6].strftime("     %Y  년     %m  월    %d   일    ")
 
                 where = "exam={}".format(exam)
-                user_rs = self.DB.SELECT("id, name, RRN, phoneNumber, address, classNumber, classTime, temporaryClassNumber", "user", where)
+                user_rs = self.inputChecker(self.DB.SELECT("id, name, RRN, phoneNumber, address, classNumber, classTime, temporaryClassNumber", "user", where))
 
                 user_query_list = ["id", "name", "RRN", "phoneNumber", "address", "classNumber", "classTime", "temporaryClassNumber"]
 
                 for rows in user_rs:
                     for index in range(len(rows)):
-                        if rows[index] == None:
-                            item_dict[user_query_list[index]] = ""
-                        else:
-                            item_dict[user_query_list[index]] = rows[index]
+                        item_dict[user_query_list[index]] = rows[index]
 
                     save_path = self.basePath + "{}\\{}{}\\{}".format(item_dict["classNumber"], item_dict["classNumber"], item_dict["classTime"], item_dict["name"])
 
@@ -370,7 +371,7 @@ class Automation:
             if doc_type == "개강보고":
                 self.wb_imsi = Workbook()
                 self.ws_imsi = self.wb_imsi.active
-                rs = self.DB.SELECT("license, name, RRN, address, phoneNumber", "user", "classNumber='{}' and classTime='{}'".format(number, time), orderBy="FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1")
+                rs = self.inputChecker(self.DB.SELECT("license, name, RRN, address, phoneNumber", "user", "classNumber='{}' and classTime='{}'".format(number, time), orderBy="FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"))
                 for indexX, rows in enumerate(rs, start=1):
                     license = rows[0]
                     if license == "일반":
@@ -401,7 +402,7 @@ class Automation:
             elif doc_type == "출석부":
                 self.wb_imsi = Workbook()
                 self.ws_imsi = self.wb_imsi.active
-                rs = self.DB.SELECT("name, RRN", "user", "classNumber='{}' and classTime='{}'".format(number, time))
+                rs = self.inputChecker(self.DB.SELECT("name, RRN", "user", "classNumber='{}' and classTime='{}'".format(number, time)))
                 for idx, rows in enumerate(rs, start=1):
                     self.ws_imsi.cell(row=idx, column=1).value = idx
                     self.ws_imsi.cell(row=idx, column=2).value = rows[0]
@@ -413,7 +414,7 @@ class Automation:
                 self.wb_imsi = Workbook()
                 self.ws_imsi = self.wb_imsi.active
                 cnt = 0
-                rs = self.DB.SELECT("license, name, RRN, phoneNumber, classTime, classNumber", "user", "temporaryClassNumber='{}'".format(number), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1")
+                rs = self.inputChecker(self.DB.SELECT("license, name, RRN, phoneNumber, classTime, classNumber", "user", "temporaryClassNumber='{}'".format(number), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"))
                 for indexX, rows in enumerate(rs, start=1):
                     license = rows[0]
                     if license == "일반":
@@ -454,7 +455,7 @@ class Automation:
             elif doc_type == "대체실습 수료보고":
                 self.wb_imsi = Workbook()
                 self.ws_imsi = self.wb_imsi.active
-                rs = self.DB.SELECT("classTime, classNumber, totalCreditHour, theoryCreditHour, practicalCreditHour, trainingCreditHour, name, RRN, address, phoneNumber", "user", "temporaryClassNumber='{}'".format(number), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1")
+                rs = self.inputChecker(self.DB.SELECT("classTime, classNumber, totalCreditHour, theoryCreditHour, practicalCreditHour, trainingCreditHour, name, RRN, address, phoneNumber", "user", "temporaryClassNumber='{}'".format(number), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"))
                 rs_temp_lecture = self.DB.SELECT("awardDate", "temptraining", "classNumber='{}'".format(number))
                 award_date = rs_temp_lecture[0][0].strftime("%Y.%m.%d")
                 for indexX, rows in enumerate(rs, start=1):
@@ -512,7 +513,7 @@ class Automation:
             exam_dict["passDate"] = str(exam_rs[5]).replace("-", "")
 
             where = "exam={}".format(exam)
-            user_rs = self.DB.SELECT("name, RRN, phoneNumber, license, address, originAddress, classNumber, classTime, totalCreditHour, theoryCreditHour, practicalCreditHour, trainingCreditHour, temporaryClassNumber, exam", "user", where)
+            user_rs = self.inputChecker(self.DB.SELECT("name, RRN, phoneNumber, license, address, originAddress, classNumber, classTime, totalCreditHour, theoryCreditHour, practicalCreditHour, trainingCreditHour, temporaryClassNumber, exam", "user", where))
 
             user_query_list = ["name", "RRN", "phoneNumber", "license", "address", "originAddress", "classNumber", "classTime", "totalCreditHour", "theoryCreditHour", "practicalCreditHour", "trainingCreditHour", "temporaryClassNumber", "exam"]
             member_dict = {}
@@ -598,7 +599,7 @@ class Automation:
 
             self.ws_imsi.cell(row=2, column=2).value = "{} {}".format(class_number, class_time)
 
-            rs = self.DB.SELECT("name, RRN, phoneNumber", "user", "classNumber='{}' and classTime='{}'".format(class_number, class_time))
+            rs = self.inputChecker(self.DB.SELECT("name, RRN, phoneNumber", "user", "classNumber='{}' and classTime='{}'".format(class_number, class_time)))
             for idx, rows in enumerate(rs, start=5):
                 self.ws_imsi.cell(row=idx, column=2).value = rows[0]
                 DOB = rows[1][:6]
@@ -625,7 +626,7 @@ class Automation:
                 self.wb_imsi = load_workbook(self.docFilePath + "사물함 주기_야간.xlsx")
 
             self.ws_imsi = self.wb_imsi.active
-            rs = self.DB.SELECT("name", "user", "classNumber='{}' and classTime='{}'".format(class_number, class_time))
+            rs = self.inputChecker(self.DB.SELECT("name", "user", "classNumber='{}' and classTime='{}'".format(class_number, class_time)))
             rows = 2
             cols = 1
             for r in rs:
@@ -651,7 +652,7 @@ class Automation:
             self.ws = self.wb.active
             save_path = "D:\\남양노아요양보호사교육원\\경기도청\\03_시험준비 및 자격증발급관련\\{}회_제출용\\{}회 응시접수명단.xlsx".format(exam, exam)
 
-            rs = self.DB.SELECT("name, RRN, phoneNumber, address, classNumber, classTime", "user", "exam={}".format(exam), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1")
+            rs = self.inputChecker(self.DB.SELECT("name, RRN, phoneNumber, address, classNumber, classTime", "user", "exam={}".format(exam), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"))
             pre_class = ""
             class_cnt = 0
             for idx, rows in enumerate(rs, start=3):
@@ -683,7 +684,7 @@ class Automation:
 
     def printDocument(self, exam, doc_type):
         non_file_list = []
-        rs_user = self.DB.SELECT("classNumber, classTime, name", "user", where="exam={}".format(exam), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1")
+        rs_user = self.inputChecker(self.DB.SELECT("classNumber, classTime, name", "user", where="exam={}".format(exam), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"))
         for rows in rs_user:
             doc_path = self.basePath + "{}\\{}{}\\{}\\{}_{}.xlsx".format(rows[0], rows[0], rows[1], rows[2], rows[2], doc_type)
             if not os.path.exists(doc_path):
@@ -703,7 +704,7 @@ class Automation:
         dir_path = "D:\\남양노아요양보호사교육원\\경기도청\\03_시험준비 및 자격증발급관련\\{}회_제출용\\자격증 사진".format(exam)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
-        rs_user = self.DB.SELECT("classNumber, classTime, name, RRN", "user", where="exam={}".format(exam))
+        rs_user = self.inputChecker(self.DB.SELECT("classNumber, classTime, name, RRN", "user", where="exam={}".format(exam)))
         for rows in rs_user:
             doc_path = self.basePath + "{}\\{}{}\\{}\\{}{}_{}.jpg".format(rows[0], rows[0], rows[1], rows[2], rows[0], rows[1], rows[2])
             re_name = rows[3].replace("-", "")

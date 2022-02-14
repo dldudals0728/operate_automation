@@ -1265,7 +1265,6 @@ class BatchUpdate(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
-        self.setWindowTitle("시험 회차 변경")
         self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
 
         self.mode = "시험회차"
@@ -1308,9 +1307,14 @@ class BatchUpdate(QWidget):
         box_bottom.addWidget(self.btn_cancel)
 
     def batch(self):
-        if self.combobox_N.currentText() == "선택" or self.combobox_T.currentText() == "선택" or self.combobox_exam_or_temp.currentText() == "선택":
-            QMessageBox.warning(self, "오류", "입력값 오류")
-            return
+        if self.mode == "이수시간 일괄 변경":
+            if self.combobox_N.currentText() == "선택" or self.combobox_T.currentText() == "선택":
+                QMessageBox.warning(self, "오류", "입력값 오류")
+        
+        else:
+            if self.combobox_N.currentText() == "선택" or self.combobox_T.currentText() == "선택" or self.combobox_exam_or_temp.currentText() == "선택":
+                QMessageBox.warning(self, "오류", "입력값 오류")
+                return
 
         ans = QMessageBox.question(self, "데이터 수정 확인", "이 기능은 \"데이터가 없는 사람(NULL)만\" 값을 변경해 줍니다. 변경하시겠습니까?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
@@ -1346,9 +1350,33 @@ class BatchUpdate(QWidget):
             db.main.showTable(Refresh=True)
             db.main.textInfo.clear()
 
-        elif self.mode == "이수시간 입력":
+        elif self.mode == "이수시간 일괄 변경":
+            checker = "(totalCreditHour is NULL and theoryCreditHour is NULL and practicalCreditHour is NULL and trainingCreditHour is NULL)"
             query = "totalCreditHour=80, theoryCreditHour=80, practicalCreditHour=80, trainingCreditHour=80"
-            where = "classNumber='{}' and classTime='{}' and exam is NULL".format(self.combobox_N.currentText(), self.combobox_T.currentText())
+            where = "classNumber='{}' and classTime='{}'".format(self.combobox_N.currentText(), self.combobox_T.currentText())
+
+            member = db.main.dbPrograms.SELECT("id, name, RRN, license", "user", where)
+            for rows in member:
+                if rows[3] == "일반":
+                    query = "totalCreditHour=240, theoryCreditHour=80, practicalCreditHour=80, trainingCreditHour=80"
+                elif rows[3] == "간호사":
+                    query = "totalCreditHour=40, theoryCreditHour=26, practicalCreditHour=6, trainingCreditHour=8"
+                elif rows[3] == "사회복지사":
+                    query = "totalCreditHour=50, theoryCreditHour=32, practicalCreditHour=10, trainingCreditHour=8"
+                elif rows[3] == "간호조무사" or rows[3] == "물리치료사" or rows[3] == "작업치료사":
+                    query = "totalCreditHour=50, theoryCreditHour=31, practicalCreditHour=11, trainingCreditHour=8"
+                else:
+                    query = "totalCreditHour=NULL, theoryCreditHour=NULL, practicalCreditHour=NULL, trainingCreditHour=NULL"
+
+                where = "id={} and name='{}' and RRN='{}' and {}".format(rows[0], rows[1], rows[2], checker)
+                db.main.dbPrograms.UPDATE("user", query, where)
+
+            QMessageBox.about(self, "완료", "데이터를 성공적으로 수정했습니다.")
+            db.main.showTable(Refresh=True)
+            db.main.textInfo.clear()
+
+        self.close()
+
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Escape:
@@ -1358,6 +1386,7 @@ class BatchUpdate(QWidget):
             self.batch()
 
     def showEvent(self, QShowEvent):
+        self.setWindowTitle(self.mode)
         self.combobox_N.clear()
         self.combobox_T.clear()
         self.combobox_exam_or_temp.clear()
@@ -1369,7 +1398,7 @@ class BatchUpdate(QWidget):
         self.combobox_T.addItem("야간")
         self.combobox_exam_or_temp.addItem("선택")
 
-        rs = db.main.dbPrograms.SELECT("classNumber, classTime", "lecture", where="TIMESTAMPDIFF(DAY, startDate, CURDATE()) < 90", orderBy="classNumber *1")
+        rs = db.main.dbPrograms.SELECT("classNumber, classTime", "lecture", where="TIMESTAMPDIFF(DAY, startDate, CURDATE()) < 120", orderBy="classNumber *1")
         if rs == "error":
             QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
             self.close()
@@ -1400,7 +1429,7 @@ class BatchUpdate(QWidget):
                 for row in rs:
                     self.combobox_exam_or_temp.addItem(str(row[0]))
 
-        elif self.mode == "이수시간 입력":
+        elif self.mode == "이수시간 일괄 변경":
             self.label_exam_or_temp.setText("")
             self.combobox_exam_or_temp.setEnabled(False)
 
@@ -3364,11 +3393,16 @@ class DBMS(QMainWindow):
         batch_data_temp = QAction(QIcon(self.icon_path + "batchEdit.png"), "대체실습 일괄 변경", self)
         batch_data_temp.setStatusTip("특정 기수, 반의 대체실습 기수를 일괄적으로 변경합니다.")
 
+        batch_data_time = QAction(QIcon(self.icon_path + "time.png"), "이수시간 일괄 변경", self)
+        batch_data_time.setStatusTip("특정 기수, 반의 이론, 실기, 실습 이수시간을 일괄적으로 변경합니다.")
+
         batch_data_exam.triggered.connect(self.batch_show)
         batch_data_temp.triggered.connect(self.batch_show)
+        batch_data_time.triggered.connect(self.batch_show)
 
         edit_batch.addAction(batch_data_exam)
         edit_batch.addAction(batch_data_temp)
+        edit_batch.addAction(batch_data_time)
 
         mod_data = QAction(QIcon(self.icon_path + "edit.png"), "데이터 수정", self)
         mod_data.setShortcut("F2")
