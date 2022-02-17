@@ -30,6 +30,137 @@ from PIL import Image
 
 from automation import Automation
 
+class LogIn(QWidget):
+    global db
+
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+        self.isLogin = False
+
+
+    def initUI(self):
+        self.setFixedSize(600, 300)
+        self.setWindowTitle("남양노아요양보호사교육원 DBMS")
+        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
+        self.main_box = QVBoxLayout()
+        self.box_logo = QHBoxLayout()
+        self.box_top = QHBoxLayout()
+        self.box_middle = QHBoxLayout()
+        self.box_bottom = QHBoxLayout()
+
+        self.label_logo = QLabel("img", self)
+        self.img_logo = QPixmap(r"D:\Master\PythonWorkspace\NYNOA\Icons\logo.png")
+        self.img_logo.scaledToWidth(150)
+        self.label_logo.setPixmap(self.img_logo)
+        self.label_logo.setAlignment(Qt.AlignCenter)
+
+        self.box_logo.addWidget(self.label_logo)
+        
+        self.main_box.addLayout(self.box_logo)
+        self.main_box.addLayout(self.box_top)
+        self.main_box.addLayout(self.box_middle)
+        self.main_box.addLayout(self.box_bottom)
+
+        self.box_top.addStretch(1)
+        self.label_id = QLabel("아이디", self)
+        self.label_id.setFixedWidth(100)
+        self.label_id.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.input_id = QLineEdit(self)
+        self.box_top.addWidget(self.label_id)
+        self.box_top.addWidget(self.input_id)
+        self.box_top.addStretch(1)
+
+        self.box_middle.addStretch(1)
+        self.label_pwd = QLabel("비밀번호", self)
+        self.label_pwd.setFixedWidth(100)
+        self.label_pwd.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.input_pwd = QLineEdit(self)
+        self.input_pwd.setEchoMode(QLineEdit.Password)
+        self.box_middle.addWidget(self.label_pwd)
+        self.box_middle.addWidget(self.input_pwd)
+        self.box_middle.addStretch(1)
+
+        self.check_id_save = QCheckBox("아이디 저장", self)
+        self.box_bottom.addWidget(self.check_id_save)
+        self.box_bottom.addStretch(1)
+        self.btn_login = QPushButton("로그인", self)
+        self.btn_login.clicked.connect(self.logIn)
+        self.box_bottom.addWidget(self.btn_login)
+
+        self.setLayout(self.main_box)
+
+        self.show()
+
+    def logIn(self):
+        user_id = self.input_id.text().strip()
+        user_pwd = self.input_pwd.text().strip()
+
+        if user_id == "" or user_pwd == "":
+            QMessageBox.about(self, "입력 오류", "아이디와 비밀번호를 입력해주세요")
+            return
+        where = "id='{}' and password='{}'".format(user_id, user_pwd)
+        res = db.main.dbPrograms.SELECT("id, password", "account", where=where)
+
+        if not res:
+            QMessageBox.about(self, "오류", "아이디 혹은 비밀번호 오류입니다.")
+        else:
+            self.isLogin = True
+            idSave = self.check_id_save.isChecked()
+            if idSave:
+                current_id = self.input_id.text().strip()
+                query = "savedId = '{}'".format(current_id)
+            else:
+                query = "savedId = NULL"
+
+            if self.saved_id == NULL:
+                where = "savedId IS null"
+            else:
+                where = "savedId='{}'".format(self.saved_id)
+
+            db.main.dbPrograms.UPDATE("loginInfo", query, where)
+
+            db.show()
+            todo_list.show()
+            self.close()
+
+
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Escape:
+            self.close()
+        
+        elif e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
+            self.logIn()
+
+    def showEvent(self, QShowEvent):
+        idIsSaved = db.main.dbPrograms.SELECT("savedId", "loginInfo")[0][0]
+        if idIsSaved != None:
+            self.check_id_save.setChecked(True)
+            self.saved_id = idIsSaved
+            self.input_id.setText(self.saved_id)
+        else:
+            self.check_id_save.setChecked(False)
+            self.saved_id = NULL
+
+    def closeEvent(self, QCloseEvent):
+        # QMessageBox.question(인자, title, message, 버튼 추가(여러개 가능(|사용)), 버튼 기본값)
+        if not self.isLogin:
+            ans = QMessageBox.question(self, "종료", "DBMS를 종료하시겠습니까?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            
+            if ans == QMessageBox.Yes:
+                ####################### 여기다가 conn.close()추가하기 !!!!!!!!!!!!!!!!!!!!!
+                try:
+                    db.main.dbPrograms.conn.close()
+                except:
+                    print("DBGUI Exception: Database is already closed!")
+                finally:
+                    QCloseEvent.accept()
+            else:
+                QCloseEvent.ignore()
+        else:
+            pass
+        
+
 class WorkingInformation(QWidget):
     global db
 
@@ -98,7 +229,7 @@ class WorkingInformation(QWidget):
 
         self.main_box.addWidget(self.main_tab)
         self.setLayout(self.main_box)
-        self.show()
+        # self.show()
 
     def initUI(self):
         rule_title = "<br><b style='font-size: 20px; font-weight: bolder; color: blue;'>교육기관장의 교육 운영</b><br>"
@@ -467,7 +598,7 @@ class ToDoList(QWidget):
         self.schedule_box.addWidget(self.label_schedule)
 
         self.initUI()
-        self.show()
+        # self.show()
 
     def exam_pass_list(self, exam_round):
         db.main.auto.makeDocument("교육수료증명서", exam_round)
@@ -3546,6 +3677,7 @@ class mainLayout(QWidget, DB):
 
 class DBMS(QMainWindow):
     # 새 창을 띄우기 위해 서로 global로 연결
+    global log_in_window
     global insert
     global update
     global batch
@@ -3577,7 +3709,7 @@ class DBMS(QMainWindow):
 
         self.menuOpt()
 
-        self.show()
+        # self.show()
 
     # 상단 menu
     def menuOpt(self):
@@ -3893,6 +4025,7 @@ class DBMS(QMainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     db = DBMS()
+    log_in_window = LogIn()
     todo_list = ToDoList()
     insert = INSERT()
     update = UPDATE()
