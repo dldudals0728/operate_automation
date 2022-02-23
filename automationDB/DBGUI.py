@@ -1,5 +1,6 @@
 import sys
 from tkinter.tix import CheckList
+from turtle import color
 from typing import DefaultDict
 # 표 생성 함수
 # QMainWindow: 상태표시줄, 메뉴 추가 / QAction: 메뉴 액션 추가 / QMenu: menu sub group 추가 / qApp: 앱 종료 함수 사용
@@ -122,6 +123,7 @@ class LogIn(QWidget):
 
             db.show()
             todo_list.show()
+            db.main.dbPrograms.dumpDatabase(daily=True)
             self.close()
 
 
@@ -607,7 +609,7 @@ class ToDoList(QWidget):
 
     def initUI(self):
         for doc_type in self.doc_type_list:
-            res = db.main.dbPrograms.ddayCheck(doc_type, isDeadline=True)
+            res = db.main.dbPrograms.dDayCheck(doc_type, isDeadline=True)
 
             if not res:
                 pass
@@ -688,7 +690,7 @@ class ToDoList(QWidget):
                     self.deadline_dict[name]["documentType"] = doc_type
 
         if len(self.deadline_dict) != 0:
-            for i in range(len(self.deadline_dict) * 3):
+            for i in range(len(self.deadline_dict) * 4):
                 self.deadline_label_list.append(QLabel(self))
                 self.deadline_label_list[i].setStyleSheet("font-size: 15px;")
 
@@ -696,19 +698,35 @@ class ToDoList(QWidget):
             self.deadline_priority_list = sorted(self.deadline_dict, key=lambda name: self.deadline_dict[name]["D-day"], reverse=True)
 
             for idx, name in enumerate(self.deadline_priority_list):
-                idx *= 3
-                self.deadline_label_list[idx].setText(name + "<b style='color: blue; font-size: 15px;'> " + self.deadline_dict[name]["마감일자"] + " </b>")
-                self.deadline_label_list[idx + 1].setText("<b style='font-size: 15px; color: blue;'>D-day : D" + str(self.deadline_dict[name]["D-day"]) + "</b>")
-                if int(self.deadline_dict[name]["D-day"]) > -3:
-                    if int(self.deadline_dict[name]["D-day"]) == 0:
-                        self.deadline_dict[name]["D-day"] = "D-day!"
-                        self.deadline_label_list[idx + 1].setText("<b style='font-size: 15px; color: red;'>D-day : " + str(self.deadline_dict[name]["D-day"]) + "</b>")
+                idx *= 4
+                self.deadline_label_list[idx].setText(name + "<b style='color: blue;'> " + self.deadline_dict[name]["마감일자"] + " </b>")
 
-                    elif int(self.deadline_dict[name]["D-day"]) > 0:
-                        self.deadline_dict[name]["D-day"] = "D+" + str(self.deadline_dict[name]["D-day"])
-                        self.deadline_label_list[idx + 1].setText("<b style='font-size: 15px; color: purple;'>D-day : " + str(self.deadline_dict[name]["D-day"]) + "</b>")
+                self.deadline_label_list[idx + 1].setText("D-day : D" + str(self.deadline_dict[name]["D-day"]))
+
+                color = "blue"
+                if int(self.deadline_dict[name]["D-day"]) < 0:
+                    if int(self.deadline_dict[name]["D-day"]) > -3:
+                        color = "red"
+                    self.deadline_dict[name]["D-day"] = "D" + str(self.deadline_dict[name]["D-day"])
+                elif int(self.deadline_dict[name]["D-day"]) == 0:
+                    self.deadline_dict[name]["D-day"] = "D-day!"
+                elif int(self.deadline_dict[name]["D-day"]) > 0:
+                    color = "purple"
+                    self.deadline_dict[name]["D-day"] = "D+" + str(self.deadline_dict[name]["D-day"])
+
+                self.deadline_label_list[idx + 1].setText("D-day : " + self.deadline_dict[name]["D-day"])
+                self.deadline_label_list[idx + 1].setStyleSheet("font-weight: bold; font-size: 15px; color: {};".format(color))
 
                 self.deadline_label_list[idx + 2].setText("<b style='font-size: 12px;'>ToDo: " + self.todo_dict[self.deadline_dict[name]["documentType"]] + "</b>")
+
+                # 마지막 QFrame 은 넣지 않는다.
+                if idx // 4 == len(self.deadline_priority_list) - 1:
+                    continue
+                # label list 각 순번의 마지막은 QFrame 으로 변경
+                self.deadline_label_list[idx + 3] = QFrame()
+                self.deadline_label_list[idx + 3].setFrameShape(QFrame.HLine)
+                self.deadline_label_list[idx + 3].setFrameShadow(QFrame.Plain)
+                self.deadline_label_list[idx + 3].setLineWidth(1)
 
             for lbl in self.deadline_label_list:
                 self.deadline_box.addWidget(lbl)
@@ -723,7 +741,7 @@ class ToDoList(QWidget):
         self.schedule_box.addWidget(self.label_schedule)
 
         for doc_type in self.doc_type_list:
-            res = db.main.dbPrograms.ddayCheck(doc_type, isDeadline=False)
+            res = db.main.dbPrograms.dDayCheck(doc_type, isDeadline=False)
 
             if not res:
                 pass
@@ -923,25 +941,45 @@ class Kuksiwon(QWidget):
             ans = QMessageBox.question(self, "확인", "{}회 합격자 {}를 출력합니다.".format(exam_round, self.doc_type[3:]), QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if ans == QMessageBox.Yes:
                 non_list = db.main.auto.printDocument(exam_round, self.doc_type[3:])
-                QMessageBox.about(self, "완료", "문서가 출력되었습니다.\n파일 에러: {}\n\n*파일에러: 파일이 존재하지 않거나 문서 이름이 정확하지 않습니다.".format(non_list))
+                if non_list == "ERROR":
+                    QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+                else:
+                    QMessageBox.about(self, "완료", "문서가 출력되었습니다.\n파일 에러: {}\n\n*파일에러: 파일이 존재하지 않거나 문서 이름이 정확하지 않습니다.".format(non_list))
 
         elif self.doc_type == "합격자 사진":
             ans = QMessageBox.question(self, "확인", "{}회 합격자 사진을 수집합니다.".format(exam_round), QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if ans == QMessageBox.Yes:
                 path, non_list = db.main.auto.gatherPictures(exam_round)
-                QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}\n파일 에러: {}\n\n*파일에러: 파일이 존재하지 않거나 문서 이름이 정확하지 않습니다.".format(path, non_list))
+                if path == "ERROR" and non_list == "ERROR":
+                    QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+                else:
+                    QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}\n파일 에러: {}\n\n*파일에러: 파일이 존재하지 않거나 문서 이름이 정확하지 않습니다.".format(path, non_list))
 
         else:
             ans = QMessageBox.question(self, "확인", "{}회 {} 파일을 생성합니다.".format(exam_round, self.doc_type), QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if ans == QMessageBox.Yes:
                 if self.doc_type == "응시접수 명단":
                     path = db.main.auto.accountList(exam_round)
+                    if path == "ERROR":
+                        QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+                    else:
+                        QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}".format(path))
+
                 elif self.doc_type == "합격자 명단":
-                    path = db.main.auto.examPassList(exam_round)
+                    non_input_list = db.main.auto.examPassList(exam_round)
+                    if non_input_list == "ERROR":
+                        QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+                    else:
+                        QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n{}".format(non_input_list))
+
                 else:
-                    db.main.auto.makeDocument(exam_round, self.doc_type)
-                    path = "NULL"
-                QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}".format(path))
+                    non_input_list = db.main.auto.makeDocument(exam_round, self.doc_type)
+                    if non_input_list == "ERROR":
+                        QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+                    else:
+                        QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n{}".format(non_input_list))
+                
+        self.close()
             
 
     def keyPressEvent(self, e):
@@ -1024,13 +1062,21 @@ class ClassOpening(QWidget):
             ans = QMessageBox.question(self, "확인", "{}기{} 수강료 수납대장 파일을 생성합니다.".format(class_number, class_time), QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if ans == QMessageBox.Yes:
                 path = db.main.auto.paymentList(class_number, class_time)
-                QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}".format(path))
+                if path == "ERROR":
+                    QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+                else:
+                    QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}".format(path))
 
         elif self.doc_type == "사물함 주기":
             ans = QMessageBox.question(self, "확인", "{}기{} 사물함 주기 파일을 생성합니다.".format(class_number, class_time), QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if ans == QMessageBox.Yes:
                 path = db.main.auto.locker(class_number, class_time)
-                QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}".format(path))
+                if path == "ERROR":
+                    QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+                else:
+                    QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}".format(path))
+
+        self.close()
         
 
 
@@ -1117,7 +1163,12 @@ class Report(QWidget):
         ans = QMessageBox.question(self, "확인", "{}기{} {} 데이터를 생성합니다.".format(class_number, class_time, self.doc_type), QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
             QMessageBox.about(self, "안내", "OK버튼을 눌러 작업을 진행해 주세요.\n생성이 완료되면 엑셀 파일이 열립니다.")
-            db.main.auto.report(self.doc_type, class_number, class_time)
+            res = db.main.auto.report(self.doc_type, class_number, class_time)
+            if res == "ERROR":
+                QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+
+        self.close()
+
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Escape:
@@ -3307,6 +3358,7 @@ class mainLayout(QWidget, DB):
 
         elif current_category == "대체실습":
             current_category = "temporaryClassNumber"
+            order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"
 
         elif current_category == "시험회차":
             if current_table == "user":
@@ -3935,11 +3987,28 @@ class DBMS(QMainWindow):
         ans = QMessageBox.question(self, "Database", msg, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
             if source.text() == "DB 내보내기":
-                self.main.dbPrograms.dumpDatabase()
+                fname = QFileDialog.getSaveFileName(self, "Save file", r"C:\Bitnami\wampstack-8.1.1-0\mariadb\bin\database_dump\*.sql", "SQL File(*.sql)")
+                if fname[-1] == "":
+                    QMessageBox.information(self, "취소", "취소되었습니다.")
+                    return
+                self.main.dbPrograms.dumpDatabase(file_path=fname[0])
+
             elif source.text() == "DB 가져오기":
-                fname = QFileDialog.getOpenFileName(self)
+                fname = QFileDialog.getOpenFileName(self, "Open file", r"C:\Bitnami\wampstack-8.1.1-0\mariadb\bin\database_dump\*.sql", "SQL File(*.sql)")
                 # fname: ('C:/Bitnami/wampstack-8.1.1-0/mariadb/bin/database_dump/ac_bak_2022-02-09.sql', 'All Files (*)')
-                self.main.dbPrograms.applyDatabase(fname[0])
+                if fname[-1] == "":
+                    QMessageBox.information(self, "취소", "취소되었습니다.")
+                    return
+                db_change = QMessageBox.question(self, "DB 변경", "데이터베이스와 연결을 끊고, DB를 선택된 DB로 변경합니다.", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                if db_change == QMessageBox.Yes:
+                    self.main.dbPrograms.applyDatabase(fname[0])
+
+                else:
+                    QMessageBox.information(self, "취소", "취소되었습니다.")
+                    return
+                
+                QMessageBox.information(self, "완료", "데이터베이스가 변경되었습니다. 프로그램을 다시 시작해주세요.", QMessageBox.Yes, QMessageBox.Yes)
+                sys.exit()
 
         QMessageBox.information(self, "완료", "완료되었습니다.", QMessageBox.Yes, QMessageBox.Yes)
             

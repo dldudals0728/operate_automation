@@ -148,7 +148,7 @@ class DB():
                 print(e)
                 print("UPDATE Exception\ndatabase Exception: Connection is already closed!")
 
-    def ddayCheck(self, doc_type, isDeadline=False):
+    def dDayCheck(self, doc_type, isDeadline=False):
         try:
             with self.conn.cursor() as curs:
                 if isDeadline == True:
@@ -227,14 +227,52 @@ class DB():
             print(e)
             return "error"
 
-    def dumpDatabase(self):
+    def dropDatabase(self, db_name):
+        sql = "drop database " + db_name
+        # try:
+        with self.conn.cursor() as curs:
+            curs.execute(sql)
+
+        # except Exception as e:
+        #     print(e)
+        #     print("error!")
+
+    def createDatabase(self, db_name):
+        sql = "create database " + db_name
+        # try:
+        with self.conn.cursor() as curs:
+            curs.execute(sql)
+
+        # except Exception as e:
+        #     print(e)
+        #     print("error!")
+
+    def dumpDatabase(self, file_path=None, daily=False):
         today = datetime.date.today().strftime("%Y-%m-%d")
         os.chdir(r"C:\Bitnami\wampstack-8.1.1-0\mariadb\bin")
-        os.system("mysqldump -u root -p123456 --databases ac > C:/Bitnami/wampstack-8.1.1-0/mariadb/bin/database_dump/ac_bak_{}.sql".format(today))
+        if daily == True:
+            if os.path.exists(r"C:\Bitnami\wampstack-8.1.1-0\mariadb\bin\database_dump\ac_bak_{}.sql".format(today)):
+                return
+            # os.system("mysqldump -u root -p123456 --default-character-set=utf8 --databases ac > C:/Bitnami/wampstack-8.1.1-0/mariadb/bin/database_dump/ac_bak_{}.sql".format(today))
+            os.system("mysqldump -u root -p123456 --databases ac > C:/Bitnami/wampstack-8.1.1-0/mariadb/bin/database_dump/ac_bak_{}.sql".format(today))
+
+        save_path = "C:/Bitnami/wampstack-8.1.1-0/mariadb/bin/database_dump/ac_bak_{}.sql".format(today)
+        if file_path != None:
+            save_path = file_path
+
+        # os.system("mysqldump -u root -p123456 --default-character-set=utf8 --databases ac > {}".format(save_path))
+        os.system("mysqldump -u root -p123456 --databases ac > {}".format(save_path))
 
     def applyDatabase(self, dump_file_path):
+        self.dropDatabase("ac")
+        self.createDatabase("ac")
         os.chdir(r"C:\Bitnami\wampstack-8.1.1-0\mariadb\bin")
-        os.system("mysqldump -u root -p123456 --databases ac < {}".format(dump_file_path))
+        try:
+            # os.system("mysqldump -u root -p123456 --default-character-set=utf8 --databases ac < {}".format(dump_file_path))
+            os.system("mysql -u root -p123456 ac < {}".format(dump_file_path))
+            return True
+        except:
+            return False
 
 
         # finally는 DBGUI에서 구현!
@@ -243,4 +281,4 @@ class DB():
 
 if __name__ == "__main__":
     db = DB()
-    db.dumpDatabase()
+    # db.dumpDatabase()
