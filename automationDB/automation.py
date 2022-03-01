@@ -1,3 +1,4 @@
+from inspect import istraceback
 import os
 import random
 import shutil
@@ -154,9 +155,7 @@ class Automation:
                 return return_str
 
             except:
-                traceback.print_exc()
-                self.DB.conn.close()
-                return "ERROR"
+                return traceback.format_exc()
 
         elif doc_type == "대체실습확인서":
             try:
@@ -259,9 +258,7 @@ class Automation:
                 return return_str
 
             except:
-                traceback.print_exc()
-                self.DB.conn.close()
-                return "ERROR"
+                return traceback.format_exc()
 
         elif doc_type == "요양보호사 자격증 발급,재발급 신청서":
             try:
@@ -398,9 +395,7 @@ class Automation:
                 return return_str
 
             except:
-                traceback.print_exc()
-                self.DB.conn.close()
-                return "ERROR"
+                return traceback.format_exc()
 
     def report(self, doc_type, number, time=None, personal_dcit=None):
         """
@@ -530,9 +525,10 @@ class Automation:
             self.wb_imsi.close()
             os.system(self.imsi_workbook_path)
 
+            return "정상 처리"
+
         except:
-            traceback.print_exc()
-            return "ERROR"
+            return traceback.format_exc()
 
 
     def examPassList(self, exam):
@@ -641,8 +637,7 @@ class Automation:
             return return_str
         
         except:
-            traceback.print_exc()
-            return "ERROR"
+            return traceback.format_exc()
 
     def paymentList(self, class_number, class_time):
         try:
@@ -668,8 +663,7 @@ class Automation:
             return self.basePath + "{}\\{}{}\\{}{}_수강료 납부 대장.xlsx".format(class_number, class_number, class_time, class_number, class_time)
 
         except:
-            traceback.print_exc()
-            return "ERROR"
+            return traceback.format_exc()
 
     def locker(self, class_number, class_time):
         try:
@@ -695,8 +689,7 @@ class Automation:
             return self.basePath + "{}\\{}{}\\{}{}_사물함 주기.xlsx".format(class_number, class_number, class_time, class_number, class_time)
 
         except:
-            traceback.print_exc()
-            return "ERROR"
+            return traceback.format_exc()
 
 
     def accountList(self, exam):
@@ -744,8 +737,7 @@ class Automation:
             return save_path
 
         except:
-            traceback.print_exc()
-            return "ERROR"
+            return traceback.format_exc()
 
     def printDocument(self, exam, doc_type):
         try:
@@ -765,8 +757,7 @@ class Automation:
             else:
                 return "없음"
         except:
-            traceback.print_exc()
-            return "ERROR"
+            return traceback.format_exc()
 
     def gatherPictures(self, exam):
         try:
@@ -795,8 +786,7 @@ class Automation:
                 return dir_path, "없음"
 
         except:
-            traceback.print_exc()
-            return "ERROR", "ERROR"
+            return traceback.format_exc(), "ERROR"
 
 
 

@@ -4,6 +4,8 @@ import pymysql
 import os
 import datetime
 
+from pymysql import MySQLError
+
 class DB():
     def __init__(self):
         self.host = 'localhost'
@@ -106,6 +108,7 @@ class DB():
 
         except Exception as e:
             print(e)
+            MySQLError.with_traceback()
             return "error"
             try:
                 print("INSERT Exception -> connection close")

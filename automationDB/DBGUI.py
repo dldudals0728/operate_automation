@@ -941,8 +941,8 @@ class Kuksiwon(QWidget):
             ans = QMessageBox.question(self, "확인", "{}회 합격자 {}를 출력합니다.".format(exam_round, self.doc_type[3:]), QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if ans == QMessageBox.Yes:
                 non_list = db.main.auto.printDocument(exam_round, self.doc_type[3:])
-                if non_list == "ERROR":
-                    QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+                if non_list[:9] == "Traceback":
+                    QMessageBox.about(self, "Traceback", non_list)
                 else:
                     QMessageBox.about(self, "완료", "문서가 출력되었습니다.\n파일 에러: {}\n\n*파일에러: 파일이 존재하지 않거나 문서 이름이 정확하지 않습니다.".format(non_list))
 
@@ -950,8 +950,8 @@ class Kuksiwon(QWidget):
             ans = QMessageBox.question(self, "확인", "{}회 합격자 사진을 수집합니다.".format(exam_round), QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if ans == QMessageBox.Yes:
                 path, non_list = db.main.auto.gatherPictures(exam_round)
-                if path == "ERROR" and non_list == "ERROR":
-                    QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+                if path[:9] == "Traceback" and non_list == "ERROR":
+                    QMessageBox.about(self, "Traceback", path)
                 else:
                     QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}\n파일 에러: {}\n\n*파일에러: 파일이 존재하지 않거나 문서 이름이 정확하지 않습니다.".format(path, non_list))
 
@@ -960,22 +960,22 @@ class Kuksiwon(QWidget):
             if ans == QMessageBox.Yes:
                 if self.doc_type == "응시접수 명단":
                     path = db.main.auto.accountList(exam_round)
-                    if path == "ERROR":
-                        QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+                    if path[:9] == "Traceback":
+                        QMessageBox.about(self, "Traceback", path)
                     else:
                         QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}".format(path))
 
                 elif self.doc_type == "합격자 명단":
                     non_input_list = db.main.auto.examPassList(exam_round)
-                    if non_input_list == "ERROR":
-                        QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+                    if non_input_list[:9] == "Traceback":
+                        QMessageBox.about(self, "Traceback", non_input_list)
                     else:
                         QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n{}".format(non_input_list))
 
                 else:
                     non_input_list = db.main.auto.makeDocument(exam_round, self.doc_type)
-                    if non_input_list == "ERROR":
-                        QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+                    if non_input_list[:9] == "Traceback":
+                        QMessageBox.about(self, "Traceback", non_input_list)
                     else:
                         QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n{}".format(non_input_list))
                 
@@ -1062,8 +1062,8 @@ class ClassOpening(QWidget):
             ans = QMessageBox.question(self, "확인", "{}기{} 수강료 수납대장 파일을 생성합니다.".format(class_number, class_time), QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if ans == QMessageBox.Yes:
                 path = db.main.auto.paymentList(class_number, class_time)
-                if path == "ERROR":
-                    QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+                if path[:9] == "Traceback":
+                    QMessageBox.about(self, "Traceback", path)
                 else:
                     QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}".format(path))
 
@@ -1071,8 +1071,8 @@ class ClassOpening(QWidget):
             ans = QMessageBox.question(self, "확인", "{}기{} 사물함 주기 파일을 생성합니다.".format(class_number, class_time), QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if ans == QMessageBox.Yes:
                 path = db.main.auto.locker(class_number, class_time)
-                if path == "ERROR":
-                    QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+                if path[:9] == "Traceback":
+                    QMessageBox.about(self, "Traceback", path)
                 else:
                     QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}".format(path))
 
@@ -1164,8 +1164,8 @@ class Report(QWidget):
         if ans == QMessageBox.Yes:
             QMessageBox.about(self, "안내", "OK버튼을 눌러 작업을 진행해 주세요.\n생성이 완료되면 엑셀 파일이 열립니다.")
             res = db.main.auto.report(self.doc_type, class_number, class_time)
-            if res == "ERROR":
-                QMessageBox.about(self, "ERROR", "에러가 발생했습니다! 관리자에게 문의해주세요.")
+            if res[:9] == "Traceback":
+                QMessageBox.about(self, "Traceback", res)
 
         self.close()
 
