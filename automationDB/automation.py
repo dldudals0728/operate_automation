@@ -91,7 +91,7 @@ class Automation:
                     item_dict["awardDate"] = tempInfo_rs[3].strftime("%Y 년    %m 월     %d 일")
 
                     # 교육수료증명서 호수
-                    string = "    2021  년  제  {} 호".format(item_dict["id"])
+                    string = "    {}  년  제  {} 호".format(item_dict["awardDate"][:4], item_dict["id"])
                     self.ws.cell(row=1, column=1).value = string
 
                     # 이름
