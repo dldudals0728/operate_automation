@@ -27,7 +27,7 @@ import datetime
 import os
 import shutil
 
-from PIL import Image
+# from PIL import Image
 
 from automation import Automation
 
@@ -679,11 +679,11 @@ class ToDoList(QWidget):
                             os.makedirs(path)
                         
                         if not os.path.exists(write_file_path):
-                            origin_file = "D:\\Master\\files\\화성시-남양노아요양보호사교육원-00회합격자명단.xlsx"
+                            origin_file = "D:\\Master\\files\\화성시-남양노아요양보호사교육원-00회합격자명단_작성용.xlsx"
                             shutil.copy(origin_file, write_file_path)
 
                         if not os.path.exists(submit_file_path):
-                            origin_file = "D:\\Master\\files\\화성시-남양노아요양보호사교육원-00회합격자명단.xlsx"
+                            origin_file = "D:\\Master\\files\\화성시-남양노아요양보호사교육원-00회합격자명단_제출용.xls"
                             shutil.copy(origin_file, submit_file_path)
 
                     self.deadline_dict[name]["D-day"] = dday
