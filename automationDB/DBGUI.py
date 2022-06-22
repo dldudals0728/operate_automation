@@ -1,5 +1,6 @@
 import sys
 from tkinter.tix import CheckList
+from tokenize import String
 from turtle import color
 from typing import DefaultDict
 # 표 생성 함수
@@ -8,7 +9,7 @@ from typing import DefaultDict
 # QVBoxLayout, QHBoxLayout)
 from PyQt5.QtWidgets import *
 # 이벤트 처리. 슬롯으로 연결해줌(connect).
-from PyQt5.QtCore import QCoreApplication, QLine, Qt
+from PyQt5.QtCore import QCoreApplication, QLine, Qt, QDate
 # table Read only mode
 from PyQt5 import QtGui
 from PyQt5.QtGui import *
@@ -895,6 +896,75 @@ class DocumentChecker(QWidget):
             for file in check_list:
                 file_name, file_extension = os.path.splitext(file)
 
+class Calender(QWidget):
+    global db
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("실습 날짜 설정")
+        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
+
+        self.selectedDate = {}
+
+        self.main_box = QVBoxLayout()
+        self.calender = QCalendarWidget()
+        self.label = QLabel()
+        self.btn = QPushButton("입력", self)
+
+        self.calender.setGridVisible(True)
+        self.calender.setVerticalHeaderFormat(False)
+
+        self.main_box.addWidget(self.label)
+        self.main_box.addWidget(self.calender)
+        self.main_box.addWidget(self.btn)
+        self.setLayout(self.main_box)
+
+        self.fm_selected = QTextCharFormat()
+        self.fm_selected.setForeground(Qt.red)
+        self.fm_selected.setBackground(Qt.yellow)
+
+        self.fm_origin = QTextCharFormat()
+
+        self.initUI()
+
+    def initUI(self):
+        self.calender.clicked.connect(self.showDate)
+        self.btn.clicked.connect(self.returnDate)
+
+    def showDate(self, date):
+        dateList = date.toString().split(" ")
+        # date.toString() -> 수 6 22 2022
+        selected_year = dateList[3]
+        selected_month = dateList[1]
+        selected_date = dateList[2]
+        selected_days = dateList[0]
+        if selected_year not in self.selectedDate.keys():
+            self.selectedDate[selected_year] = []
+
+        dateInfo = f"{selected_month.rjust(2, '0')}/{selected_date.rjust(2, '0')}"
+
+        if dateInfo not in self.selectedDate[selected_year]:
+            self.calender.setDateTextFormat(date, self.fm_selected)
+            self.selectedDate[selected_year].append(dateInfo)
+        else:
+            self.calender.setDateTextFormat(date, self.fm_origin)
+            self.selectedDate[selected_year].remove(dateInfo)
+
+        self.selectedDate = dict(sorted(self.selectedDate.items(), key = lambda item: item[0]))
+        for year in self.selectedDate.keys():
+            self.selectedDate[year].sort()
+
+        myStr = ""
+        for year in self.selectedDate.keys():
+            myStr += year + ": "
+            myStr += " | ".join(self.selectedDate[year])
+            myStr += "\n"
+        print(f"date.year: {date.year()} / date.month:{date.month()} / date.getDate(): {date.getDate()} / date.day:{date.day()} / date.dayOfWeek:{date.dayOfWeek()}")
+        print(self.selectedDate)
+        self.label.setText(myStr)
+
+    def returnDate(self):
+        # 이거 작동 안됨
+        return self.selectedDate
 
 class Kuksiwon(QWidget):
     global db
@@ -1816,6 +1886,41 @@ class UPDATE(QWidget):
                 .format(teach_list[0], teach_list[1], teach_list[2], teach_list[3], teach_list[4], teach_list[5], teach_list[6])
             ask += "\n해당 정보로 업데이트합니다."
 
+        elif self.target_table == "facility":
+            if self.text_id_facility.text().strip() == "" or self.text_name_facility.text().strip() == "":
+                QMessageBox.warning(self, "오류", "ID, 이름값을 입력해야 합니다!")
+                return
+            
+            facility_list = []
+            facility_list.append(self.text_id_facility.text().strip())
+            facility_list.append(self.text_name_facility.text().strip())
+            facility_list.append(self.text_catg_facility.text().strip())
+            facility_list.append(self.text_start_contract.text().strip())
+            facility_list.append(self.text_end_contract.text().strip())
+            facility_list.append(self.text_person_facility.text().strip())
+
+            query_list = ["id", "name", "category", "contractTermStart", "contractTermEnd", "personnel"]
+
+            where = "id = '{}' and name = '{}'".format(self.key_dict["ID"], self.key_dict["name"])
+
+            query = ""
+            for i in range(len(facility_list)):
+                query += query_list[i] + "="
+
+                if facility_list[i] == "" or facility_list[i] == NULL:
+                    facility_list[i] = NULL
+                    query += facility_list[i]
+
+                else:
+                    query += "'" + facility_list[i] + "'"
+
+                if i != len(facility_list) - 1:
+                    query += ", "
+
+            ask = "ID: {}\t기관명: {}\t구분: {}\t1일 실습인원: {}\n계약 시작일: {}\t\t계약 종료일: {}\n"\
+                .format(facility_list[0], facility_list[1], facility_list[2], facility_list[5], facility_list[3], facility_list[4])
+            ask += "\n해당 정보로 업데이트합니다."
+
         elif self.target_table == "temptraining":
             if self.text_clsN_temp_training.text().strip() == "":
                 QMessageBox.warning(self, "오류", "기수를 입력해야 합니다!")
@@ -1922,14 +2027,16 @@ class UPDATE(QWidget):
                 number = self.text_clsN_user.text().strip()
                 time = self.text_clsT_user.text().strip()
 
-                if name != self.key_dict["name"]:
-                    self.changeName(self.key_dict["기수"], self.key_dict["반"], self.key_dict["name"], name)
-                    self.key_dict["name"] = name
+                if name != '':
+                    if name != self.key_dict["name"]:
+                        self.changeName(self.key_dict["기수"], self.key_dict["반"], self.key_dict["name"], name)
+                        self.key_dict["name"] = name
 
-                if number != self.key_dict["기수"] or time != self.key_dict["반"]:
-                    self.changeClass(self.key_dict["name"], self.key_dict["기수"], self.key_dict["반"], number, time)
-                    self.key_dict["기수"] = number
-                    self.key_dict["반"] = time
+                if number != '' and time != '':
+                    if number != self.key_dict["기수"] or time != self.key_dict["반"]:
+                        self.changeClass(self.key_dict["name"], self.key_dict["기수"], self.key_dict["반"], number, time)
+                        self.key_dict["기수"] = number
+                        self.key_dict["반"] = time
 
             self.close()
         else:
@@ -2207,6 +2314,69 @@ class UPDATE(QWidget):
 
             self.key_dict["ID"] = str(input_teacher[0])
             self.key_dict["name"] = str(input_teacher[2])
+
+        elif db.main.current_table == "facility":
+            self.target_table = "facility"
+            self.setWindowTitle("데이터 수정 - 기관")
+            self.setFixedSize(530, 200)
+            cnt_row = 3
+            cnt_col = 6
+            self.resize(400, 200)
+            self.label_id_facility = QLabel("ID", self)
+            self.label_id_facility.setFixedWidth(90)
+            self.label_id_facility.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.grid.addWidget(self.label_id_facility, 0, 0)
+            self.text_id_facility = QLineEdit()
+            next_id = str(int(db.main.dbPrograms.SELECT("id", "facility", orderBy="id desc limit 1")[0][0]) + 1)
+            self.text_id_facility.setText(next_id)
+            self.grid.addWidget(self.text_id_facility, 0, 1, 1, 2)
+            self.label_catg_facility = QLabel("구분", self)
+            self.label_catg_facility.setFixedWidth(90)
+            self.label_catg_facility.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.grid.addWidget(self.label_catg_facility, 0, 3)
+            self.text_catg_facility = QLineEdit()
+            self.grid.addWidget(self.text_catg_facility, 0, 4, 1, 2)
+            self.label_name_facility = QLabel("기관명", self)
+            self.label_name_facility.setFixedWidth(90)
+            self.label_name_facility.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.grid.addWidget(self.label_name_facility, 1, 0)
+            self.text_name_facility = QLineEdit()
+            self.grid.addWidget(self.text_name_facility, 1, 1, 1, 2)
+            self.label_person_facility = QLabel("1일 실습인원", self)
+            self.label_person_facility.setFixedWidth(90)
+            self.label_person_facility.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.grid.addWidget(self.label_person_facility, 1, 3)
+            self.text_person_facility = QLineEdit()
+            self.grid.addWidget(self.text_person_facility, 1, 4, 1, 2)
+            self.label_start_contract = QLabel("계약 시작일", self)
+            self.label_start_contract.setFixedWidth(90)
+            self.label_start_contract.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.grid.addWidget(self.label_start_contract, 2, 0)
+            self.text_start_contract = QLineEdit()
+            self.grid.addWidget(self.text_start_contract, 2, 1, 1, 2)
+            self.label_end_contract = QLabel("계약 종료일")
+            self.label_end_contract.setFixedWidth(90)
+            self.label_end_contract.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.grid.addWidget(self.label_end_contract, 2, 3)
+            self.text_end_contract = QLineEdit()
+            self.grid.addWidget(self.text_end_contract, 2, 4, 1, 2)
+
+            input_facility = []
+            for i in range(7):
+                input_facility.append(db.main.readDB.index(db.main.table.currentIndex().row(), i).data())
+
+                if input_facility[i] == "NULL":
+                    input_facility[i] = ""
+
+            self.text_id_facility.setText(str(input_facility[0]))
+            self.text_name_facility.setText(str(input_facility[1]))
+            self.text_catg_facility.setText(str(input_facility[2]))
+            self.text_start_contract.setText(str(input_facility[3]))
+            self.text_end_contract.setText(str(input_facility[4]))
+            self.text_person_facility.setText(str(input_facility[5]))
+
+            self.key_dict["ID"] = str(input_facility[0])
+            self.key_dict["name"] = str(input_facility[1])
 
         elif db.main.current_table == "temptraining":
             self.target_table = "temptraining"
@@ -2520,6 +2690,36 @@ class INSERT(QWidget):
                 .format(teach_list[0], teach_list[1], teach_list[2], teach_list[3], teach_list[4], teach_list[5], teach_list[6])
             ask += "\n해당 정보를 데이터베이스에 추가합니다."
 
+        elif self.target_table == "facility":
+            if self.text_id_facility.text().strip() == "" or self.text_name_facility.text().strip() == "":
+                QMessageBox.warning(self, "오류", "ID와 기관명을 입력해야 합니다!")
+                return
+
+            facility_list = []
+            facility_list.append(self.text_id_facility.text().strip())
+            facility_list.append(self.text_name_facility.text().strip())
+            facility_list.append(self.text_catg_facility.text().strip())
+            facility_list.append(self.text_start_contract.text().strip())
+            facility_list.append(self.text_end_contract.text().strip())
+            facility_list.append(self.text_person_facility.text().strip())
+
+            query = ""
+            for i in range(len(facility_list)):
+                if facility_list[i] == "" or facility_list[i] == NULL:
+                    facility_list[i] = NULL
+                    query += facility_list[i]
+
+                else:
+                    query += "'" + facility_list[i] + "'"
+
+                if i != len(facility_list) - 1:
+                    query += ", "
+
+            ask = "ID: {}\t기관명: {}\t구분: {}\t1일 실습인원: {}\n계약 시작일: {}\t\t계약 종료일: {}\n"\
+                .format(facility_list[0], facility_list[1], facility_list[2], facility_list[5], facility_list[3], facility_list[4])
+            ask += "\n해당 정보를 데이터베이스에 추가합니다."
+
+
         elif self.target_table == "temptraining":
             if self.text_clsN_temp_training.text().strip() == "":
                 QMessageBox.warning(self, "오류", "기수를 입력해야 합니다!")
@@ -2804,6 +3004,52 @@ class INSERT(QWidget):
             self.text_ACK = QLineEdit()
             self.grid.addWidget(self.text_ACK, 2, 4, 1, 2)
 
+        elif db.main.current_table == "facility":
+            self.target_table = "facility"
+            self.setWindowTitle("데이터 삽입 - 기관")
+            self.setFixedSize(530, 200)
+            cnt_row = 3
+            cnt_col = 6
+            self.resize(400, 200)
+            self.label_id_facility = QLabel("ID", self)
+            self.label_id_facility.setFixedWidth(90)
+            self.label_id_facility.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.grid.addWidget(self.label_id_facility, 0, 0)
+            self.text_id_facility = QLineEdit()
+            next_id = str(int(db.main.dbPrograms.SELECT("id", "facility", orderBy="id desc limit 1")[0][0]) + 1)
+            self.text_id_facility.setText(next_id)
+            self.grid.addWidget(self.text_id_facility, 0, 1, 1, 2)
+            self.label_catg_facility = QLabel("구분", self)
+            self.label_catg_facility.setFixedWidth(90)
+            self.label_catg_facility.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.grid.addWidget(self.label_catg_facility, 0, 3)
+            self.text_catg_facility = QLineEdit()
+            self.grid.addWidget(self.text_catg_facility, 0, 4, 1, 2)
+            self.label_name_facility = QLabel("기관명", self)
+            self.label_name_facility.setFixedWidth(90)
+            self.label_name_facility.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.grid.addWidget(self.label_name_facility, 1, 0)
+            self.text_name_facility = QLineEdit()
+            self.grid.addWidget(self.text_name_facility, 1, 1, 1, 2)
+            self.label_person_facility = QLabel("1일 실습인원", self)
+            self.label_person_facility.setFixedWidth(90)
+            self.label_person_facility.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.grid.addWidget(self.label_person_facility, 1, 3)
+            self.text_person_facility = QLineEdit()
+            self.grid.addWidget(self.text_person_facility, 1, 4, 1, 2)
+            self.label_start_contract = QLabel("계약 시작일", self)
+            self.label_start_contract.setFixedWidth(90)
+            self.label_start_contract.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.grid.addWidget(self.label_start_contract, 2, 0)
+            self.text_start_contract = QLineEdit()
+            self.grid.addWidget(self.text_start_contract, 2, 1, 1, 2)
+            self.label_end_contract = QLabel("계약 종료일")
+            self.label_end_contract.setFixedWidth(90)
+            self.label_end_contract.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.grid.addWidget(self.label_end_contract, 2, 3)
+            self.text_end_contract = QLineEdit()
+            self.grid.addWidget(self.text_end_contract, 2, 4, 1, 2)
+
         elif db.main.current_table == "temptraining":
             self.target_table = "temptraining"
             self.setWindowTitle("데이터 삽입 - 대체실습")
@@ -2952,6 +3198,7 @@ class mainLayout(QWidget, DB):
         self.select_list_user = ["ID", "이름", "주민등록번호", "전화번호", "자격증", "주소", "본적주소", "기수", "반", "총 이수시간", "이론", "실기", "실습", "대체실습", "시험회차"]
         self.select_list_lecture = ["기수", "반", "시작일", "종료일"]
         self.select_list_teacher = ["ID", "분류", "이름", "생년월일", "자격증", "경력", "도 승인날짜"]
+        self.select_list_facility = ["ID", "기관명", "구분", "계약 시작일", "계약 종료일", "1일 실습인원"]
         self.select_list_temptraining = ["기수", "시작일", "종료일", "수여일"]
         self.select_list_temptrainingteacher = ["기수", "강사"]
         self.select_list_exam = ["시험 회차", "접수 시작일", "접수 종료일", "응시표 출력", "시험일자", "합격자 발표(예정)", "서류 준비 기한"]
@@ -2980,6 +3227,8 @@ class mainLayout(QWidget, DB):
         second_hbox = QHBoxLayout()
 
         self.current_table = ""
+        self.searching = False
+        self.searchInfo = {"TABLE": '', "WHERE": '', "LIKE": '', "ORDER BY": ''}
 
         self.table = QTreeView(self)
         self.table.setAlternatingRowColors(True)
@@ -3076,6 +3325,18 @@ class mainLayout(QWidget, DB):
 
             send_string = ID + "\n\n" + categ + "\n\n" + DOB + "\n\n" + licen + "\n\n" + career + "\n\n" + ACKDate
 
+        elif self.current_table == "facility":
+            self.textInfo.clear()
+
+            ID = "ID: " + str(self.readDB.index(self.table.currentIndex().row(), 0).data())
+            name = "기관명: " + str(self.readDB.index(self.table.currentIndex().row(), 1).data())
+            categ = "구분: " + str(self.readDB.index(self.table.currentIndex().row(), 2).data())
+            conStart = "계약 시작일: " + str(self.readDB.index(self.table.currentIndex().row(), 3).data())
+            conEnd = "계약 종료일: " + str(self.readDB.index(self.table.currentIndex().row(), 4).data())
+            personnel = "1일 실습인원: " + str(self.readDB.index(self.table.currentIndex().row(), 5).data())
+
+            send_string = ID + "\n\n" + name + "\n\n" + categ + "\n\n" + conStart + "\n\n" + conEnd + "\n\n" + personnel
+
         elif self.current_table == "temptraining":
             self.textInfo.clear()
 
@@ -3122,6 +3383,10 @@ class mainLayout(QWidget, DB):
             self.readDB.setColumnCount(7)
             self.readDB.setHorizontalHeaderLabels(self.select_list_teacher)
 
+        elif self.current_table == "facility":
+            self.readDB.setColumnCount(6)
+            self.readDB.setHorizontalHeaderLabels(self.select_list_facility)
+
         elif self.current_table == "temptraining":
             self.readDB.setColumnCount(4)
             self.readDB.setHorizontalHeaderLabels(self.select_list_temptraining)
@@ -3138,9 +3403,11 @@ class mainLayout(QWidget, DB):
         source = self.sender()
         self.changeCategory(Refresh=Refresh)
         self.readDB.clear()
-        self.R_searchBox.clear()
 
         if Refresh == False:
+            self.R_searchBox.clear()
+            self.searching = False
+
             if source.text() == "수강생 관리":
                 self.current_table = "user"
                 order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"
@@ -3162,6 +3429,12 @@ class mainLayout(QWidget, DB):
                 self.readDB.setColumnCount(7)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_teacher)
 
+            elif source.text() == "실습기관 관리":
+                self.current_table = "facility"
+                order = "id *1, FIELD(category, '시설', '재가')"
+
+                self.readDB.setColumnCount(6)
+                self.readDB.setHorizontalHeaderLabels(self.select_list_facility)
 
             elif source.text() == "대체실습":
                 self.current_table = "temptraining"
@@ -3203,6 +3476,12 @@ class mainLayout(QWidget, DB):
                 self.readDB.setColumnCount(7)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_teacher)
 
+            elif self.current_table == "facility":
+                order = "id *1, FIELD(category, '시설', '재가')"
+
+                self.readDB.setColumnCount(6)
+                self.readDB.setHorizontalHeaderLabels(self.select_list_facility)
+
             elif self.current_table == "temptraining":
                 order = "classNumber *1"
 
@@ -3221,7 +3500,10 @@ class mainLayout(QWidget, DB):
                 self.readDB.setColumnCount(7)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_exam)
 
-        rs = self.dbPrograms.SELECT("*", self.current_table, orderBy=order)
+        if not self.searching:
+            rs = self.dbPrograms.SELECT("*", self.current_table, orderBy=order)
+        else:
+            rs = self.dbPrograms.SELECT("*", self.searchInfo['TABLE'], where=f"{self.searchInfo['WHERE']} LIKE {self.searchInfo['LIKE']}", orderBy=self.searchInfo['ORDER BY'])
 
         if rs == "error":
             QMessageBox.information(self, "SQL query Error", "SQL query returns error!", QMessageBox.Yes, QMessageBox.Yes)
@@ -3237,12 +3519,15 @@ class mainLayout(QWidget, DB):
 
     def changeCategory(self, Refresh=False):
         source = self.sender()
-        self.R_category.clear()
+
         if Refresh == False:
+            self.R_category.clear()
             if source.text() == "수강생 관리":
                 self.R_category.addItem("이름")
                 self.R_category.addItem("기수/반")
                 self.R_category.addItem("대체실습")
+                self.R_category.addItem("전화번호")
+                self.R_category.addItem("생년월일")
                 self.R_category.addItem("ID")
                 self.R_category.addItem("자격증")
                 self.R_category.addItem("시험회차")
@@ -3257,6 +3542,10 @@ class mainLayout(QWidget, DB):
                 self.R_category.addItem("이름")
                 self.R_category.addItem("자격증")
                 self.R_category.addItem("SQL")
+
+            elif source.text() == "실습기관 관리":
+                self.R_category.addItem("기관명")
+                self.R_category.addItem("구분")
 
             elif source.text() == "대체실습":
                 self.R_category.addItem("기수")
@@ -3277,42 +3566,49 @@ class mainLayout(QWidget, DB):
                 self.R_category.addItem("시험회차")
 
         elif Refresh == True:
-            if self.current_table == "user":
-                self.R_category.addItem("이름")
-                self.R_category.addItem("기수/반")
-                self.R_category.addItem("대체실습")
-                self.R_category.addItem("ID")
-                self.R_category.addItem("자격증")
-                self.R_category.addItem("시험회차")
-                self.R_category.addItem("SQL")
+            pass
+            # if self.current_table == "user":
+            #     self.R_category.addItem("이름")
+            #     self.R_category.addItem("기수/반")
+            #     self.R_category.addItem("대체실습")
+            #     self.R_category.addItem("전화번호")
+            #     self.R_category.addItem("생년월일")
+            #     self.R_category.addItem("ID")
+            #     self.R_category.addItem("자격증")
+            #     self.R_category.addItem("시험회차")
+            #     self.R_category.addItem("SQL")
 
-            elif self.current_table == "lecture":
-                self.R_category.addItem("기수/반")
-                self.R_category.addItem("SQL")
+            # elif self.current_table == "lecture":
+            #     self.R_category.addItem("기수/반")
+            #     self.R_category.addItem("SQL")
 
-            elif self.current_table == "teacher":
-                self.R_category.addItem("ID")
-                self.R_category.addItem("이름")
-                self.R_category.addItem("자격증")
-                self.R_category.addItem("SQL")
+            # elif self.current_table == "teacher":
+            #     self.R_category.addItem("ID")
+            #     self.R_category.addItem("이름")
+            #     self.R_category.addItem("자격증")
+            #     self.R_category.addItem("SQL")
 
-            elif self.current_table == "temptraining":
-                self.R_category.addItem("기수")
-                # 시작일은 검색어 "이후"의 날짜들 모두, 종료일은 검색어 "이전"의 날짜들 모두
-                # (시작일을 2022-01-01로 검색할 경우 1월 1일 이후에 시작하는 기수 검색)
-                # (종료일을 2022-01-01로 검색할 경우 1월 1일 이전에 종료된 기수 검색)
-                self.R_category.addItem("시작일")
-                self.R_category.addItem("종료일")
-                self.R_category.addItem("수여일")
-                self.R_category.addItem("SQL")
+            # elif self.current_table == "facility":
+            #     self.R_category.addItem("기관명")
+            #     self.R_category.addItem("구분")
 
-            elif self.current_table == "temptrainingteacher":
-                self.R_category.addItem("기수")
-                self.R_category.addItem("강사")
-                self.R_category.addItem("SQL")
+            # elif self.current_table == "temptraining":
+            #     self.R_category.addItem("기수")
+            #     # 시작일은 검색어 "이후"의 날짜들 모두, 종료일은 검색어 "이전"의 날짜들 모두
+            #     # (시작일을 2022-01-01로 검색할 경우 1월 1일 이후에 시작하는 기수 검색)
+            #     # (종료일을 2022-01-01로 검색할 경우 1월 1일 이전에 종료된 기수 검색)
+            #     self.R_category.addItem("시작일")
+            #     self.R_category.addItem("종료일")
+            #     self.R_category.addItem("수여일")
+            #     self.R_category.addItem("SQL")
 
-            elif self.current_table == "exam":
-                self.R_category.addItem("시험회차")
+            # elif self.current_table == "temptrainingteacher":
+            #     self.R_category.addItem("기수")
+            #     self.R_category.addItem("강사")
+            #     self.R_category.addItem("SQL")
+
+            # elif self.current_table == "exam":
+            #     self.R_category.addItem("시험회차")
 
     def search(self):
         order = None
@@ -3356,6 +3652,14 @@ class mainLayout(QWidget, DB):
             else:
                 order = "classNumber *1, FIELD(classTime, '주간', '야간')"
 
+        elif current_category == "전화번호":
+            current_category = "phoneNumber"
+            order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"
+
+        elif current_category == "생년월일":
+            current_category = "RRN"
+            order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"
+
         elif current_category == "대체실습":
             current_category = "temporaryClassNumber"
             order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"
@@ -3367,6 +3671,13 @@ class mainLayout(QWidget, DB):
             elif current_table == "exam":
                 current_category = "round"
                 order = "round *1"
+
+        elif current_category == "기관명":
+            current_category = "name"
+
+        elif current_category == "구분":
+            current_category = "category"
+            order = "id *1"
             
         elif current_category == "시작일":
             current_category = "startDate"
@@ -3408,10 +3719,15 @@ class mainLayout(QWidget, DB):
             self.readDB.clear()
             self.selectTable()
             if current_category == "name" or current_category == "teacherName":
-                rs = self.dbPrograms.SELECT("*", current_table, where=f"{current_category} LIKE '%{keyWord}%'", orderBy=order)
+                like = f"'%{keyWord}%'"
+
+            elif current_category == "RRN":
+                like = f"'{keyWord}%'"
             else:
-                rs = self.dbPrograms.SELECT("*", current_table, where=f"{current_category} LIKE '%{keyWord}%'", orderBy=order)
+                like = f"'%{keyWord}%'"
                 
+            rs = self.dbPrograms.SELECT("*", current_table, where=f"{current_category} LIKE {like}", orderBy=order)
+
             if rs == "error":
                 QMessageBox.information(self, "SQL query Error", "SQL query returns error!", QMessageBox.Yes, QMessageBox.Yes)
             else:
@@ -3425,6 +3741,8 @@ class mainLayout(QWidget, DB):
                         if string == "None":
                             string = NULL
                         self.readDB.setData(self.readDB.index(i, j), string)
+                        self.searching = True
+                        self.searchInfo = {"TABLE": current_table, "WHERE": current_category, "LIKE": like, "ORDER BY": order}
         except:
             QMessageBox.information(self, "검색 오류", "잘못된 검색입니다.", QMessageBox.Yes, QMessageBox.Yes)
             return
@@ -3485,6 +3803,17 @@ class mainLayout(QWidget, DB):
             check = "ID: {}\t이름: {}\t자격증: {}\n생년월일: {}\t구분: {}\n최소경력: {}\n도 승인일자: {}\n"\
                 .format(ID, name, licen, DOB, categ, career, ACKDate)
             check += "\n해당 정보를 데이터베이스에서 삭제합니다."
+
+        elif self.current_table == "facility":
+            target_table = "facility"
+            ID = str(self.readDB.index(self.table.currentIndex().row(), 0).data())
+            name = str(self.readDB.index(self.table.currentIndex().row(), 1).data())
+            category = str(self.readDB.index(self.table.currentIndex().row(), 2).data())
+
+            query = "id = '{}'".format(ID)
+            check = "ID: {}\t기관명: {}\t구분: {}\n".format(ID, name, category)
+            check += "\n해당 정보를 데이터베이스에서 삭제합니다."
+
 
         elif self.current_table == "temptraining":
             target_table = "temptraining"
@@ -3557,6 +3886,10 @@ class mainLayout(QWidget, DB):
 
         elif self.current_table == "teacher":
             query = "id IS null or category IS null or name IS null or dateOfBirth IS null or license IS null or minCareer IS null or ACKDate IS null"
+            order = "id"
+
+        elif self.current_table == "facility":
+            query = "id IS null or name IS null or category IS null or contractTermStart IS null or contractTermEnd IS null or personnel IS null"
             order = "id"
 
         elif self.current_table == "temptraining":
@@ -3649,6 +3982,11 @@ class mainLayout(QWidget, DB):
             dimension_lst = [9, 12, 10, 15, 15, 15, 15]
             file_name = "강사DB"
 
+        elif self.current_table == "facility":
+            col = self.select_list_facility
+            dimension_lst = [9, 20, 10, 15, 15, 9]
+            file_name = "기관DB"
+
         elif self.current_table == "temptraining":
             col = self.select_list_temptraining
             dimension_lst = [10, 15, 15, 15]
@@ -3685,6 +4023,14 @@ class mainLayout(QWidget, DB):
                         ws.cell(row=i + 2, column=j + 1).value = str(self.readDB.index(i, j).data())
             
         elif self.current_table == "teacher":
+            for i in range(self.readDB.rowCount()):
+                for j in range(len(col)):
+                    if str(self.readDB.index(i, j).data()) == "NULL":
+                        continue
+                    else:
+                        ws.cell(row=i + 2, column=j + 1).value = str(self.readDB.index(i, j).data())
+
+        elif self.current_table == "facility":
             for i in range(self.readDB.rowCount()):
                 for j in range(len(col)):
                     if str(self.readDB.index(i, j).data()) == "NULL":
@@ -3774,6 +4120,7 @@ class DBMS(QMainWindow):
         menu_stu = menuBar.addAction("수강생 관리")
         menu_lecture = menuBar.addAction("기수 관리")
         menu_teach = menuBar.addAction("강사 관리")
+        menu_facility = menuBar.addAction("실습기관 관리")
         menu_temp = menuBar.addAction("대체실습")
         menu_tempTeach = menuBar.addAction("대체실습 담당강사")
         menu_exam = menuBar.addAction("국시원 시험")
@@ -3937,6 +4284,7 @@ class DBMS(QMainWindow):
         menu_stu.triggered.connect(self.main.showTable)
         menu_lecture.triggered.connect(self.main.showTable)
         menu_teach.triggered.connect(self.main.showTable)
+        menu_facility.triggered.connect(self.main.showTable)
         menu_temp.triggered.connect(self.main.showTable)
         menu_tempTeach.triggered.connect(self.main.showTable)
         menu_exam.triggered.connect(self.main.showTable)
@@ -4104,6 +4452,10 @@ if __name__ == '__main__':
     kuksiwon = Kuksiwon()
     wi = WorkingInformation()
 
+
+
+    # calender = Calender()
+    # calender.show()
 
 
     # scanner = scanFile()
