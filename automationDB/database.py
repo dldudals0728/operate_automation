@@ -4,6 +4,8 @@ import pymysql
 import os
 import datetime
 
+import logging
+
 from pymysql import MySQLError
 
 class DB():
@@ -14,6 +16,15 @@ class DB():
         self.db = 'ac'
         self.conn = pymysql.connect(host=self.host, user=self.user, password=self.password, db=self.db, charset='utf8')
 
+        self.logger = logging.getLogger("DATABASE log")
+        fileHandler = logging.FileHandler("D:\\Master\\log\\Program log.log")
+
+        formatter = logging.Formatter('[%(asctime)s][%(levelname)s|%(filename)s:%(lineno)s] in <%(funcName)s> %(name)s >> %(message)s')
+        fileHandler.setFormatter(formatter)
+
+        self.logger.addHandler(fileHandler)
+        self.logger.setLevel(level=logging.DEBUG)
+
     def SQL(self, sql_query):
         try:
             with self.conn.cursor() as curs:
@@ -21,10 +32,13 @@ class DB():
                 curs.execute(sql)
                 rs = curs.fetchall()
 
+                self.logger.debug("#SQL SELF QUERY running <{}>".format(sql_query))
+                self.logger.info("$SQL SELF QUERY result ==> [{}]".format(rs))
                 return rs
 
         except Exception as e:
             print(e)
+            self.logger.error("!SQL SELF QUERY Exception Handling <{}>".format(e))
             return "error"
             try:
                 print("SQL Exception -> connection close")
@@ -45,6 +59,7 @@ class DB():
                 sql = "SELECT {} FROM {}".format(columns, table)
 
                 if where == None:
+                    where = "None"
                     pass
                 else:
                     sql += " WHERE {}".format(where)
@@ -70,10 +85,16 @@ class DB():
                 #     for j in range(cols):
                 #         connObj.setData(connObj.index(i, j), str(rs[i][j]))
 
+                if columns == "*":
+                    columns = "all attribute"
+                
+                self.logger.debug("#SQL SELECT running <{}>".format(sql))
+                self.logger.info("$SQL SELECT result ==> [TABLE|{}]에서 [COLUMNS|{}]검색. 조건[WHERE|{}]\n[RESULT|{}]".format(table, columns, where, rs))
                 return rs
 
         except Exception as e:
             print(e)
+            self.logger.error("!SQL SELECT Exception Handling <{}>".format(e))
             return "error"
             try:
                 print("SELECT Exception -> connection close")
@@ -94,6 +115,8 @@ class DB():
                 sql = "INSERT INTO {} VALUES({});".format(table, values)
                 curs.execute(sql)
                 self.conn.commit()
+                self.logger.debug("#SQL INSERT running <{}>".format(sql))
+                self.logger.info("$SQL INSERT result ==> [TABLE|{}]에 [VALUES|{}]삽입\n[RESULT|NULL]".format(table, values))
 
                 # 데이터 삽입 후 treeview에 입력. 검색이 된 상태에서 삽입 시 문제 발생. delete 구문처럼 처리
                 # connObj.insertRows(connObj.rowCount(), 1)
@@ -108,6 +131,7 @@ class DB():
 
         except Exception as e:
             print(e)
+            self.logger.error("!SQL INSERT Exception Handling <{}>".format(e))
             MySQLError.with_traceback()
             return "error"
             try:
@@ -123,9 +147,12 @@ class DB():
                 sql = "DELETE FROM {} WHERE {};".format(table, where)
                 curs.execute(sql)
                 self.conn.commit()
+                self.logger.debug("#SQL DELETE running <{}>".format(sql))
+                self.logger.info("$SQL DELETE result ==> [TABLE|{}]에서 조건: [WHERE|{}]인 데이터 삭제".format(table, where))
 
         except Exception as e:
             print(e)
+            self.logger.error("!SQL DELETE Exception Handling <{}>".format(e))
             return "error"
             try:
                 print("DELETE Exception -> connection close")
@@ -140,9 +167,12 @@ class DB():
                 sql = "UPDATE {} SET {} WHERE {};".format(table, modified, where)
                 curs.execute(sql)
                 self.conn.commit()
+                self.logger.debug("#SQL UPDATE running <{}>".format(sql))
+                self.logger.info("$SQL UPDATE result ==> [TABLE|{}]에서 [WHERE|{}]인 데이터를 [SET|{}](으)로 변경".format(table, where, modified))
 
         except Exception as e:
             print(e)
+            self.logger.error("!SQL UPDATE Exception Handling <{}>".format(e))
             return "error"
             try:
                 print("UPDATE Exception -> connection close")
@@ -265,6 +295,7 @@ class DB():
 
         # os.system("mysqldump -u root -p123456 --default-character-set=utf8 --databases ac > {}".format(save_path))
         os.system("mysqldump -u root -p123456 --databases ac > {}".format(save_path))
+        self.logger.info("$SQL DUMP DB ==> [{}]파일 저장 완료(자동저장 X)".format(file_path))
 
     def applyDatabase(self, dump_file_path):
         self.dropDatabase("ac")
@@ -273,6 +304,7 @@ class DB():
         try:
             # os.system("mysqldump -u root -p123456 --default-character-set=utf8 --databases ac < {}".format(dump_file_path))
             os.system("mysql -u root -p123456 ac < {}".format(dump_file_path))
+            self.logger.info("$SQL APPLY DB ==> [{}]파일로 DB 변경".format(dump_file_path))
             return True
         except:
             return False

@@ -1,4 +1,5 @@
 import sys
+import logging
 from tkinter.tix import CheckList
 from tokenize import String
 from turtle import color
@@ -2017,6 +2018,7 @@ class UPDATE(QWidget):
 
         ans = QMessageBox.question(self, "데이터 수정 확인", ask, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
+            db.logger.info("$UI UPDATE Request [TABLE|{}][{}] {} 삭제 요청".format(self.target_table, table, classification))
             db.main.dbPrograms.UPDATE(self.target_table, query, where)
             QMessageBox.about(self, "완료", "데이터를 성공적으로 수정했습니다.")
             db.main.showTable(Refresh=True)
@@ -2633,6 +2635,9 @@ class INSERT(QWidget):
                 QMessageBox.warning(self, "오류", "{} {}반 {}님이 이미 존재합니다!".format(user_list[7], user_list[8], user_list[1]))
                 return
 
+            table = "수강생"
+            classification = "{}{} {}".format(user_list[1], user_list[7], user_list[8])
+
                 
         elif self.target_table == "lecture":
             if self.text_clsN_lecture.text().strip() == "" or self.text_clsT_lecture.text().strip() == "":
@@ -2659,6 +2664,9 @@ class INSERT(QWidget):
 
             ask = "기수: {}\t반: {}\n시작일: {}\n종료일: {}\n".format(lect_list[0], lect_list[1], lect_list[2], lect_list[3])
             ask += "\n해당 정보를 데이터베이스에 추가합니다."
+
+            table = "기수"
+            classification = "{}{}".format(lect_list[0], lect_list[1])
 
         elif self.target_table == "teacher":
             if self.text_id_teacher.text().strip() == "" or self.text_name_teacher.text().strip() == "":
@@ -2690,6 +2698,9 @@ class INSERT(QWidget):
                 .format(teach_list[0], teach_list[1], teach_list[2], teach_list[3], teach_list[4], teach_list[5], teach_list[6])
             ask += "\n해당 정보를 데이터베이스에 추가합니다."
 
+            table = "강사"
+            classification = "{} / {}".format(teach_list[1], teach_list[3])
+
         elif self.target_table == "facility":
             if self.text_id_facility.text().strip() == "" or self.text_name_facility.text().strip() == "":
                 QMessageBox.warning(self, "오류", "ID와 기관명을 입력해야 합니다!")
@@ -2719,6 +2730,8 @@ class INSERT(QWidget):
                 .format(facility_list[0], facility_list[1], facility_list[2], facility_list[5], facility_list[3], facility_list[4])
             ask += "\n해당 정보를 데이터베이스에 추가합니다."
 
+            table = "기관"
+            classification = "{} / {}".format(facility_list[0], facility_list[1])
 
         elif self.target_table == "temptraining":
             if self.text_clsN_temp_training.text().strip() == "":
@@ -2746,6 +2759,9 @@ class INSERT(QWidget):
             ask = "기수: {}\n시작일: {}\n종료일: {}\n수여일: {}\n".format(temp_list[0], temp_list[1], temp_list[2], temp_list[3])
             ask += "\n해당 정보를 데이터베이스에 추가합니다."
 
+            table = "대체실습"
+            classification = "{}".format(temp_list[0])
+
         elif self.target_table == "temptrainingteacher":
             if self.text_clsN_temp_training_teacher.text().strip() == "" or self.text_teacher.text().strip() == "":
                 QMessageBox.warning(self, "오류", "기수, 담당강사를 입력해야 합니다!")
@@ -2769,6 +2785,9 @@ class INSERT(QWidget):
 
             ask = "기수: {}\n강사: {}\n".format(temp_training_teacher_list[0], temp_training_teacher_list[1])
             ask += "\n해당 정보를 데이터베이스에 추가합니다."
+
+            table = "대체실습 강사"
+            classification = "{} / {}".format(temp_training_teacher_list[0], temp_training_teacher_list[1])
 
         elif self.target_table == "exam":
             if self.text_exam_round.text().strip() == "":
@@ -2798,9 +2817,12 @@ class INSERT(QWidget):
 
             ask = "시험회차: {}\n응시원서 접수 시작일: {}\t응시원서 접수 종료일: {}\n응시표 출력: {}\t시험일: {}\n합격자 발표 예정일: {}\t서류 준비 날짜: {}\n\n해당 정보를 데이터베이스에 추가합니다.".format(exam_list[0], exam_list[1], exam_list[2], exam_list[3], exam_list[4], exam_list[5], exam_list[6])
 
+            table = "시험"
+            classification = "{}회".format(exam_list[0])
 
         ans = QMessageBox.question(self, "데이터 삽입 확인", ask, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
+            db.logger.info("$UI INSERT Request [TABLE|{}][{}] {} 삭제 요청".format(self.target_table, table, classification))
             db.main.dbPrograms.INSERT(self.target_table, query)
             QMessageBox.about(self, "완료", "데이터를 성공적으로 추가했습니다.")
             if self.target_table == "user":
@@ -3776,6 +3798,9 @@ class mainLayout(QWidget, DB):
 
             path = "D:\\남양노아요양보호사교육원\\교육생관리\\{}\\{}{}\\{}".format(clsN, clsN, clsT, name)
 
+            table = "수강생"
+            classification = "{}{} {}".format(clsN, clsT, name)
+
         elif self.current_table == "lecture":
             target_table = "lecture"
             clsN = str(self.readDB.index(self.table.currentIndex().row(), 0).data())
@@ -3787,6 +3812,9 @@ class mainLayout(QWidget, DB):
 
             check = "기수: {}\t반: {}\n시작일: {}\n종료일: {}\n".format(clsN, clsT, startD, endD)
             check += "\n해당 정보를 데이터베이스에서 삭제합니다."
+
+            table = "기수"
+            classification = "{}{}".format(clsN, clsT)
             
         elif self.current_table == "teacher":
             target_table = "teacher"
@@ -3804,6 +3832,9 @@ class mainLayout(QWidget, DB):
                 .format(ID, name, licen, DOB, categ, career, ACKDate)
             check += "\n해당 정보를 데이터베이스에서 삭제합니다."
 
+            table = "강사"
+            classification = "{} / {}".format(name, DOB)
+
         elif self.current_table == "facility":
             target_table = "facility"
             ID = str(self.readDB.index(self.table.currentIndex().row(), 0).data())
@@ -3814,6 +3845,8 @@ class mainLayout(QWidget, DB):
             check = "ID: {}\t기관명: {}\t구분: {}\n".format(ID, name, category)
             check += "\n해당 정보를 데이터베이스에서 삭제합니다."
 
+            table = "기관"
+            classification = "{} / {}".format(name, category)
 
         elif self.current_table == "temptraining":
             target_table = "temptraining"
@@ -3826,6 +3859,9 @@ class mainLayout(QWidget, DB):
             check += "\n해당 정보를 데이터베이스에서 삭제합니다."
 
             query = "classNumber = '{}'".format(clsN)
+
+            table = "대체실습"
+            classification = "{}".format(clsN)
             
         elif self.current_table == "temptrainingteacher":
             target_table = "temptrainingteacher"
@@ -3836,6 +3872,9 @@ class mainLayout(QWidget, DB):
 
             check = "기수: {}\n강사: {}\n".format(clsN, teacher)
             check += "\n해당 정보를 데이터베이스에서 삭제합니다."
+
+            table = "대체실습 강사"
+            classification = "{} / {}".format(clsN, teacher)
 
         elif self.current_table == "exam":
             target_table = "exam"
@@ -3851,9 +3890,12 @@ class mainLayout(QWidget, DB):
 
             check = "시험회차: {}\n응시원서 접수 시작일: {}\t응시원서 접수 종료일: {}\n응시표 출력: {}\t시험일: {}\n합격자 발표 예정일: {}\t서류 준비 날짜: {}\n\n해당 정보를 데이터베이스에서 삭제합니다.".format(examRound, examDueStart, examDueEnd, examTicket, examDay, examPass, examSubmit)
 
+            table = "시험"
+            classification = "{}회".format(examRound)
 
         ans = QMessageBox.question(self, "데이터 삭제 확인", check, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
+            db.logger.info("$UI DELETE Request [TABLE|{}][{}] {} 삭제 요청".format(self.current_table, table, classification))
             db.main.dbPrograms.DELETE(target_table, query)
             if path != None and os.path.exists(path):
                 ans_dir_delete = QMessageBox.question(self, "폴더 삭제", "해당 데이터의 폴더도 함께 삭제하시겠습니까?\n(해당 작업은 신중해야 합니다.)", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
@@ -4069,6 +4111,7 @@ class mainLayout(QWidget, DB):
         if ans == QMessageBox.Yes:
             self.backUpWbook.save(save_path)
             QMessageBox.about(self, "완료", "데이터를 성공적으로 수정했습니다.\n경로: {}".format(save_path))
+            db.logger.info("$UI [Backup to Excel] {}.xlsx파일 생성 완료.".format(file_name))
         else:
             QMessageBox.about(self, "취소", "데티어 백업을 취소했습니다.")
 
@@ -4089,6 +4132,15 @@ class DBMS(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.logger = logging.getLogger("UI log")
+        fileHandler = logging.FileHandler("D:\\Master\\log\\Program log.log")
+
+        formatter = logging.Formatter('[%(asctime)s][%(levelname)s|%(filename)s:%(lineno)s] in <%(funcName)s> %(name)s >> %(message)s')
+        fileHandler.setFormatter(formatter)
+
+        self.logger.addHandler(fileHandler)
+        self.logger.setLevel(level=logging.DEBUG)
+
         self.initUI()
 
     def initUI(self):
@@ -4106,6 +4158,7 @@ class DBMS(QMainWindow):
         self.setCentralWidget(self.main)
 
         self.menuOpt()
+        self.logger.debug("DBMS Program is running")
 
         # self.show()
 

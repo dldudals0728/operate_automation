@@ -1,4 +1,5 @@
 from inspect import istraceback
+import logging
 import os
 import random
 import shutil
@@ -11,6 +12,7 @@ from database import DB
 
 class Automation:
     def __init__(self):
+        self.logFile = "D:\\Master\\log\\"
         self.makeFilePath = "D:\\Master\\mkfile\\"
         self.docFilePath = "D:\\Master\\files\\"
         self.basePath = "D:\\남양노아요양보호사교육원\\교육생관리\\"
@@ -20,6 +22,15 @@ class Automation:
         self.DB = DB()
         self.wb_imsi = None
         self.ws_imsi = None
+
+        self.logger = logging.getLogger("AUTOMATION log")
+        fileHandler = logging.FileHandler("D:\\Master\\log\\Program log.log")
+
+        formatter = logging.Formatter('[%(asctime)s][%(levelname)s|%(filename)s:%(lineno)s] in <%(funcName)s> %(name)s >> %(message)s')
+        fileHandler.setFormatter(formatter)
+
+        self.logger.addHandler(fileHandler)
+        self.logger.setLevel(level=logging.DEBUG)
 
     """
     교육수료증명서를 어떻게 일괄적으로 출력 할 것인가!
@@ -57,6 +68,7 @@ class Automation:
     def makeDocument(self, exam, doc_type):
         file_path = self.makeFilePath + "\\{}.xlsx".format(doc_type)
         print(file_path)
+        self.logger.info("$Automation [Document|{}][Exam|{}회]작성".format(doc_type, exam))
         if doc_type == "교육수료증명서":
             try:
                 where = "exam={}".format(exam)
@@ -144,6 +156,7 @@ class Automation:
                     self.ws.cell(row=23, column=1).value = string
 
                     self.wb.save(save_path + "\\{}_{}.xlsx".format(item_dict["name"], doc_type))
+                    self.logger.info("$Automation [Document|교육수료증명서][{}{} {}]작성".format(item_dict["classNumber"], item_dict["classTime"], item_dict["name"]))
                     self.wb.close()
 
                 return_str = "입력 오류: "
@@ -151,6 +164,7 @@ class Automation:
                     return_str += "모두 정상 처리되었습니다."
                 else:
                     return_str += ", ".join(valueErrorList)
+                    self.logger.error("!Automation [Document|교육수료증명서] 미처리 항목: {}".format(return_str))
 
                 return return_str
 
@@ -247,6 +261,7 @@ class Automation:
                     self.ws.cell(row=27, column=1).value = string
 
                     self.wb.save(save_path + "\\{}_{}.xlsx".format(item_dict["name"], doc_type))
+                    self.logger.info("$Automation [Document|대체실습확인서][{}{} {}]작성".format(item_dict["classNumber"], item_dict["classTime"], item_dict["name"]))
                     self.wb.close()
 
                 return_str = "입력 오류: "
@@ -254,6 +269,7 @@ class Automation:
                     return_str += "모두 정상 처리되었습니다."
                 else:
                     return_str += ", ".join(valueErrorList)
+                    self.logger.error("!Automation [Document|대체실습확인서] 미처리 항목: {}".format(return_str))
 
                 return return_str
 
@@ -384,6 +400,7 @@ class Automation:
                     self.ws.cell(row=20, column=4).value = string
 
                     self.wb.save(save_path + "\\{}_{}.xlsx".format(item_dict["name"], doc_type))
+                    self.logger.info("$Automation [Document|요양보호사 자격증 발급,재발급 신청서][{}{} {}]작성".format(item_dict["classNumber"], item_dict["classTime"], item_dict["name"]))
                     self.wb.close()
 
                 return_str = "입력 오류: "
@@ -391,6 +408,7 @@ class Automation:
                     return_str += "모두 정상 처리되었습니다."
                 else:
                     return_str += ", ".join(valueErrorList)
+                    self.logger.error("!Automation [Document|요양보호사 자격증 발급,재발급 신청서] 미처리 항목: {}".format(return_str))
 
                 return return_str
 
@@ -521,6 +539,7 @@ class Automation:
                         self.ws_imsi.cell(row=indexX, column=indexY).alignment = Alignment(horizontal="center", vertical="center")
                         self.ws_imsi.cell(row=indexX, column=indexY).font = Font(size=10)
 
+            self.logger.info("$Automation [Report|{}]작성".format(doc_type))
             self.wb_imsi.save(self.imsi_workbook_path)
             self.wb_imsi.close()
             os.system(self.imsi_workbook_path)
@@ -528,6 +547,7 @@ class Automation:
             return "정상 처리"
 
         except:
+            self.logger.error("!Automation [Report|{}]작성 에러 발생")
             return traceback.format_exc()
 
 
@@ -626,6 +646,7 @@ class Automation:
                 ws_pass.cell(row=idx + 4, column=38).value = member_dict["phoneNumber"]
 
             wb_pass.save(save_path)
+            self.logger.info("$Automation [{}회 합격자명단 작성]".format(exam))
             wb_pass.close()
 
             return_str = "입력 오류: "
@@ -637,6 +658,7 @@ class Automation:
             return return_str
         
         except:
+            self.logger.error("!Automation[{}회 합격자명단 작성] 작성 중 오류발생".format(exam))
             return traceback.format_exc()
 
     def paymentList(self, class_number, class_time):
@@ -743,6 +765,7 @@ class Automation:
         try:
             non_file_list = []
             rs_user = self.inputChecker(self.DB.SELECT("classNumber, classTime, name", "user", where="exam={}".format(exam), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"))
+            self.logger.info("$Automation [Document|{}][Exam|{}회] 서류 출력 진행".format(doc_type, exam))
             for rows in rs_user:
                 doc_path = self.basePath + "{}\\{}{}\\{}\\{}_{}.xlsx".format(rows[0], rows[0], rows[1], rows[2], rows[2], doc_type)
                 if not os.path.exists(doc_path):
@@ -752,6 +775,7 @@ class Automation:
                     os.startfile(doc_path, "print")
 
             if not(non_file_list == []):
+                self.logger.error("!Automation [Document|{}][Exam|{}회] 서류 누락자 존재: {}".format(doc_type, exam, "/".join(non_file_list)))
                 return "파일에러: {}명\n".format(len(non_file_list)) + " / ".join(non_file_list)
 
             else:
