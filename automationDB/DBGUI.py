@@ -1008,6 +1008,7 @@ class Kuksiwon(QWidget):
             QMessageBox.about(self, "안내", "옵션이 선택되지 않았습니다.")
             return
 
+        db.logger.info("$UI KUKSIWON Request [REQUEST|{}][EXAM|{}회] 수행 요청".format(self.doc_type, exam_round))
         if "출력" in self.doc_type:
             ans = QMessageBox.question(self, "확인", "{}회 합격자 {}를 출력합니다.".format(exam_round, self.doc_type[3:]), QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if ans == QMessageBox.Yes:
@@ -1560,6 +1561,7 @@ class BatchUpdate(QWidget):
         box_bottom.addWidget(self.btn_cancel)
 
     def batch(self):
+        db.logger.info("$UI BATCH UPDATE Request [REQUEST|{}] 일괄 수정 요청".format(self.mode))
         if self.mode == "이수시간 일괄 변경":
             if self.combobox_N.currentText() == "선택" or self.combobox_T.currentText() == "선택":
                 QMessageBox.warning(self, "오류", "입력값 오류")
@@ -1818,6 +1820,9 @@ class UPDATE(QWidget):
             ask = "ID: {}\t이름: {}\t주민등록번호: {}\n전화번호: {}\t자격증: {}\n주소: {}\n본적주소: {}\n기수: {}\t반: {}\t 대체실습: {}\n총 이수시간: {}\t이론이수: {}\t실습이수: {}\t실기이수: {}\n시험회차: {}회"\
                 .format(user_list[0], user_list[1], user_list[2], user_list[3], user_list[4], user_list[5], user_list[6], user_list[7], user_list[8], user_list[13], user_list[9], user_list[10], user_list[11], user_list[12], user_list[14])
             ask += "\n해당 정보로 업데이트합니다."
+
+            table = "수강생"
+            classification = "{}{} {}".format(user_list[1], user_list[7], user_list[8])
                 
         elif self.target_table == "lecture":
             if self.text_clsN_lecture.text().strip() == "" or self.text_clsT_lecture.text().strip() == "":
@@ -1850,6 +1855,9 @@ class UPDATE(QWidget):
 
             ask = "기수: {}\t반: {}\n시작일: {}\n종료일: {}\n".format(lect_list[0], lect_list[1], lect_list[2], lect_list[3])
             ask += "\n해당 정보로 업데이트합니다."
+
+            table = "기수"
+            classification = "{}{}".format(lect_list[0], lect_list[1])
 
         elif self.target_table == "teacher":
             if self.text_id_teacher.text().strip() == "" or self.text_name_teacher.text().strip() == "":
@@ -1887,6 +1895,9 @@ class UPDATE(QWidget):
                 .format(teach_list[0], teach_list[1], teach_list[2], teach_list[3], teach_list[4], teach_list[5], teach_list[6])
             ask += "\n해당 정보로 업데이트합니다."
 
+            table = "강사"
+            classification = "{} / {}".format(teach_list[1], teach_list[3])
+
         elif self.target_table == "facility":
             if self.text_id_facility.text().strip() == "" or self.text_name_facility.text().strip() == "":
                 QMessageBox.warning(self, "오류", "ID, 이름값을 입력해야 합니다!")
@@ -1922,6 +1933,9 @@ class UPDATE(QWidget):
                 .format(facility_list[0], facility_list[1], facility_list[2], facility_list[5], facility_list[3], facility_list[4])
             ask += "\n해당 정보로 업데이트합니다."
 
+            table = "기관"
+            classification = "{} / {}".format(facility_list[0], facility_list[1])
+
         elif self.target_table == "temptraining":
             if self.text_clsN_temp_training.text().strip() == "":
                 QMessageBox.warning(self, "오류", "기수를 입력해야 합니다!")
@@ -1954,6 +1968,9 @@ class UPDATE(QWidget):
             ask = "기수: {}\n시작일: {}\n종료일: {}\n수여일: {}\n".format(temp_list[0], temp_list[1], temp_list[2], temp_list[3])
             ask += "\n해당 정보로 업데이트합니다."
 
+            table = "대체실습"
+            classification = "{}".format(temp_list[0])
+
         elif self.target_table == "temptrainingteacher":
             if self.text_clsN_temp_training_teacher.text().strip() == "" or self.text_teacher.text().strip() == "":
                 QMessageBox.warning(self, "오류", "기수, 담당강사를 입력해야 합니다!")
@@ -1982,6 +1999,9 @@ class UPDATE(QWidget):
 
             ask = "기수: {}\n강사: {}\n".format(temp_training_teacher_list[0], temp_training_teacher_list[1])
             ask += "\n해당 정보로 업데이트합니다."
+
+            table = "대체실습 강사"
+            classification = "{} / {}".format(temp_training_teacher_list[0], temp_training_teacher_list[1])
 
         elif self.target_table == "exam":
             if self.text_exam_round.text().strip() == "":
@@ -2015,10 +2035,13 @@ class UPDATE(QWidget):
 
             ask = "시험회차: {}\n응시원서 접수 시작일: {}\t응시원서 접수 종료일: {}\n응시표 출력: {}\t시험일: {}\n합격자 발표 예정일: {}\t서류 준비 날짜: {}\n\n해당 정보로 업데이트합니다.".format(exam_list[0], exam_list[1], exam_list[2], exam_list[3], exam_list[4], exam_list[5], exam_list[6])
 
+            table = "시험"
+            classification = "{}회".format(exam_list[0])
+
 
         ans = QMessageBox.question(self, "데이터 수정 확인", ask, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
-            db.logger.info("$UI UPDATE Request [TABLE|{}][{}] {} 삭제 요청".format(self.target_table, table, classification))
+            db.logger.info("$UI UPDATE Request [TABLE|{}][{}] {} 수정 요청".format(self.target_table, table, classification))
             db.main.dbPrograms.UPDATE(self.target_table, query, where)
             QMessageBox.about(self, "완료", "데이터를 성공적으로 수정했습니다.")
             db.main.showTable(Refresh=True)
