@@ -89,7 +89,9 @@ class DB():
                     columns = "all attribute"
                 
                 self.logger.debug("#SQL SELECT running <{}>".format(sql))
-                self.logger.info("$SQL SELECT result ==> [TABLE|{}]에서 [COLUMNS|{}]검색. 조건[WHERE|{}]\n[RESULT|{}]".format(table, columns, where, rs))
+                # 테이블 새로고침 시에는 출력 X
+                if where != "None":
+                    self.logger.info("$SQL SELECT result ==> [TABLE|{}]에서 [COLUMNS|{}]검색. 조건[WHERE|{}]\n[RESULT|{}]".format(table, columns, where, rs))
                 return rs
 
         except Exception as e:

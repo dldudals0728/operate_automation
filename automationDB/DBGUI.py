@@ -1,3 +1,4 @@
+import functools
 import sys
 import logging
 from tkinter.tix import CheckList
@@ -14,6 +15,7 @@ from PyQt5.QtCore import QCoreApplication, QLine, Qt, QDate
 # table Read only mode
 from PyQt5 import QtGui
 from PyQt5.QtGui import *
+from numpy import empty
 # Tree view에 나열되는 내용을 담당.
 # from PyQt5.QtGui import QStandardItemModel
 
@@ -34,7 +36,7 @@ import shutil
 from automation import Automation
 
 class LogIn(QWidget):
-    global db
+    
 
     def __init__(self):
         super().__init__()
@@ -166,7 +168,7 @@ class LogIn(QWidget):
         
 
 class WorkingInformation(QWidget):
-    global db
+    
 
     def __init__(self):
         super().__init__()
@@ -549,7 +551,7 @@ class WorkingInformation(QWidget):
 
 
 class ToDoList(QWidget):
-    global db
+    
 
     def __init__(self):
         super().__init__()
@@ -864,7 +866,7 @@ class MemberManagement(QWidget):
         self.layoutInfo.addWidget(self.textInfo)
 
 class DocumentChecker(QWidget):
-    global db
+    
 
     def __init__(self):
         super().__init__()
@@ -897,8 +899,8 @@ class DocumentChecker(QWidget):
             for file in check_list:
                 file_name, file_extension = os.path.splitext(file)
 
-class Calender(QWidget):
-    global db
+class Calendar(QWidget):
+    
     def __init__(self):
         super().__init__()
         self.setWindowTitle("실습 날짜 설정")
@@ -907,15 +909,54 @@ class Calender(QWidget):
         self.selectedDate = {}
 
         self.main_box = QVBoxLayout()
-        self.calender = QCalendarWidget()
-        self.label = QLabel()
+        self.calendar = QCalendarWidget()
+        self.label = QLabel("■ 삭제", self)
+        self.label.setObjectName(self.label.text())
+        self.label.mousePressEvent = functools.partial(Calendar.calendarLabelClicked, self.label)
         self.btn = QPushButton("입력", self)
+        self.btn.clicked.connect(self.inputData)
 
-        self.calender.setGridVisible(True)
-        self.calender.setVerticalHeaderFormat(False)
+        self.calendar.setGridVisible(True)
+        self.calendar.setVerticalHeaderFormat(False)
+
+        self.calendarLabelList = [QLabel("■ 대체", self)]
+        self.labelLayoutList = [QHBoxLayout()]
+        # red, orange, green, blue, navy, purple, brown, cyan, violet
+        self.calendarLabelForegroundRGB = [QColor(255, 0, 0), QColor(255, 128, 0), QColor(0, 204, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(0, 204, 204), QColor(204, 0, 102)]
+        self.calendarLabelForegroundHexa = ["FF0000", "FF8000", "00CC00", "0000FF", "000066", "6600CC", "331900", "00CCCC", "CC0066"]
+        self.facilityDict = {}
+        self.foregroundWhite = [QColor(255, 0, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(204, 0, 102)]
+        # self.calendarLabelBackground = [Qt.violet, ]
+        for f in db.main.dbPrograms.SELECT("name", "facility"):
+            # ('새소망요양원',) ('상락원',) ('묘희원',) ...
+            self.calendarLabelList.append(QLabel("■ " + f[0], self))
+
+        for i in range(len(self.calendarLabelList)):
+            self.calendarLabelList[i].mousePressEvent = functools.partial(Calendar.calendarLabelClicked, self.calendarLabelList[i])
+            self.calendarLabelList[i].setStyleSheet("color: #{};".format(self.calendarLabelForegroundHexa[i]))
+            self.facilityDict[self.calendarLabelList[i].text()[2:]] = QTextCharFormat()
+            self.facilityDict[self.calendarLabelList[i].text()[2:]].setBackground(self.calendarLabelForegroundRGB[i])
+            if self.calendarLabelForegroundRGB[i] in self.foregroundWhite:
+                self.facilityDict[self.calendarLabelList[i].text()[2:]].setForeground(Qt.white)
+            else:
+                self.facilityDict[self.calendarLabelList[i].text()[2:]].setForeground(Qt.black)
+
+        lineLength = 0
+        for i in range(len(self.calendarLabelList)):
+            self.calendarLabelList[i].setObjectName(self.calendarLabelList[i].text())
+            self.labelLayoutList[-1].addWidget(self.calendarLabelList[i])
+            lineLength += len(self.calendarLabelList[i].text()) + 2
+            if lineLength >= 38:
+                lineLength = 0
+                self.labelLayoutList.append(QHBoxLayout())
+
+        self.calendarLabel = QLabel("", self)
 
         self.main_box.addWidget(self.label)
-        self.main_box.addWidget(self.calender)
+        for i in range(len(self.labelLayoutList)):
+            self.main_box.addLayout(self.labelLayoutList[i])
+        self.main_box.addWidget(self.calendarLabel)
+        self.main_box.addWidget(self.calendar)
         self.main_box.addWidget(self.btn)
         self.setLayout(self.main_box)
 
@@ -924,31 +965,124 @@ class Calender(QWidget):
         self.fm_selected.setBackground(Qt.yellow)
 
         self.fm_origin = QTextCharFormat()
+        self.fm_today = QTextCharFormat()
 
         self.initUI()
 
     def initUI(self):
-        self.calender.clicked.connect(self.showDate)
-        self.btn.clicked.connect(self.returnDate)
+        self.calendar.clicked.connect(self.showDate)
+
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Escape:
+            self.close()
+        
+        elif e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
+            self.inputData()
+
+    def inputData(self):
+        if not self.selectedDate:
+            QMessageBox.warning(self, "오류", "선택된 날짜가 없습니다!")
+            return
+
+        sendMsg = ""
+        for key in self.selectedDate.keys():
+            sendMsg += key + ": "
+            sendingLst = [i[5:] for i in self.selectedDate[key]]
+            sendMsg += ", ".join(sendingLst)
+            sendMsg += "\n"
+
+        sendMsg += "데이터를 삽입하시겠습니까?"
+
+        ans = QMessageBox.question(self, "실습 데이터 삽입 확인", sendMsg, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if ans == QMessageBox.Yes:
+            # db.logger.info("$UI INSERT Request [TABLE|{}][{}] {} 삽입 요청".format(self.target_table, table, classification))
+            # db.main.dbPrograms.INSERT(self.target_table, query)
+            QMessageBox.about(self, "완료", "실습 데이터가 성공적으로 업데이트 되었습니다.")
+        else:
+            return
+
+
+        ################ dict2str ################
+        dateString = ""
+        facilityString = "|".join(list(self.selectedDate.keys()))
+        for dateList in self.selectedDate.items():
+            # dataList: ('대체', ['2022/06/07', '2022/06/08', '2022/06/09'])
+            dateString += ",".join(list(dateList[1]))
+            dateString += "|"
+        
+        dateString = dateString[:-1]
+
+        print(facilityString)
+        print(dateString)
+        ##########################################
+        totalString = facilityString + "$" + dateString
+        print(totalString)
+        ################ str2dict ################
+        newFacilityString, newDateString = totalString.split("$")
+        facilityList = newFacilityString.split("|")
+        datesList = newDateString.split("|")
+
+        print(facilityList)
+        print(datesList)
+
+        newList = [dateStr.split(",") for dateStr in datesList]
+        print(newList)
+        newDict = dict(zip(facilityList, newList))
+        ##########################################
+
+        print("---------------- result ----------------")
+        print(self.selectedDate)
+        print(newDict)
+        print(self.selectedDate == newDict)
+
+    def calendarLabelClicked(self, event):
+        clickedObject = self.objectName()
+        self.parent().calendarLabel.setText(clickedObject)
+        self.parent().calendarLabel.setStyleSheet(self.styleSheet())
 
     def showDate(self, date):
+        selectedFacility = self.calendarLabel.text()[2:]
+        all_date = []
+        if selectedFacility == '':
+            return
         dateList = date.toString().split(" ")
         # date.toString() -> 수 6 22 2022
         selected_year = dateList[3]
         selected_month = dateList[1]
         selected_date = dateList[2]
-        selected_days = dateList[0]
-        if selected_year not in self.selectedDate.keys():
-            self.selectedDate[selected_year] = []
 
-        dateInfo = f"{selected_month.rjust(2, '0')}/{selected_date.rjust(2, '0')}"
+        # 현재 기관 데이터가 없을 경우 추가
+        if selectedFacility not in self.selectedDate.keys():
+            self.selectedDate[selectedFacility] = []
 
-        if dateInfo not in self.selectedDate[selected_year]:
-            self.calender.setDateTextFormat(date, self.fm_selected)
-            self.selectedDate[selected_year].append(dateInfo)
+        dateInfo = f"{selected_year}/{selected_month.rjust(2, '0')}/{selected_date.rjust(2, '0')}"
+        all_date.append(dateInfo)
+
+        if selectedFacility == "삭제":
+            self.calendar.setDateTextFormat(date, self.fm_origin)
+            # (deep copy를 통해 RuntimeError: dictionary changed size during iteration 방지)
+            for facility in list(self.selectedDate.keys()):
+                if dateInfo in self.selectedDate[facility]:
+                    self.selectedDate[facility].remove(dateInfo)
+                    if self.selectedDate[facility] == []:
+                        del self.selectedDate[facility]
+
+        elif dateInfo not in self.selectedDate[selectedFacility]:
+            # 먼저 선택된 날짜가 해당 기관 날짜에 없다면, 다른 기관에 날짜로 정해져있는지 확인 후, 있다면 삭제한 다음 해당 기관에 날짜를 추가한다.
+            for facility in self.selectedDate.keys():
+                if dateInfo in self.selectedDate[facility]:
+                    self.selectedDate[facility].remove(dateInfo)
+
+            self.calendar.setDateTextFormat(date, self.facilityDict[selectedFacility])
+            self.selectedDate[selectedFacility].append(dateInfo)
+
         else:
-            self.calender.setDateTextFormat(date, self.fm_origin)
-            self.selectedDate[selected_year].remove(dateInfo)
+            self.calendar.setDateTextFormat(date, self.fm_origin)
+            self.selectedDate[selectedFacility].remove(dateInfo)
+
+        # 기관에 포함된 날짜가 없을 경우, 기관 삭제.
+        if self.selectedDate[selectedFacility] == []:
+            del self.selectedDate[selectedFacility]
 
         self.selectedDate = dict(sorted(self.selectedDate.items(), key = lambda item: item[0]))
         for year in self.selectedDate.keys():
@@ -959,16 +1093,9 @@ class Calender(QWidget):
             myStr += year + ": "
             myStr += " | ".join(self.selectedDate[year])
             myStr += "\n"
-        print(f"date.year: {date.year()} / date.month:{date.month()} / date.getDate(): {date.getDate()} / date.day:{date.day()} / date.dayOfWeek:{date.dayOfWeek()}")
-        print(self.selectedDate)
-        self.label.setText(myStr)
-
-    def returnDate(self):
-        # 이거 작동 안됨
-        return self.selectedDate
 
 class Kuksiwon(QWidget):
-    global db
+    
 
     def __init__(self):
         super().__init__()
@@ -1081,7 +1208,7 @@ class Kuksiwon(QWidget):
 
 
 class ClassOpening(QWidget):
-    global db
+    
 
     def __init__(self):
         super().__init__()
@@ -1184,7 +1311,7 @@ class ClassOpening(QWidget):
 
 
 class Report(QWidget):
-    global db
+    
 
     def __init__(self):
         super().__init__()
@@ -1297,7 +1424,7 @@ class Report(QWidget):
 
 
 class scanFile(QWidget):
-    global db
+    
 
     def __init__(self):
         super().__init__()
@@ -1514,7 +1641,7 @@ class scanFile(QWidget):
 
 """
 class BatchUpdate(QWidget):
-    global db
+    
 
     def __init__(self):
         super().__init__()
@@ -1691,9 +1818,6 @@ class BatchUpdate(QWidget):
         # self.combobox_exam_or_temp.addItem("Default")
 
 class UPDATE(QWidget):
-    # 새 창을 띄우기 위해 서로 global로 연결
-    global db
-
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -2163,7 +2287,10 @@ class UPDATE(QWidget):
             self.grid.addWidget(self.text_origin_adr, 4, 1, 1, 5)
 
             self.label_total_time = QLabel("총 이수시간은 이론 + 실기 + 실습 이수시간으로 입력됩니다.")
-            self.grid.addWidget(self.label_total_time, 5, 0, 1, 6)
+            self.grid.addWidget(self.label_total_time, 5, 0, 1, 5)
+            self.btn_train_manage = QPushButton("실습 관리", self)
+            self.btn_train_manage.clicked.connect(db.calendar_show)
+            self.grid.addWidget(self.btn_train_manage, 5, 5)
 
             self.label_theory_time = QLabel("이론이수")
             self.label_theory_time.setFixedWidth(90)
@@ -2573,9 +2700,6 @@ class UPDATE(QWidget):
 
 
 class INSERT(QWidget):
-    # 새 창을 띄우기 위해 서로 global로 연결
-    global db
-
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -2845,7 +2969,7 @@ class INSERT(QWidget):
 
         ans = QMessageBox.question(self, "데이터 삽입 확인", ask, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
-            db.logger.info("$UI INSERT Request [TABLE|{}][{}] {} 삭제 요청".format(self.target_table, table, classification))
+            db.logger.info("$UI INSERT Request [TABLE|{}][{}] {} 삽입 요청".format(self.target_table, table, classification))
             db.main.dbPrograms.INSERT(self.target_table, query)
             QMessageBox.about(self, "완료", "데이터를 성공적으로 추가했습니다.")
             if self.target_table == "user":
@@ -3293,11 +3417,75 @@ class mainLayout(QWidget, DB):
         self.labelInfo = QLabel("선택된 객체의 정보가 표시됩니다.")
         self.textInfo = QTextEdit()
         self.textInfo.setReadOnly(True)
-        self.textInfo.setFixedWidth(400)
+        self.textInfo.setFixedWidth(500)
         # self.textInfo.setFontPointSize(12)
+
+        self.layoutCalendar = QVBoxLayout()
+
+        self.calendarLabelList = [QLabel("■ 대체", self)]
+        self.labelLayoutList = [QHBoxLayout()]
+        # red, orange, green, blue, navy, purple, brown, cyan, violet
+        self.calendarLabelForegroundRGB = [QColor(255, 0, 0), QColor(255, 128, 0), QColor(0, 204, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(0, 204, 204), QColor(204, 0, 102)]
+        self.calendarLabelForegroundHexa = ["FF0000", "FF8000", "00CC00", "0000FF", "000066", "6600CC", "331900", "00CCCC", "CC0066"]
+        self.facilityDict = {}
+        self.foregroundWhite = [QColor(255, 0, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(204, 0, 102)]
+        # self.calendarLabelBackground = [Qt.violet, ]
+        for f in self.dbPrograms.SELECT("name", "facility"):
+            # ('새소망요양원',) ('상락원',) ('묘희원',) ...
+            self.calendarLabelList.append(QLabel("■ " + f[0], self))
+
+        for i in range(len(self.calendarLabelList)):
+            self.calendarLabelList[i].mousePressEvent = functools.partial(mainLayout.calendarLabelClicked, self.calendarLabelList[i])
+            self.calendarLabelList[i].setStyleSheet("color: #{};".format(self.calendarLabelForegroundHexa[i]))
+            self.facilityDict[self.calendarLabelList[i].text()[2:]] = QTextCharFormat()
+            self.facilityDict[self.calendarLabelList[i].text()[2:]].setBackground(self.calendarLabelForegroundRGB[i])
+            if self.calendarLabelForegroundRGB[i] in self.foregroundWhite:
+                self.facilityDict[self.calendarLabelList[i].text()[2:]].setForeground(Qt.white)
+            else:
+                self.facilityDict[self.calendarLabelList[i].text()[2:]].setForeground(Qt.black)
+
+        lineLength = 0
+        for i in range(len(self.calendarLabelList)):
+            self.calendarLabelList[i].setObjectName(self.calendarLabelList[i].text())
+            self.labelLayoutList[-1].addWidget(self.calendarLabelList[i])
+            lineLength += len(self.calendarLabelList[i].text()) + 2
+            if lineLength >= 38:
+                lineLength = 0
+                self.labelLayoutList.append(QHBoxLayout())
+
+        
+        self.calendarLabel = QLabel("", self)
+
+        self.calendarInfo = QCalendarWidget()
+        self.calendarInfo.setGridVisible(True)
+        self.calendarInfo.setVerticalHeaderFormat(False)
+        self.calendarInfo.setFixedWidth(500)
+
+        self.fmList = []
+        for i in range(len(self.calendarLabelList)):
+            self.fmList.append(QTextCharFormat())
+
+
+        # self.fm_temp = QTextCharFormat()
+        # self.fm_facility_1 = QTextCharFormat()
+        
+        # self.fm_selected.setForeground(Qt.red)
+        # self.fm_selected.setBackground(Qt.yellow)
+
+        # self.fm_origin = QTextCharFormat()
+
+        self.btnEditCalendar = QPushButton("실습일자 편집", self)
+
+        for i in range(len(self.labelLayoutList)):
+            self.layoutCalendar.addLayout(self.labelLayoutList[i])
+        self.layoutCalendar.addWidget(self.calendarLabel)
+        self.layoutCalendar.addWidget(self.calendarInfo)
+        self.layoutCalendar.addWidget(self.btnEditCalendar)
+
         self.textInfo.setCurrentFont(QtGui.QFont("맑은 고딕"))
         self.layoutInfo.addWidget(self.labelInfo)
         self.layoutInfo.addWidget(self.textInfo)
+        self.layoutInfo.addLayout(self.layoutCalendar)
 
         # self.gridInfo = QGridLayout()
         
@@ -3322,7 +3510,12 @@ class mainLayout(QWidget, DB):
         vbox.addLayout(first_hbox)
         vbox.addLayout(second_hbox)
 
-        self.setLayout(vbox)        
+        self.setLayout(vbox)
+
+    def calendarLabelClicked(self, event):
+        clickedObject = self.objectName()
+        self.parent().calendarLabel.setText(clickedObject)
+        self.parent().calendarLabel.setStyleSheet(self.styleSheet())
 
     def selected(self):
         if self.current_table == "user":
@@ -4140,19 +4333,6 @@ class mainLayout(QWidget, DB):
 
 
 class DBMS(QMainWindow):
-    # 새 창을 띄우기 위해 서로 global로 연결
-    global log_in_window
-    global insert
-    global update
-    global batch
-    global report_gov
-    global opening
-    global kuksiwon
-    global todo_list
-    global wi
-
-    global scanner
-
     def __init__(self):
         super().__init__()
         self.logger = logging.getLogger("UI log")
@@ -4329,6 +4509,11 @@ class DBMS(QMainWindow):
         edit_batch.addAction(batch_data_temp)
         edit_batch.addAction(batch_data_time)
 
+        mod_train = QAction(QIcon(self.icon_path + "checker.png"), "실습 관리", self)
+        mod_train.setShortcut("Ctrl+T")
+        mod_train.setStatusTip("수강생의 실습 일정을 관리합니다.")
+        mod_train.triggered.connect(self.calendar_show)
+
         mod_data = QAction(QIcon(self.icon_path + "edit.png"), "데이터 수정", self)
         mod_data.setShortcut("F2")
         mod_data.setStatusTip("테이블에서 선택된 데이터를 수정합니다.")
@@ -4354,6 +4539,7 @@ class DBMS(QMainWindow):
         menu_view.addAction(view_stat)
 
         menu_edit.addMenu(edit_batch)
+        menu_edit.addAction(mod_train)
         menu_edit.addAction(mod_data)
         menu_edit.addAction(del_data)
 
@@ -4436,6 +4622,8 @@ class DBMS(QMainWindow):
 
         QMessageBox.information(self, "완료", "완료되었습니다.", QMessageBox.Yes, QMessageBox.Yes)
             
+    def calendar_show(self):
+        calendar.show()
 
     def workingInformation_show(self):
         wi.show()
@@ -4516,6 +4704,21 @@ class DBMS(QMainWindow):
 
 
 if __name__ == '__main__':
+    # 새 창을 띄우기 위해 서로 global로 연결
+    global db
+    global log_in_window
+    global insert
+    global update
+    global batch
+    global report_gov
+    global opening
+    global kuksiwon
+    global todo_list
+    global calendar
+    global wi
+
+    # global scanner
+
     app = QApplication(sys.argv)
     db = DBMS()
     log_in_window = LogIn()
@@ -4527,11 +4730,7 @@ if __name__ == '__main__':
     opening = ClassOpening()
     kuksiwon = Kuksiwon()
     wi = WorkingInformation()
-
-
-
-    # calender = Calender()
-    # calender.show()
+    calendar = Calendar()
 
 
     # scanner = scanFile()

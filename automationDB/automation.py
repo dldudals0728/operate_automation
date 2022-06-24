@@ -435,6 +435,8 @@ class Automation:
                     license = rows[0]
                     if license == "일반":
                         category = "신규\n(일반)"
+                    elif license == "경력자":
+                        category = "경력자"
                     else:
                         category = "자격증\n"
                         if license == "간호사" or license == "물리치료사":
@@ -479,6 +481,8 @@ class Automation:
                     if license == "일반":
                         category = "신규"
                         time = 80
+                    elif license == "경력자":
+                        category = "경력자"
                     else:
                         category = "자격증"
                         time = 8
@@ -514,7 +518,7 @@ class Automation:
             elif doc_type == "대체실습 수료보고":
                 self.wb_imsi = Workbook()
                 self.ws_imsi = self.wb_imsi.active
-                rs = self.inputChecker(self.DB.SELECT("classTime, classNumber, totalCreditHour, theoryCreditHour, practicalCreditHour, trainingCreditHour, name, RRN, address, phoneNumber", "user", "temporaryClassNumber='{}'".format(number), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"))
+                rs = self.inputChecker(self.DB.SELECT("classTime, classNumber, totalCreditHour, theoryCreditHour, practicalCreditHour, trainingCreditHour, name, RRN, address, phoneNumber", "user", "temporaryClassNumber='{}'".format(number), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사', '작업치료사'), id *1"))
                 rs_temp_lecture = self.DB.SELECT("endDate", "temptraining", "classNumber='{}'".format(number))
                 endDate = rs_temp_lecture[0][0].strftime("%Y.%m.%d")
                 for indexX, rows in enumerate(rs, start=1):
@@ -721,7 +725,7 @@ class Automation:
             self.ws = self.wb.active
             save_path = "D:\\남양노아요양보호사교육원\\경기도청\\03_시험준비 및 자격증발급관련\\{}회_제출용\\{}회 응시접수명단.xlsx".format(exam, exam)
 
-            rs = self.inputChecker(self.DB.SELECT("name, RRN, phoneNumber, address, classNumber, classTime", "user", "exam={}".format(exam), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"))
+            rs = self.inputChecker(self.DB.SELECT("name, RRN, phoneNumber, address, classNumber, classTime", "user", "exam={}".format(exam), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사', '작업치료사'), id *1"))
             pre_class = ""
             class_cnt = 0
             for idx, rows in enumerate(rs, start=3):
@@ -764,7 +768,7 @@ class Automation:
     def printDocument(self, exam, doc_type):
         try:
             non_file_list = []
-            rs_user = self.inputChecker(self.DB.SELECT("classNumber, classTime, name", "user", where="exam={}".format(exam), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"))
+            rs_user = self.inputChecker(self.DB.SELECT("classNumber, classTime, name", "user", where="exam={}".format(exam), orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사', '작업치료사'), id *1"))
             self.logger.info("$Automation [Document|{}][Exam|{}회] 서류 출력 진행".format(doc_type, exam))
             for rows in rs_user:
                 doc_path = self.basePath + "{}\\{}{}\\{}\\{}_{}.xlsx".format(rows[0], rows[0], rows[1], rows[2], rows[2], doc_type)
