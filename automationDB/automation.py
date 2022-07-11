@@ -4,6 +4,7 @@ import os
 import random
 import shutil
 import traceback
+from tracemalloc import start
 from openpyxl import Workbook
 from openpyxl import load_workbook
 from openpyxl.styles import Alignment, Font, PatternFill
@@ -40,12 +41,13 @@ class Automation:
     """
     def inputChecker(self, res):
         """DB 검색을 통해 반환된 튜플의 입력 여부를 검사합니다."""
+        # 실습 기관이 4개(대체실습 포함)를 초과하는 경우는 예외 처리 !! (자동작성 기관부분은 안하고 따로 알림을 울린다던가, 아예 빼버린다던가, 다른 파일을 사용한다던가 등)
         input_list = []
         for rows in res:
             imsi_list = []
             for rs in rows:
                 if rs == None:
-                    imsi_list.append("")
+                    imsi_list.append("None")
                 else:
                     imsi_list.append(rs)
 
@@ -54,6 +56,7 @@ class Automation:
         return tuple(input_list)
 
     def nullValueChecker(self, res, checker_index):
+        # 없는 값을 반환할 경우 : value: None     type: <class 'NoneType'>
         null_list = []
         for rows in res:
             null_check_switch = False
@@ -64,6 +67,29 @@ class Automation:
                 null_list.append(rows[checker_index])
 
         return null_list
+
+    def funcTest(self):
+        # self.DB.UPDATE("user", "exam=NULL", "id=458")
+        res = self.DB.SELECT("*", "user", "id=426")[0]
+        for col in res:
+            print("value:", col, "\ttype:", type(col))
+
+        print(self.DB.SELECT("*", "user", "id=458"))
+
+    def str2Dict(self, fromString):
+        if type(fromString) == dict:
+            return fromString
+        elif fromString == "NULL" or fromString == "None":
+            return {}
+        newFacilityString, newDateString = fromString.split("$")
+        facilityList = newFacilityString.split("|")
+        datesList = newDateString.split("|")
+
+
+        newList = [dateStr.split(",") for dateStr in datesList]
+        newDict = dict(zip(facilityList, newList))
+
+        return newDict
 
     def makeDocument(self, exam, doc_type):
         file_path = self.makeFilePath + "\\{}.xlsx".format(doc_type)
@@ -76,8 +102,11 @@ class Automation:
                 valueErrorList = self.nullValueChecker(user_rs, 1)
 
                 user_query_list = ["id", "name", "RRN", "phoneNumber", "license", "address", "originAddress", "classNumber", "classTime", \
-                    "totalCreditHour", "theoryCreditHour", "practicalCreditHour", "trainingCreditHour", "temporaryClassNumber", "exam"]
+                    "totalCreditHour", "theoryCreditHour", "practicalCreditHour", "trainingCreditHour", "temporaryClassNumber", "exam", "trainingDate"]
                 item_dict = {}
+
+                facility_rs = self.DB.SELECT("name, category", "facility")
+                facility_dict = {name: categ for name, categ in facility_rs}
 
                 for rows in user_rs:
                     item_dict.clear()
@@ -101,6 +130,15 @@ class Automation:
                     item_dict["startDate_temp"] = tempInfo_rs[1].strftime("%Y 년 %m 월 %d 일")
                     item_dict["endDate_temp"] = tempInfo_rs[2].strftime("%Y 년 %m 월 %d 일")
                     item_dict["awardDate"] = tempInfo_rs[3].strftime("%Y 년    %m 월     %d 일")
+                    item_dict["trainingDate"] = self.str2Dict(item_dict["trainingDate"])
+                    # 각 기관별 날짜의 연도가 같을 경우, 맨 앞 연도만 살려두고 나머지는 삭제하는 algo.
+                    for facility in item_dict["trainingDate"].keys():
+                        pre_year = item_dict["trainingDate"][facility][0][:4]
+                        for date_idx in range(1, len(item_dict["trainingDate"][facility])):
+                            if pre_year == item_dict["trainingDate"][facility][date_idx][:4]:
+                                item_dict["trainingDate"][facility][date_idx] = item_dict["trainingDate"][facility][date_idx][5:]
+                            else:
+                                pre_year = item_dict["trainingDate"][facility][date_idx][:4]
 
                     # 교육수료증명서 호수
                     string = "    {}  년  제  {} 호".format(item_dict["awardDate"][:4], item_dict["id"])
@@ -134,26 +172,36 @@ class Automation:
                     string = "        {}  시간".format(int(item_dict["theoryCreditHour"]) + int(item_dict["practicalCreditHour"]))
                     self.ws.cell(row=9, column=7).value = string
 
-                    # 실습기간 / 대체실습 각 기수별 or 실습기간 따로 만들기,  21년 01월 18일 ∼ 21년 03월 13일 형식으로, 년도수 두자리만 표시
-                    string = "{} \n~ {}".format(item_dict["startDate_temp"], item_dict["endDate_temp"])
-                    self.ws.cell(row=12, column=4).value = string
+                    # 대체실습 실습 기관, 실습 기간, 실습 시간: 기관 별 작성 ==> update
+                    total_train = 0
+                    for i, facility in enumerate(item_dict["trainingDate"].keys()):
+                        if facility == "대체":
+                            f_name = "남양노아\n요양보호사교육원"
+                            category = "대체실습"
+                        else:
+                            f_name = facility
+                            if len(f_name) >= 10:
+                                f_name = f_name[:4] + "\n" + f_name[4:]
+                            category = facility_dict[facility]
+                        date_string = ", ".join(item_dict["trainingDate"][facility])
+                        train_hour = len(item_dict["trainingDate"][facility]) * 8
+                        self.ws.cell(row=12+(i * 2), column=3).value = f_name
+                        self.ws.cell(row=13+(i * 2), column=3).value = "( {} )".format(category)
+                        self.ws.cell(row=12+(i * 2), column=4).value = date_string
+                        self.ws.cell(row=12+(i * 2), column=7).value = train_hour
+                        total_train += train_hour
 
-                    # 대체실습이 종료되면, 각 사람마다 실습시간(각 기관) 이 달라짐. 업데이트 필요
-                    # 실습시간
-                    string = "        {}  시간".format(item_dict["trainingCreditHour"])
-                    self.ws.cell(row=12, column=7).value = string
-
-                    # 총 실습시간
+                    # 총 실습시간   / total_train 사용 X
                     string = "         {}  시간".format(item_dict["trainingCreditHour"])
-                    self.ws.cell(row=18, column=7).value = string
+                    self.ws.cell(row=20, column=7).value = string
 
                     # 총 이수시간
                     string = "       {}  시간".format(item_dict["totalCreditHour"])
-                    self.ws.cell(row=19, column=7).value = string
+                    self.ws.cell(row=21, column=7).value = string
 
                     # 수여일 / 각 인원 대체실습 기준 종료일 바로 다음 월요일 날짜로 지정
                     string = "                                      {}".format(item_dict["awardDate"])
-                    self.ws.cell(row=23, column=1).value = string
+                    self.ws.cell(row=25, column=1).value = string
 
                     self.wb.save(save_path + "\\{}_{}.xlsx".format(item_dict["name"], doc_type))
                     self.logger.info("$Automation [Document|교육수료증명서][{}{} {}]작성".format(item_dict["classNumber"], item_dict["classTime"], item_dict["name"]))
@@ -168,16 +216,16 @@ class Automation:
 
                 return return_str
 
-            except:
+            except Exception as e:
+                print(e)
                 return traceback.format_exc()
 
         elif doc_type == "대체실습확인서":
             try:
                 where = "exam={}".format(exam)
-                user_rs = self.inputChecker(self.DB.SELECT("id, name, RRN, phoneNumber, classNumber, classTime, trainingCreditHour, temporaryClassNumber", "user", where))
+                user_rs = self.inputChecker(self.DB.SELECT("id, name, RRN, phoneNumber, classNumber, classTime, trainingCreditHour, temporaryClassNumber, trainingDate", "user", where))
                 valueErrorList = self.nullValueChecker(user_rs, 1)
-
-                user_query_list = ["id", "name", "RRN", "phoneNumber", "classNumber", "classTime", "trainingCreditHour", "temporaryClassNumber"]
+                user_query_list = ["id", "name", "RRN", "phoneNumber", "classNumber", "classTime", "trainingCreditHour", "temporaryClassNumber", "trainingDate"]
                 item_dict = {}
 
                 for rows in user_rs:
@@ -207,6 +255,12 @@ class Automation:
                     item_dict["startDate_temp"] = tempInfo_rs[1].strftime("%Y 년  %m 월  %d 일")
                     item_dict["endDate_temp"] = tempInfo_rs[2].strftime("%Y 년  %m 월  %d 일")
                     item_dict["awardDate"] = tempInfo_rs[3].strftime("%Y 년   %m 월    %d 일")
+                    item_dict["trainingDate"] = self.str2Dict(item_dict["trainingDate"])["대체"]
+
+                    pre_year = item_dict["trainingDate"][0][:4]
+                    for idx in range(1, len(item_dict["trainingDate"])):
+                        if pre_year == item_dict["trainingDate"][idx][:4]:
+                            item_dict["trainingDate"][idx] = item_dict["trainingDate"][idx][5:]
 
                     # 이름
                     string = item_dict["name"]
@@ -238,11 +292,11 @@ class Automation:
                         teacher_start_row += 1                    
 
                     # 대체실습 기간
-                    string = "{}  ~  {}".format(item_dict["startDate_temp"], item_dict["endDate_temp"])
+                    string = ", ".join(item_dict["trainingDate"])
                     self.ws.cell(row=21, column=3).value = string
 
                     # 대체실습 시간
-                    string = "  총     {}  시간".format(item_dict["trainingCreditHour"])
+                    string = "  총     {}  시간".format(len(item_dict["trainingDate"]) * 8)
                     self.ws.cell(row=22, column=3).value = string
 
                     # 합격여부 
@@ -273,7 +327,8 @@ class Automation:
 
                 return return_str
 
-            except:
+            except Exception as e:
+                print(e)
                 return traceback.format_exc()
 
         elif doc_type == "요양보호사 자격증 발급,재발급 신청서":
@@ -289,10 +344,10 @@ class Automation:
                 exam_dict["submitDate"] = exam_rs[6].strftime("     %Y  년     %m  월    %d   일    ")
 
                 where = "exam={}".format(exam)
-                user_rs = self.inputChecker(self.DB.SELECT("id, name, RRN, phoneNumber, address, classNumber, classTime, temporaryClassNumber", "user", where))
+                user_rs = self.inputChecker(self.DB.SELECT("id, name, RRN, phoneNumber, address, classNumber, classTime, temporaryClassNumber, trainingDate", "user", where))
                 valueErrorList = self.nullValueChecker(user_rs, 1)
 
-                user_query_list = ["id", "name", "RRN", "phoneNumber", "address", "classNumber", "classTime", "temporaryClassNumber"]
+                user_query_list = ["id", "name", "RRN", "phoneNumber", "address", "classNumber", "classTime", "temporaryClassNumber", "trainingDate"]
 
                 for rows in user_rs:
                     item_dict.clear()
@@ -316,6 +371,11 @@ class Automation:
                     item_dict["startDate_temp"] = tempInfo_rs[1].strftime("%Y.%m.%d")
                     item_dict["endDate_temp"] = tempInfo_rs[2].strftime("%Y.%m.%d")
                     item_dict["awardDate"] = tempInfo_rs[3].strftime("%Y 년    %m 월     %d 일")
+                    item_dict["trainingDate"] = self.str2Dict(item_dict["trainingDate"])
+                    # 2021/01/01 -> 21.01.01 replace
+                    for facility in item_dict["trainingDate"].keys():
+                        for date_idx in range(len(item_dict["trainingDate"][facility])):
+                            item_dict["trainingDate"][facility][date_idx] = item_dict["trainingDate"][facility][date_idx].replace("/", ".")[2:]
                     
                     """
                     시험 회차, 시험 시행일, 합격일, 신청 일자, 합격 예정일(?) 등 컬럼 맞춰서 table 생성하기!
@@ -375,29 +435,36 @@ class Automation:
                     string = item_dict["endDate_temp"][2:]
                     self.ws.cell(row=13, column=3).value = string
 
-                    # 교육과정명(실습)
-                    string = "요양보호사 (대체실습{})".format(item_dict["temporaryClassNumber"])
-                    self.ws.cell(row=13, column=4).value = string
-
-                    # 교육기관명(실습)
-                    string = "남양노아요양보호사교육원"
-                    self.ws.cell(row=13, column=7).value = string
+                    # 교육과정명(실습)  | 요양보호사(실습)
+                    for idx, facility in enumerate(item_dict["trainingDate"].keys()):
+                        start_date = item_dict["trainingDate"][facility][0]
+                        end_date = item_dict["trainingDate"][facility][-1]
+                        if facility == "대체":
+                            curriculum = "요양보호사 (대체실습{})".format(item_dict["temporaryClassNumber"])
+                            name = "남양노아요양보호사교육원"
+                        else:
+                            curriculum = "요양보호사(실습)"
+                            name = facility
+                        self.ws.cell(row=13+idx, column=2).value = start_date
+                        self.ws.cell(row=13+idx, column=3).value = end_date
+                        self.ws.cell(row=13+idx, column=4).value = curriculum
+                        self.ws.cell(row=13+idx, column=7).value = name
 
                     # 시험 시행일
                     string = "시험시행일   {}".format(exam_dict["examDate"])
-                    self.ws.cell(row=14, column=2).value = string
+                    self.ws.cell(row=17, column=2).value = string
 
                     # 시험 합격일
                     string = "시험합격일   {}".format(exam_dict["passDate"])
-                    self.ws.cell(row=14, column=5).value = string
+                    self.ws.cell(row=17, column=5).value = string
 
                     # 신청 일자
                     string = exam_dict["submitDate"]
-                    self.ws.cell(row=19, column=1).value = string
+                    self.ws.cell(row=22, column=1).value = string
 
                     # 이름 / shift 는 keyDown(or Up) 에서 left 와 right 를 모두 입력해 주어야 정상작동 함 !!
                     string = "{} (서명 또는 인)".format(item_dict["name"])
-                    self.ws.cell(row=20, column=4).value = string
+                    self.ws.cell(row=23, column=4).value = string
 
                     self.wb.save(save_path + "\\{}_{}.xlsx".format(item_dict["name"], doc_type))
                     self.logger.info("$Automation [Document|요양보호사 자격증 발급,재발급 신청서][{}{} {}]작성".format(item_dict["classNumber"], item_dict["classTime"], item_dict["name"]))
@@ -412,7 +479,8 @@ class Automation:
 
                 return return_str
 
-            except:
+            except Exception as e:
+                print(e)
                 return traceback.format_exc()
 
     def report(self, doc_type, number, time=None, personal_dcit=None):
@@ -550,7 +618,8 @@ class Automation:
 
             return "정상 처리"
 
-        except:
+        except Exception as e:
+            print(e)
             self.logger.error("!Automation [Report|{}]작성 에러 발생")
             return traceback.format_exc()
 
@@ -661,7 +730,8 @@ class Automation:
 
             return return_str
         
-        except:
+        except Exception as e:
+            print(e)
             self.logger.error("!Automation[{}회 합격자명단 작성] 작성 중 오류발생".format(exam))
             return traceback.format_exc()
 
@@ -688,7 +758,8 @@ class Automation:
 
             return self.basePath + "{}\\{}{}\\{}{}_수강료 납부 대장.xlsx".format(class_number, class_number, class_time, class_number, class_time)
 
-        except:
+        except Exception as e:
+            print(e)
             return traceback.format_exc()
 
     def locker(self, class_number, class_time):
@@ -714,7 +785,8 @@ class Automation:
 
             return self.basePath + "{}\\{}{}\\{}{}_사물함 주기.xlsx".format(class_number, class_number, class_time, class_number, class_time)
 
-        except:
+        except Exception as e:
+            print(e)
             return traceback.format_exc()
 
 
@@ -762,7 +834,8 @@ class Automation:
 
             return save_path
 
-        except:
+        except Exception as e:
+            print(e)
             return traceback.format_exc()
 
     def printDocument(self, exam, doc_type):
@@ -784,7 +857,8 @@ class Automation:
 
             else:
                 return "없음"
-        except:
+        except Exception as e:
+            print(e)
             return traceback.format_exc()
 
     def gatherPictures(self, exam):
@@ -813,7 +887,8 @@ class Automation:
             else:
                 return dir_path, "없음"
 
-        except:
+        except Exception as e:
+            print(e)
             return traceback.format_exc(), "ERROR"
 
 

@@ -16,6 +16,8 @@ class DB():
         self.db = 'ac'
         self.conn = pymysql.connect(host=self.host, user=self.user, password=self.password, db=self.db, charset='utf8')
 
+        self.UI = {""}
+
         self.logger = logging.getLogger("DATABASE log")
         fileHandler = logging.FileHandler("D:\\Master\\log\\Program log.log")
 
@@ -24,6 +26,34 @@ class DB():
 
         self.logger.addHandler(fileHandler)
         self.logger.setLevel(level=logging.DEBUG)
+
+    def SQLExceptionHandler(self, e):
+        print(e)
+        msg = str(e)
+        return_msg = "ERROR|"
+        if("PRIMARY" in msg):
+            print("기본키 오류:!")
+            return_msg += "PRIMARY KEY"
+        elif("foreign key constraint fails" in msg):
+            print("외래키 오류:!")
+            return_msg += "FOREIGN KEY"
+        elif("cannot be null" in msg):
+            print("NULL 삽입 불가 오류:!")
+            return_msg += "CANNOT NULL"
+        elif("Column count doesn't match" in msg):
+            print("데이터 삽입 갯수 오류:!")
+            return_msg += "COLUMN MATCH"
+        elif("Incorrect date value" in msg):
+            print("데이터 타입 오류:!")
+            return_msg += "INCORRECT TYPE"
+        elif("SQL syntax;" in msg):
+            print("SQL 문법 오류:!")
+            return_msg += "SYNTAX"
+        else:
+            print("다른 오류")
+            return_msg += "ELSE"
+
+        return return_msg
 
     def SQL(self, sql_query):
         try:
@@ -37,15 +67,8 @@ class DB():
                 return rs
 
         except Exception as e:
-            print(e)
             self.logger.error("!SQL SELF QUERY Exception Handling <{}>".format(e))
-            return "error"
-            try:
-                print("SQL Exception -> connection close")
-                # self.conn.close()
-            except Exception as e:
-                print(e)
-                print("SQL Exception\ndatabase Exception: Connection is already closed!")
+            return self.SQLExceptionHandler(e)
 
     def SELECT(self, columns, table, where=None, orderBy=None, fetchone=False):
         try:
@@ -95,15 +118,8 @@ class DB():
                 return rs
 
         except Exception as e:
-            print(e)
             self.logger.error("!SQL SELECT Exception Handling <{}>".format(e))
-            return "error"
-            try:
-                print("SELECT Exception -> connection close")
-                # self.conn.close()
-            except Exception as e:
-                print(e)
-                print("SELECT Exception\ndatabase Exception: Connection is already closed!")
+            return self.SQLExceptionHandler(e)
 
     def INSERT(self, table, values):
         try:
@@ -132,16 +148,10 @@ class DB():
                 #     connObj.setData(connObj.index(connObj.rowCount() - 1, i), str(list[i]))
 
         except Exception as e:
-            print(e)
+            self.SQLExceptionHandler(e)
             self.logger.error("!SQL INSERT Exception Handling <{}>".format(e))
-            MySQLError.with_traceback()
-            return "error"
-            try:
-                print("INSERT Exception -> connection close")
-                # self.conn.close()
-            except Exception as e:
-                print(e)
-                print("INSERT Exception\ndatabase Exception: Connection is already closed!")
+            # MySQLError.with_traceback()
+            return self.SQLExceptionHandler(e)
 
     def DELETE(self, table, where):
         try:
@@ -153,15 +163,8 @@ class DB():
                 self.logger.info("$SQL DELETE result ==> [TABLE|{}]에서 조건: [WHERE|{}]인 데이터 삭제".format(table, where))
 
         except Exception as e:
-            print(e)
             self.logger.error("!SQL DELETE Exception Handling <{}>".format(e))
-            return "error"
-            try:
-                print("DELETE Exception -> connection close")
-                # self.conn.close()
-            except Exception as e:
-                print(e)
-                print("DELETE Exception\ndatabase Exception: Connection is already closed!")
+            return self.SQLExceptionHandler(e)
 
     def UPDATE(self, table, modified, where):
         try:
@@ -173,15 +176,8 @@ class DB():
                 self.logger.info("$SQL UPDATE result ==> [TABLE|{}]에서 [WHERE|{}]인 데이터를 [SET|{}](으)로 변경".format(table, where, modified))
 
         except Exception as e:
-            print(e)
             self.logger.error("!SQL UPDATE Exception Handling <{}>".format(e))
-            return "error"
-            try:
-                print("UPDATE Exception -> connection close")
-                # self.conn.close()
-            except Exception as e:
-                print(e)
-                print("UPDATE Exception\ndatabase Exception: Connection is already closed!")
+            return self.SQLExceptionHandler(e)
 
     def dDayCheck(self, doc_type, isDeadline=False):
         try:
@@ -254,13 +250,10 @@ class DB():
                 curs.execute(sql)
                 rs = curs.fetchall()
 
-                return rs;
-
-
+                return rs
 
         except Exception as e:
-            print(e)
-            return "error"
+            return self.SQLExceptionHandler(e)
 
     def dropDatabase(self, db_name):
         sql = "drop database " + db_name
@@ -318,4 +311,11 @@ class DB():
 
 if __name__ == "__main__":
     db = DB()
+    db.INSERT("user", "429, '이영민', '990728-1234567', '010-1234-5678', '일반', '경기도 화성시 향남읍 상신리', '경기도 화성시 장안면 사곡리', '999기', '주간', NULL, NULL, NULL, NULL, '999기', NULL, NULL")
+    # db.INSERT("user", "430, '김연흥', '990728-1234567', '010-1234-5678', '일반', '경기도 화성시 향남읍 상신리', '경기도 화성시 장안면 사곡리', '999기', '주간', NULL, NULL, NULL, NULL, '999기', NULL, NULL")
+    # db.INSERT("teacher", "8, NULL, '이영민', '2888-10-10', '강사', '3년 이상', '2888-10-10'")
+    # db.INSERT("lecture", "'108기', '야간', '2012-01-01', NULL")
+    # db.UPDATE("user", "id=428", "id=429")
+    db.DELETE("temptraining", "classNumber='999기'")
+    # db.UPDATE("user", "id=428", "name='이영민'")
     # db.dumpDatabase()

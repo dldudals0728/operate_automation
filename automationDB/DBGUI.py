@@ -48,6 +48,7 @@ class LogIn(QWidget):
         self.setFixedSize(600, 300)
         self.setWindowTitle("남양노아요양보호사교육원 DBMS")
         self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
+        self.setStyleSheet("background-color: white;")
         self.main_box = QVBoxLayout()
         self.box_logo = QHBoxLayout()
         self.box_top = QHBoxLayout()
@@ -900,19 +901,23 @@ class DocumentChecker(QWidget):
                 file_name, file_extension = os.path.splitext(file)
 
 class Calendar(QWidget):
-    
     def __init__(self):
         super().__init__()
         self.setWindowTitle("실습 날짜 설정")
         self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
-        self.selectedDate = {}
+        self.newDate = {}
+        self.selectedInfo = {"selectedDate": None, "selectedId": None, "selectedName": None}
+        self.query = ""
 
         self.main_box = QVBoxLayout()
         self.calendar = QCalendarWidget()
         self.label = QLabel("■ 삭제", self)
+        self.label.setFixedWidth(50)
         self.label.setObjectName(self.label.text())
         self.label.mousePressEvent = functools.partial(Calendar.calendarLabelClicked, self.label)
+        self.label.setStyleSheet("color: #000000; border-style: solid; border-width: 2px; border-color: #000000; border-radius: 3px; padding-top: 1px; padding-bottom: 1px;")
         self.btn = QPushButton("입력", self)
         self.btn.clicked.connect(self.inputData)
 
@@ -922,8 +927,8 @@ class Calendar(QWidget):
         self.calendarLabelList = [QLabel("■ 대체", self)]
         self.labelLayoutList = [QHBoxLayout()]
         # red, orange, green, blue, navy, purple, brown, cyan, violet
-        self.calendarLabelForegroundRGB = [QColor(255, 0, 0), QColor(255, 128, 0), QColor(0, 204, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(0, 204, 204), QColor(204, 0, 102)]
-        self.calendarLabelForegroundHexa = ["FF0000", "FF8000", "00CC00", "0000FF", "000066", "6600CC", "331900", "00CCCC", "CC0066"]
+        self.calendarLabelBackgroundRGB = [QColor(255, 0, 0), QColor(255, 128, 0), QColor(0, 204, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(0, 204, 204), QColor(204, 0, 102)]
+        self.calendarLabelBackgroundHexa = ["FF0000", "FF8000", "00CC00", "0000FF", "000066", "6600CC", "331900", "00CCCC", "CC0066"]
         self.facilityDict = {}
         self.foregroundWhite = [QColor(255, 0, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(204, 0, 102)]
         # self.calendarLabelBackground = [Qt.violet, ]
@@ -933,21 +938,18 @@ class Calendar(QWidget):
 
         for i in range(len(self.calendarLabelList)):
             self.calendarLabelList[i].mousePressEvent = functools.partial(Calendar.calendarLabelClicked, self.calendarLabelList[i])
-            self.calendarLabelList[i].setStyleSheet("color: #{};".format(self.calendarLabelForegroundHexa[i]))
+            self.calendarLabelList[i].setStyleSheet("color: #{}; border-style: solid; border-width: 2px; border-color: #{}; border-radius: 3px; padding-top: 1px; padding-bottom: 1px;".format(self.calendarLabelBackgroundHexa[i], self.calendarLabelBackgroundHexa[i]))
             self.facilityDict[self.calendarLabelList[i].text()[2:]] = QTextCharFormat()
-            self.facilityDict[self.calendarLabelList[i].text()[2:]].setBackground(self.calendarLabelForegroundRGB[i])
-            if self.calendarLabelForegroundRGB[i] in self.foregroundWhite:
+            self.facilityDict[self.calendarLabelList[i].text()[2:]].setBackground(self.calendarLabelBackgroundRGB[i])
+            if self.calendarLabelBackgroundRGB[i] in self.foregroundWhite:
                 self.facilityDict[self.calendarLabelList[i].text()[2:]].setForeground(Qt.white)
             else:
                 self.facilityDict[self.calendarLabelList[i].text()[2:]].setForeground(Qt.black)
 
-        lineLength = 0
         for i in range(len(self.calendarLabelList)):
             self.calendarLabelList[i].setObjectName(self.calendarLabelList[i].text())
             self.labelLayoutList[-1].addWidget(self.calendarLabelList[i])
-            lineLength += len(self.calendarLabelList[i].text()) + 2
-            if lineLength >= 38:
-                lineLength = 0
+            if(i + 1) % 3 == 0:
                 self.labelLayoutList.append(QHBoxLayout())
 
         self.calendarLabel = QLabel("", self)
@@ -965,7 +967,6 @@ class Calendar(QWidget):
         self.fm_selected.setBackground(Qt.yellow)
 
         self.fm_origin = QTextCharFormat()
-        self.fm_today = QTextCharFormat()
 
         self.initUI()
 
@@ -979,66 +980,114 @@ class Calendar(QWidget):
         elif e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
             self.inputData()
 
-    def inputData(self):
-        if not self.selectedDate:
-            QMessageBox.warning(self, "오류", "선택된 날짜가 없습니다!")
-            return
+    def showEvent(self, QShowEvent):
+        self.calendar.setSelectedDate(QDate.currentDate())
+        self.selectedInfo["selectedDate"] = db.main.select_train_date
+        self.selectedInfo["selectedId"] = db.main.readDB.index(db.main.table.currentIndex().row(), 0).data()
+        self.selectedInfo["selectedName"] = db.main.readDB.index(db.main.table.currentIndex().row(), 1).data()
+        self.drawCalendar(self.selectedInfo["selectedDate"])
+        self.newDate = self.str2Dict(self.selectedInfo["selectedDate"])
 
+    def closeEvent(self, QCloseEvent):
+        # 작업이 완료되고 Calendar창이 닫히면 달력 초기화
+        self.clearCalendar(self.newDate)
+        self.query = ""
+
+    def inputData(self):
         sendMsg = ""
-        for key in self.selectedDate.keys():
-            sendMsg += key + ": "
-            sendingLst = [i[5:] for i in self.selectedDate[key]]
-            sendMsg += ", ".join(sendingLst)
-            sendMsg += "\n"
+        if self.newDate:
+            for key in self.newDate.keys():
+                self.query = "trainingDate='{}'".format(sendStr)
+                sendMsg += key + ": "
+                sendingLst = [i[5:] for i in self.newDate[key]]
+                sendMsg += ", ".join(sendingLst)
+                sendMsg += "\n"
+        else:
+            self.query = "trainingDate=NULL"
+            sendMsg += "실습 데이터가 없습니다.\n"
 
         sendMsg += "데이터를 삽입하시겠습니까?"
 
         ans = QMessageBox.question(self, "실습 데이터 삽입 확인", sendMsg, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
-            # db.logger.info("$UI INSERT Request [TABLE|{}][{}] {} 삽입 요청".format(self.target_table, table, classification))
-            # db.main.dbPrograms.INSERT(self.target_table, query)
-            QMessageBox.about(self, "완료", "실습 데이터가 성공적으로 업데이트 되었습니다.")
+            sendStr = self.dict2Str(self.newDate)
+            where = "id={} AND name='{}'".format(self.selectedInfo["selectedId"], self.selectedInfo["selectedName"])
+            db.logger.info("$UI UPDATE Request [TABLE|{}][{}] {} 수정 요청".format("user", "수강생", self.query))
+            res = db.main.dbPrograms.UPDATE(db.main.current_table, self.query, where)
+            if res != "error":
+                QMessageBox.about(self, "완료", "실습 데이터가 성공적으로 업데이트 되었습니다.")
+                self.close()
+                db.main.showTable(Refresh=True)
+            else:
+                QMessageBox.warning(self, "UPDATE ERROR", "데이터 변경 중 오류가 발생했습니다.")
         else:
             return
 
+    def drawCalendar(self, drawDates):
+        if drawDates == "NULL" or drawDates == "None":
+            return
 
-        ################ dict2str ################
-        dateString = ""
-        facilityString = "|".join(list(self.selectedDate.keys()))
-        for dateList in self.selectedDate.items():
-            # dataList: ('대체', ['2022/06/07', '2022/06/08', '2022/06/09'])
-            dateString += ",".join(list(dateList[1]))
-            dateString += "|"
-        
-        dateString = dateString[:-1]
+        drawDates = self.str2Dict(drawDates)
+        for facility in drawDates.keys():
+            for dates in drawDates[facility]:
+                year, month, day = dates.split("/")
+                self.calendar.setDateTextFormat(QDate(int(year), int(month), int(day)), self.facilityDict[facility])
 
-        print(facilityString)
-        print(dateString)
-        ##########################################
-        totalString = facilityString + "$" + dateString
-        print(totalString)
-        ################ str2dict ################
-        newFacilityString, newDateString = totalString.split("$")
-        facilityList = newFacilityString.split("|")
-        datesList = newDateString.split("|")
+    def clearCalendar(self, clearDates):
+        self.calendar.setSelectedDate(QDate.currentDate())
+        if clearDates == "NULL" or clearDates == "None":
+            return
 
-        print(facilityList)
-        print(datesList)
+        clearDates = self.str2Dict(clearDates)
+        for facility in clearDates.keys():
+            for dates in clearDates[facility]:
+                year, month, day = dates.split("/")
+                self.calendar.setDateTextFormat(QDate(int(year), int(month), int(day)), self.fm_origin)
 
-        newList = [dateStr.split(",") for dateStr in datesList]
-        print(newList)
-        newDict = dict(zip(facilityList, newList))
-        ##########################################
-
-        print("---------------- result ----------------")
-        print(self.selectedDate)
-        print(newDict)
-        print(self.selectedDate == newDict)
+        self.calendarLabel.setText("")
+        self.calendarLabel.setStyleSheet("")
 
     def calendarLabelClicked(self, event):
         clickedObject = self.objectName()
         self.parent().calendarLabel.setText(clickedObject)
         self.parent().calendarLabel.setStyleSheet(self.styleSheet())
+        self.parent().calendarLabel.setFixedWidth(self.width())
+
+    def dict2Str(self, fromDict):
+        if type(fromDict) != dict:
+            return fromDict
+        elif fromDict == "NULL" or fromDict == "None":
+            return NULL
+        elif not fromDict:
+            return NULL
+        facilityString = ""
+        dateString = ""
+
+        # dict_items([('대체', ['2022/06/15', '2022/06/29']), ('묘희원', ['2022/06/14', '2022/06/16']), ('상락원', ['2022/06/20', '2022/06/23'])])
+        for data in fromDict.items():
+            facilityString += data[0] + "|"
+            dateString += ",".join(list(data[1])) + "|"
+
+        facilityString = facilityString[:-1]
+        dateString = dateString[:-1]
+        returnStr = facilityString + "$" + dateString
+
+        return returnStr
+
+    def str2Dict(self, fromString):
+        if type(fromString) == dict:
+            return fromString
+        elif fromString == "NULL" or fromString == "None":
+            return {}
+        newFacilityString, newDateString = fromString.split("$")
+        facilityList = newFacilityString.split("|")
+        datesList = newDateString.split("|")
+
+
+        newList = [dateStr.split(",") for dateStr in datesList]
+        newDict = dict(zip(facilityList, newList))
+
+        return newDict
 
     def showDate(self, date):
         selectedFacility = self.calendarLabel.text()[2:]
@@ -1052,51 +1101,55 @@ class Calendar(QWidget):
         selected_date = dateList[2]
 
         # 현재 기관 데이터가 없을 경우 추가
-        if selectedFacility not in self.selectedDate.keys():
-            self.selectedDate[selectedFacility] = []
+        if selectedFacility not in self.newDate.keys():
+            self.newDate[selectedFacility] = []
 
         dateInfo = f"{selected_year}/{selected_month.rjust(2, '0')}/{selected_date.rjust(2, '0')}"
         all_date.append(dateInfo)
 
+        # 삭제 선택
         if selectedFacility == "삭제":
             self.calendar.setDateTextFormat(date, self.fm_origin)
             # (deep copy를 통해 RuntimeError: dictionary changed size during iteration 방지)
-            for facility in list(self.selectedDate.keys()):
-                if dateInfo in self.selectedDate[facility]:
-                    self.selectedDate[facility].remove(dateInfo)
-                    if self.selectedDate[facility] == []:
-                        del self.selectedDate[facility]
+            for facility in list(self.newDate.keys()):
+                if dateInfo in self.newDate[facility]:
+                    self.newDate[facility].remove(dateInfo)
+                    if self.newDate[facility] == []:
+                        del self.newDate[facility]
 
-        elif dateInfo not in self.selectedDate[selectedFacility]:
+        # 날짜 선택
+        elif dateInfo not in self.newDate[selectedFacility]:
             # 먼저 선택된 날짜가 해당 기관 날짜에 없다면, 다른 기관에 날짜로 정해져있는지 확인 후, 있다면 삭제한 다음 해당 기관에 날짜를 추가한다.
-            for facility in self.selectedDate.keys():
-                if dateInfo in self.selectedDate[facility]:
-                    self.selectedDate[facility].remove(dateInfo)
+            # 다른 기관에 해당 날짜가 포함되어 있는지 확인
+            for facility in self.newDate.keys():
+                if dateInfo in self.newDate[facility]:
+                    # 다른 기관의 날짜 삭제
+                    self.newDate[facility].remove(dateInfo)
 
             self.calendar.setDateTextFormat(date, self.facilityDict[selectedFacility])
-            self.selectedDate[selectedFacility].append(dateInfo)
+            # 선택된 기관의 날짜로 삽입
+            self.newDate[selectedFacility].append(dateInfo)
 
+        # 얘는 뭐지
         else:
             self.calendar.setDateTextFormat(date, self.fm_origin)
-            self.selectedDate[selectedFacility].remove(dateInfo)
+            self.newDate[selectedFacility].remove(dateInfo)
 
         # 기관에 포함된 날짜가 없을 경우, 기관 삭제.
-        if self.selectedDate[selectedFacility] == []:
-            del self.selectedDate[selectedFacility]
+        if self.newDate[selectedFacility] == []:
+            del self.newDate[selectedFacility]
 
-        self.selectedDate = dict(sorted(self.selectedDate.items(), key = lambda item: item[0]))
-        for year in self.selectedDate.keys():
-            self.selectedDate[year].sort()
+        self.newDate = dict(sorted(self.newDate.items(), key = lambda item: item[0]))
+        for year in self.newDate.keys():
+            self.newDate[year].sort()
 
         myStr = ""
-        for year in self.selectedDate.keys():
+        for year in self.newDate.keys():
             myStr += year + ": "
-            myStr += " | ".join(self.selectedDate[year])
+            myStr += " | ".join(self.newDate[year])
             myStr += "\n"
 
 class Kuksiwon(QWidget):
-    
-
     def __init__(self):
         super().__init__()
         self.setWindowTitle("국시원")
@@ -1131,7 +1184,7 @@ class Kuksiwon(QWidget):
 
     def createFile(self):
         exam_round = self.combobox_exam.currentText()
-        if self.combobox_exam == "선택":
+        if exam_round == "선택":
             QMessageBox.about(self, "안내", "옵션이 선택되지 않았습니다.")
             return
 
@@ -1197,7 +1250,7 @@ class Kuksiwon(QWidget):
         self.combobox_exam.addItem("선택")
         rs = db.main.dbPrograms.SELECT("round", "exam", where="TIMESTAMPDIFF(DAY, passDate, CURDATE()) < 90", orderBy="round *1")
 
-        if rs == "error":
+        if rs[:6] == "ERROR|":
             QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
         else:
             for row in rs:
@@ -1292,7 +1345,7 @@ class ClassOpening(QWidget):
         self.combobox_T.addItem("야간")
         rs = db.main.dbPrograms.SELECT("classNumber", "lecture", where="TIMESTAMPDIFF(DAY, startDate, CURDATE()) < 60", orderBy="classNumber *1")
 
-        if rs == "error":
+        if rs[:6] == "ERROR|":
             QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
         else:
             for row in rs:
@@ -1411,7 +1464,7 @@ class Report(QWidget):
             self.combobox_T.setEnabled(False)
             rs = db.main.dbPrograms.SELECT("classNumber", "temptraining", where="TIMESTAMPDIFF(DAY, endDate, CURDATE()) < 60", orderBy="classNumber *1")
         
-        if rs == "error":
+        if rs[:6] == "ERROR|":
             QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
         else:
             for row in rs:
@@ -1712,12 +1765,11 @@ class BatchUpdate(QWidget):
             where = "classNumber='{}' and classTime='{}' and exam is NULL".format(self.combobox_N.currentText(), self.combobox_T.currentText())
 
             res = db.main.dbPrograms.UPDATE("user", query, where)
-            if res == "error":
+            if res[:6] == "ERROR|":
                 QMessageBox.warning(self, "오류", "데이터 수정에 오류가 발생했습니다!")
             else:
                 QMessageBox.about(self, "완료", "데이터를 성공적으로 수정했습니다.")
             db.main.showTable(Refresh=True)
-            db.main.textInfo.clear()
             
         elif self.mode == "대체실습 일괄 변경":
             temp_class_number = self.combobox_exam_or_temp.currentText()
@@ -1725,12 +1777,14 @@ class BatchUpdate(QWidget):
             where = "classNumber='{}' and classTime='{}' and temporaryClassNumber is NULL".format(self.combobox_N.currentText(), self.combobox_T.currentText())
 
             res = db.main.dbPrograms.UPDATE("user", query, where)
-            if res == "error":
-                QMessageBox.warning(self, "오류", "데이터 수정에 오류가 발생했습니다!")
+            if res[:6] == "ERROR|":
+                if res[6:] == "FOREIGN KEY":
+                    QMessageBox.warning(self, "오류", "대체실습 테이블에 {}기가 존제하지 않습니다!\n\n대체실습 테이블에 먼저 데이터를 입력해주세요.".format(temp_class_number))
+                else:
+                    QMessageBox.warning(self, "오류", "데이터 수정에 알 수 없는 오류가 발생했습니다!\n\n{}".format(res))
             else:
                 QMessageBox.about(self, "완료", "데이터를 성공적으로 수정했습니다.")
             db.main.showTable(Refresh=True)
-            db.main.textInfo.clear()
 
         elif self.mode == "이수시간 일괄 변경":
             checker = "(totalCreditHour is NULL and theoryCreditHour is NULL and practicalCreditHour is NULL and trainingCreditHour is NULL)"
@@ -1755,7 +1809,6 @@ class BatchUpdate(QWidget):
 
             QMessageBox.about(self, "완료", "데이터를 성공적으로 수정했습니다.")
             db.main.showTable(Refresh=True)
-            db.main.textInfo.clear()
 
         self.close()
 
@@ -1781,7 +1834,7 @@ class BatchUpdate(QWidget):
         self.combobox_exam_or_temp.addItem("선택")
 
         rs = db.main.dbPrograms.SELECT("classNumber, classTime", "lecture", where="TIMESTAMPDIFF(DAY, startDate, CURDATE()) < 120", orderBy="classNumber *1")
-        if rs == "error":
+        if rs[:6] == "ERROR|":
             QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
             self.close()
         else:
@@ -1794,7 +1847,7 @@ class BatchUpdate(QWidget):
         if self.mode == "시험회차 일괄 변경":
             self.label_exam_or_temp.setText("시험 회차")
             rs = db.main.dbPrograms.SELECT("round", "exam", "TIMESTAMPDIFF(DAY, startAcceptance, CURDATE()) < 90", orderBy="round *1")
-            if rs == "error":
+            if rs[:6] == "ERROR|":
                 QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
                 self.close()
             else:
@@ -1804,7 +1857,7 @@ class BatchUpdate(QWidget):
         elif self.mode == "대체실습 일괄 변경":
             self.label_exam_or_temp.setText("대체실습")
             rs = db.main.dbPrograms.SELECT("classNumber", "temptraining", "TIMESTAMPDIFF(DAY, startDate, CURDATE()) < 30", orderBy="classNumber *1")
-            if rs == "error":
+            if rs[:6] == "ERROR|":
                 QMessageBox.information(self, "ERROR", "class batchUpdate returns error", QMessageBox.Yes, QMessageBox.Yes)
                 self.close()
             else:
@@ -1921,9 +1974,11 @@ class UPDATE(QWidget):
             user_list.append(self.text_training_time.text().strip())
             user_list.append(self.text_temp.text().strip())
             user_list.append(self.text_exam.text().strip())
+            # 실습 일정 관리는 따로 입력
+            user_list.append(NULL)
 
             query_list = ["id", "name", "RRN", "phoneNumber", "license", "address", "originAddress", "classNumber", "classTime", \
-                "totalCreditHour", "theoryCreditHour", "practicalCreditHour", "trainingCreditHour", "temporaryClassNumber", "exam"]
+                "totalCreditHour", "theoryCreditHour", "practicalCreditHour", "trainingCreditHour", "temporaryClassNumber", "exam", "trainingDate"]
 
             where = "id = '{}' and name = '{}'".format(self.key_dict["ID"], self.key_dict["name"])
             query = ""
@@ -2166,26 +2221,43 @@ class UPDATE(QWidget):
         ans = QMessageBox.question(self, "데이터 수정 확인", ask, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
             db.logger.info("$UI UPDATE Request [TABLE|{}][{}] {} 수정 요청".format(self.target_table, table, classification))
-            db.main.dbPrograms.UPDATE(self.target_table, query, where)
-            QMessageBox.about(self, "완료", "데이터를 성공적으로 수정했습니다.")
-            db.main.showTable(Refresh=True)
-            db.main.textInfo.clear()
+            rs = db.main.dbPrograms.UPDATE(self.target_table, query, where)
+            if rs != None:
+                errorMsg = ""
+                if rs[6:] == "PRIMARY KEY":
+                    errorMsg += "데이터의 ID 속성은 중복될 수 없습니다!"
+                elif rs[6:] == "FOREIGN KEY":
+                    errorMsg += "입력하고자 하는 기수, 반, 대체실습 기수가 각각의 테이블에 존재하는지 확인해주세요.\n테이블에 존재하지 않는 값은 넣을 수 없습니다!"
+                elif rs[6:] == "CANNOT NULL":
+                    errorMsg += "데이터의 ID 속성은 빈 값을 넣을 수 없습니다!"
+                elif rs[6:] == "INCORRECT TYPE":
+                    errorMsg += "데이터 타입에 문제가 있습니다. 오탈자가 있는지 확인해주세요!\n(ID와 시험회차는 숫자만 입력해야 합니다.)"
+                else:
+                    errorMsg += "데이터 수정 오류입니다.\n\n{}".format(rs)
+                
+                QMessageBox.warning(self, "UPDATE ERROR", errorMsg)
+                return
+
+            else:
+                QMessageBox.about(self, "완료", "데이터를 성공적으로 수정했습니다.")
+                db.main.showTable(Refresh=True)
 
             if self.target_table == "user":
                 name = self.text_name_user.text().strip()
                 number = self.text_clsN_user.text().strip()
                 time = self.text_clsT_user.text().strip()
 
-                if name != '':
-                    if name != self.key_dict["name"]:
-                        self.changeName(self.key_dict["기수"], self.key_dict["반"], self.key_dict["name"], name)
-                        self.key_dict["name"] = name
+                if name != '' and number != '' and time !='':
+                    if name != '':
+                        if name != self.key_dict["name"]:
+                            self.changeName(self.key_dict["기수"], self.key_dict["반"], self.key_dict["name"], name)
+                            self.key_dict["name"] = name
 
-                if number != '' and time != '':
-                    if number != self.key_dict["기수"] or time != self.key_dict["반"]:
-                        self.changeClass(self.key_dict["name"], self.key_dict["기수"], self.key_dict["반"], number, time)
-                        self.key_dict["기수"] = number
-                        self.key_dict["반"] = time
+                    if number != '' and time != '':
+                        if number != self.key_dict["기수"] or time != self.key_dict["반"]:
+                            self.changeClass(self.key_dict["name"], self.key_dict["기수"], self.key_dict["반"], number, time)
+                            self.key_dict["기수"] = number
+                            self.key_dict["반"] = time
 
             self.close()
         else:
@@ -2758,6 +2830,8 @@ class INSERT(QWidget):
             user_list.append(self.text_temp.text().strip())
             # 시험 회차 정보는 데이터 수정에서 입력
             user_list.append(NULL)
+            # 실습 일정 관리는 따로 입력
+            user_list.append(NULL)
 
             query = ""
             for i in range(len(user_list)):
@@ -2772,8 +2846,8 @@ class INSERT(QWidget):
                 if i != len(user_list) - 1:
                     query += ", "
             
-            ask = "ID: {}\t이름: {}\t주민등록번호: {}\n전화번호: {}\t자격증: {}\n주소: {}\n본적주소: {}\n기수: {}\t반: {}\t 대체실습: {}\n총 이수시간: {}\t이론이수: {}\t실습이수: {}\t 실기이수: {}\n"\
-                .format(user_list[0], user_list[1], user_list[2], user_list[3], user_list[4], user_list[5], user_list[6], user_list[7], user_list[8], user_list[13], user_list[9], user_list[10], user_list[11], user_list[12])
+            ask = "ID: {}\t이름: {}\t주민등록번호: {}\n전화번호: {}\t자격증: {}\n주소: {}\n본적주소: {}\n기수: {}\t반: {}\t 대체실습: {}\n"\
+                .format(user_list[0], user_list[1], user_list[2], user_list[3], user_list[4], user_list[5], user_list[6], user_list[7], user_list[8], user_list[13])
             ask += "\n해당 정보를 데이터베이스에 추가합니다."
 
             more_check = "name = '{}' and classNumber = '{}' and classTime = '{}'".format(user_list[1], user_list[7], user_list[8])
@@ -2970,19 +3044,36 @@ class INSERT(QWidget):
         ans = QMessageBox.question(self, "데이터 삽입 확인", ask, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
             db.logger.info("$UI INSERT Request [TABLE|{}][{}] {} 삽입 요청".format(self.target_table, table, classification))
-            db.main.dbPrograms.INSERT(self.target_table, query)
-            QMessageBox.about(self, "완료", "데이터를 성공적으로 추가했습니다.")
-            if self.target_table == "user":
-                name = self.text_name_user.text().strip()
-                number = self.text_clsN_user.text().strip()
-                time = self.text_clsT_user.text().strip()
+            print(query)
+            rs = db.main.dbPrograms.INSERT(self.target_table, query)
+            if rs != None:
+                errorMsg = ""
+                if rs[6:] == "PRIMARY KEY":
+                    errorMsg += "데이터의 ID 속성은 중복될 수 없습니다!"
+                elif rs[6:] == "FOREIGN KEY":
+                    errorMsg += "입력하고자 하는 기수, 반, 대체실습 기수가 각각의 테이블에 존재하는지 확인해주세요.\n테이블에 존재하지 않는 값은 넣을 수 없습니다!"
+                elif rs[6:] == "CANNOT NULL":
+                    errorMsg += "데이터의 ID 속성은 빈 값을 넣을 수 없습니다!"
+                elif rs[6:] == "INCORRECT TYPE":
+                    errorMsg += "데이터 타입에 문제가 있습니다. 오탈자가 있는지 확인해주세요!\n(ID와 시험회차는 숫자만 입력해야 합니다.)"
+                else:
+                    errorMsg += "데이터 삽입 오류입니다.\n\n{}".format(rs)
+                
+                QMessageBox.warning(self, "INSERT ERROR", errorMsg)
+                return
 
-                if not (number == "" or time == ""):
-                    self.generateDirectory(number, time, name)
+            else:
+                QMessageBox.about(self, "완료", "데이터를 성공적으로 추가했습니다.")
+                if self.target_table == "user":
+                    name = self.text_name_user.text().strip()
+                    number = self.text_clsN_user.text().strip()
+                    time = self.text_clsT_user.text().strip()
 
-            db.main.showTable(Refresh=True)
-            db.main.textInfo.clear()
-            self.close()
+                    if not (number == "" or time == ""):
+                        self.generateDirectory(number, time, name)
+
+                db.main.showTable(Refresh=True)
+                self.close()
         else:
             pass
 
@@ -3364,13 +3455,14 @@ class mainLayout(QWidget, DB):
         super(mainLayout, self).__init__()
         self.dbPrograms = DB()
 
-        self.select_list_user = ["ID", "이름", "주민등록번호", "전화번호", "자격증", "주소", "본적주소", "기수", "반", "총 이수시간", "이론", "실기", "실습", "대체실습", "시험회차"]
+        self.select_list_user = ["ID", "이름", "주민등록번호", "전화번호", "자격증", "주소", "본적주소", "기수", "반", "총 이수시간", "이론", "실기", "실습", "대체실습", "시험회차", "실습일정"]
         self.select_list_lecture = ["기수", "반", "시작일", "종료일"]
         self.select_list_teacher = ["ID", "분류", "이름", "생년월일", "자격증", "경력", "도 승인날짜"]
         self.select_list_facility = ["ID", "기관명", "구분", "계약 시작일", "계약 종료일", "1일 실습인원"]
         self.select_list_temptraining = ["기수", "시작일", "종료일", "수여일"]
         self.select_list_temptrainingteacher = ["기수", "강사"]
         self.select_list_exam = ["시험 회차", "접수 시작일", "접수 종료일", "응시표 출력", "시험일자", "합격자 발표(예정)", "서류 준비 기한"]
+        self.select_train_date = "NULL"
 
         self.auto = Automation()
 
@@ -3417,16 +3509,19 @@ class mainLayout(QWidget, DB):
         self.labelInfo = QLabel("선택된 객체의 정보가 표시됩니다.")
         self.textInfo = QTextEdit()
         self.textInfo.setReadOnly(True)
-        self.textInfo.setFixedWidth(500)
+        self.textInfo.setFixedWidth(450)
         # self.textInfo.setFontPointSize(12)
 
         self.layoutCalendar = QVBoxLayout()
 
+        self.labelAll = QLabel("■ 모두보기", self)
+        self.labelAll.mousePressEvent = functools.partial(mainLayout.calendarSelectAll, self.labelAll)
+        self.labelAll.setStyleSheet("color: #000000; border-style: solid; border-width: 2px; border-color: #000000; border-radius: 3px; padding-top: 1px; padding-bottom: 1px;")
         self.calendarLabelList = [QLabel("■ 대체", self)]
         self.labelLayoutList = [QHBoxLayout()]
         # red, orange, green, blue, navy, purple, brown, cyan, violet
-        self.calendarLabelForegroundRGB = [QColor(255, 0, 0), QColor(255, 128, 0), QColor(0, 204, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(0, 204, 204), QColor(204, 0, 102)]
-        self.calendarLabelForegroundHexa = ["FF0000", "FF8000", "00CC00", "0000FF", "000066", "6600CC", "331900", "00CCCC", "CC0066"]
+        self.calendarLabelBackgroundRGB = [QColor(255, 0, 0), QColor(255, 128, 0), QColor(0, 204, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(0, 204, 204), QColor(204, 0, 102)]
+        self.calendarLabelBackgroundHexa = ["FF0000", "FF8000", "00CC00", "0000FF", "000066", "6600CC", "331900", "00CCCC", "CC0066"]
         self.facilityDict = {}
         self.foregroundWhite = [QColor(255, 0, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(204, 0, 102)]
         # self.calendarLabelBackground = [Qt.violet, ]
@@ -3436,21 +3531,19 @@ class mainLayout(QWidget, DB):
 
         for i in range(len(self.calendarLabelList)):
             self.calendarLabelList[i].mousePressEvent = functools.partial(mainLayout.calendarLabelClicked, self.calendarLabelList[i])
-            self.calendarLabelList[i].setStyleSheet("color: #{};".format(self.calendarLabelForegroundHexa[i]))
+            self.calendarLabelList[i].setStyleSheet("color: #{}; border-style: solid; border-width: 2px; border-color: #{}; border-radius: 3px; padding-top: 1px; padding-bottom: 1px;".format(self.calendarLabelBackgroundHexa[i], self.calendarLabelBackgroundHexa[i]))
             self.facilityDict[self.calendarLabelList[i].text()[2:]] = QTextCharFormat()
-            self.facilityDict[self.calendarLabelList[i].text()[2:]].setBackground(self.calendarLabelForegroundRGB[i])
-            if self.calendarLabelForegroundRGB[i] in self.foregroundWhite:
+            self.facilityDict[self.calendarLabelList[i].text()[2:]].setBackground(self.calendarLabelBackgroundRGB[i])
+            if self.calendarLabelBackgroundRGB[i] in self.foregroundWhite:
                 self.facilityDict[self.calendarLabelList[i].text()[2:]].setForeground(Qt.white)
             else:
                 self.facilityDict[self.calendarLabelList[i].text()[2:]].setForeground(Qt.black)
 
-        lineLength = 0
+        self.labelLayoutList[-1].addWidget(self.labelAll)
         for i in range(len(self.calendarLabelList)):
             self.calendarLabelList[i].setObjectName(self.calendarLabelList[i].text())
             self.labelLayoutList[-1].addWidget(self.calendarLabelList[i])
-            lineLength += len(self.calendarLabelList[i].text()) + 2
-            if lineLength >= 38:
-                lineLength = 0
+            if (i + 1) % 3 == 0:
                 self.labelLayoutList.append(QHBoxLayout())
 
         
@@ -3459,27 +3552,24 @@ class mainLayout(QWidget, DB):
         self.calendarInfo = QCalendarWidget()
         self.calendarInfo.setGridVisible(True)
         self.calendarInfo.setVerticalHeaderFormat(False)
-        self.calendarInfo.setFixedWidth(500)
+        self.calendarInfo.setFixedWidth(450)
 
         self.fmList = []
         for i in range(len(self.calendarLabelList)):
             self.fmList.append(QTextCharFormat())
 
-
-        # self.fm_temp = QTextCharFormat()
-        # self.fm_facility_1 = QTextCharFormat()
-        
-        # self.fm_selected.setForeground(Qt.red)
-        # self.fm_selected.setBackground(Qt.yellow)
-
-        # self.fm_origin = QTextCharFormat()
+        self.fm_origin = QTextCharFormat()
 
         self.btnEditCalendar = QPushButton("실습일자 편집", self)
+        self.btnEditCalendar.clicked.connect(self.calendar_show)
+
+        self.labelSelectedDate = QLabel("", self)
 
         for i in range(len(self.labelLayoutList)):
             self.layoutCalendar.addLayout(self.labelLayoutList[i])
         self.layoutCalendar.addWidget(self.calendarLabel)
         self.layoutCalendar.addWidget(self.calendarInfo)
+        self.layoutCalendar.addWidget(self.labelSelectedDate)
         self.layoutCalendar.addWidget(self.btnEditCalendar)
 
         self.textInfo.setCurrentFont(QtGui.QFont("맑은 고딕"))
@@ -3512,97 +3602,164 @@ class mainLayout(QWidget, DB):
 
         self.setLayout(vbox)
 
+    def calendar_show(self):
+        if self.select_train_date == "":
+            QMessageBox.information(self, "데이터 없음", "실습 데이터를 변경하고자 하는 데이터를 먼저 선택해주세요!")
+            return
+        calendar.show()
+
+    def str2Dict(self, fromString):
+        if type(fromString) == dict:
+            return fromString
+        elif fromString == "NULL" or fromString == "None":
+            return {}
+        newFacilityString, newDateString = fromString.split("$")
+        facilityList = newFacilityString.split("|")
+        datesList = newDateString.split("|")
+
+
+        newList = [dateStr.split(",") for dateStr in datesList]
+        newDict = dict(zip(facilityList, newList))
+
+        return newDict
+
+    def calendarSelectAll(self, event):
+        self.parent().calendarLabel.setText("■ 모두보기")
+        self.parent().calendarLabel.setStyleSheet(self.styleSheet())
+        self.parent().calendarLabel.setFixedWidth(self.width())
+        drawDate = self.parent().select_train_date
+        self.parent().clearCalendar(drawDate)
+        if drawDate:
+            self.parent().drawCalendar(drawDate)
+
     def calendarLabelClicked(self, event):
         clickedObject = self.objectName()
         self.parent().calendarLabel.setText(clickedObject)
         self.parent().calendarLabel.setStyleSheet(self.styleSheet())
+        self.parent().calendarLabel.setFixedWidth(self.width())
+        drawDate = self.parent().select_train_date
+        self.parent().clearCalendar(drawDate)
+        if drawDate:
+            fac = clickedObject[2:]
+            self.parent().drawCalendar(drawDate, selected=fac)
+        # DB에 없는 기관을 클릭했을 경우
+        else:
+            self.parent().clearCalendar(drawDate)
+
+    def clearCalendar(self, clearDates):
+        self.calendarInfo.setSelectedDate(QDate.currentDate())
+        if clearDates == "NULL" or clearDates == "None" or clearDates == "":
+            return
+
+        clearDates = self.str2Dict(clearDates)
+        for facility in clearDates.keys():
+            for dates in clearDates[facility]:
+                year, month, day = dates.split("/")
+                self.calendarInfo.setDateTextFormat(QDate(int(year), int(month), int(day)), self.fm_origin)
+                self.labelSelectedDate.setText("")
+
+    def drawCalendar(self, drawDates, selected=""):
+        sendStr = ""
+        if drawDates == "NULL" or drawDates == "None" or drawDates == "":
+            return
+
+        drawDates = self.str2Dict(drawDates)
+        for facility in drawDates.keys():
+            if selected in facility:
+                sendStr += facility + ": " + ", ".join(drawDates[facility])
+                for dates in drawDates[facility]:
+                    year, month, day = dates.split("/")
+                    self.calendarInfo.setDateTextFormat(QDate(int(year), int(month), int(day)), self.facilityDict[facility])
+                sendStr += "\n"
+
+        sendStr = sendStr[:-1]
+        self.labelSelectedDate.setText(sendStr)
 
     def selected(self):
-        if self.current_table == "user":
-            self.textInfo.clear()
+        self.textInfo.clear()
+        self.calendarLabel.setText("■ 모두보기")
+        self.calendarLabel.setStyleSheet(self.labelAll.styleSheet())
+        self.calendarLabel.setFixedWidth(self.labelAll.width())
+        self.clearCalendar(self.select_train_date)
 
-            ID = "ID: " + str(self.readDB.index(self.table.currentIndex().row(), 0).data())
-            name = "이름: " + str(self.readDB.index(self.table.currentIndex().row(), 1).data())
-            RRN = "주민등록번호: " + str(self.readDB.index(self.table.currentIndex().row(), 2).data())
-            phone = "전화번호: " + str(self.readDB.index(self.table.currentIndex().row(), 3).data())
-            licen = "자격증: " + str(self.readDB.index(self.table.currentIndex().row(), 4).data())
-            adr = "주소: " + str(self.readDB.index(self.table.currentIndex().row(), 5).data())
-            oAdr = "본적주소: " + str(self.readDB.index(self.table.currentIndex().row(), 6).data())
-            clsN = "기수: " + str(self.readDB.index(self.table.currentIndex().row(), 7).data())
-            clsT = "반: " + str(self.readDB.index(self.table.currentIndex().row(), 8).data())
-            totalH = "총 이수시간: " + str(self.readDB.index(self.table.currentIndex().row(), 9).data())
-            theH = "이론: " + str(self.readDB.index(self.table.currentIndex().row(), 10).data())
-            pracH = "실기: " + str(self.readDB.index(self.table.currentIndex().row(), 11).data())
-            trainH = "실습: " + str(self.readDB.index(self.table.currentIndex().row(), 12).data())
-            tempC = "대체실습: " + str(self.readDB.index(self.table.currentIndex().row(), 13).data())
-            exam = "시험회차: " + str(self.readDB.index(self.table.currentIndex().row(), 14).data())
+        if self.current_table == "user":
+            ID = "ID: " + self.readDB.index(self.table.currentIndex().row(), 0).data()
+            name = "이름: " + self.readDB.index(self.table.currentIndex().row(), 1).data()
+            RRN = "주민등록번호: " + self.readDB.index(self.table.currentIndex().row(), 2).data()
+            phone = "전화번호: " + self.readDB.index(self.table.currentIndex().row(), 3).data()
+            licen = "자격증: " + self.readDB.index(self.table.currentIndex().row(), 4).data()
+            adr = "주소: " + self.readDB.index(self.table.currentIndex().row(), 5).data()
+            oAdr = "본적주소: " + self.readDB.index(self.table.currentIndex().row(), 6).data()
+            clsN = "기수: " + self.readDB.index(self.table.currentIndex().row(), 7).data()
+            clsT = "반: " + self.readDB.index(self.table.currentIndex().row(), 8).data()
+            totalH = "총 이수시간: " + self.readDB.index(self.table.currentIndex().row(), 9).data()
+            theH = "이론: " + self.readDB.index(self.table.currentIndex().row(), 10).data()
+            pracH = "실기: " + self.readDB.index(self.table.currentIndex().row(), 11).data()
+            trainH = "실습: " + self.readDB.index(self.table.currentIndex().row(), 12).data()
+            tempC = "대체실습: " + self.readDB.index(self.table.currentIndex().row(), 13).data()
+            exam = "시험회차: " + self.readDB.index(self.table.currentIndex().row(), 14).data()
+            self.select_train_date = self.readDB.index(self.table.currentIndex().row(), 15).data()
 
             send_string = ID + "\n\n" + name + "\n\n" + RRN + "\n\n" + phone + "\n\n" + licen + "\n\n" + adr + "\n\n" + oAdr + "\n\n" +\
                 clsN + "\n\n" + clsT + "\n\n" + totalH + "\n\n" + theH + "\n\n" + pracH + "\n\n" + trainH + "\n\n" + tempC + "\n\n" + exam
 
-        elif self.current_table == "lecture":
-            self.textInfo.clear()
+            """
+            여기서 calendar 업데이트 하기!!
+            """
+            # calendar update
+            self.drawCalendar(self.select_train_date)
 
-            clsN = "기수: " + str(self.readDB.index(self.table.currentIndex().row(), 0).data())
-            clsT = "반: " + str(self.readDB.index(self.table.currentIndex().row(), 1).data())
-            startD = "시작일: " + str(self.readDB.index(self.table.currentIndex().row(), 2).data())
-            endD = "종료일: " + str(self.readDB.index(self.table.currentIndex().row(), 3).data())
+        elif self.current_table == "lecture":
+            clsN = "기수: " + self.readDB.index(self.table.currentIndex().row(), 0).data()
+            clsT = "반: " + self.readDB.index(self.table.currentIndex().row(), 1).data()
+            startD = "시작일: " + self.readDB.index(self.table.currentIndex().row(), 2).data()
+            endD = "종료일: " + self.readDB.index(self.table.currentIndex().row(), 3).data()
 
             send_string = clsN + "\n\n" + clsT + "\n\n" + startD + "\n\n" + endD
             
-        elif self.current_table == "teacher":
-            self.textInfo.clear()
-            
-            ID = "ID: " + str(self.readDB.index(self.table.currentIndex().row(), 0).data())
-            categ = "분류: " + str(self.readDB.index(self.table.currentIndex().row(), 1).data())
-            name = "이름: " + str(self.readDB.index(self.table.currentIndex().row(), 2).data())
-            DOB = "생년월일: " + str(self.readDB.index(self.table.currentIndex().row(), 3).data())
-            licen = "자격증: " + str(self.readDB.index(self.table.currentIndex().row(), 4).data())
-            career = "경력: " + str(self.readDB.index(self.table.currentIndex().row(), 5).data())
-            ACKDate = "도 승인일자: " + str(self.readDB.index(self.table.currentIndex().row(), 6).data())
+        elif self.current_table == "teacher":            
+            ID = "ID: " + self.readDB.index(self.table.currentIndex().row(), 0).data()
+            categ = "분류: " + self.readDB.index(self.table.currentIndex().row(), 1).data()
+            name = "이름: " + self.readDB.index(self.table.currentIndex().row(), 2).data()
+            DOB = "생년월일: " + self.readDB.index(self.table.currentIndex().row(), 3).data()
+            licen = "자격증: " + self.readDB.index(self.table.currentIndex().row(), 4).data()
+            career = "경력: " + self.readDB.index(self.table.currentIndex().row(), 5).data()
+            ACKDate = "도 승인일자: " + self.readDB.index(self.table.currentIndex().row(), 6).data()
 
             send_string = ID + "\n\n" + categ + "\n\n" + DOB + "\n\n" + licen + "\n\n" + career + "\n\n" + ACKDate
 
         elif self.current_table == "facility":
-            self.textInfo.clear()
-
-            ID = "ID: " + str(self.readDB.index(self.table.currentIndex().row(), 0).data())
-            name = "기관명: " + str(self.readDB.index(self.table.currentIndex().row(), 1).data())
-            categ = "구분: " + str(self.readDB.index(self.table.currentIndex().row(), 2).data())
-            conStart = "계약 시작일: " + str(self.readDB.index(self.table.currentIndex().row(), 3).data())
-            conEnd = "계약 종료일: " + str(self.readDB.index(self.table.currentIndex().row(), 4).data())
-            personnel = "1일 실습인원: " + str(self.readDB.index(self.table.currentIndex().row(), 5).data())
+            ID = "ID: " + self.readDB.index(self.table.currentIndex().row(), 0).data()
+            name = "기관명: " + self.readDB.index(self.table.currentIndex().row(), 1).data()
+            categ = "구분: " + self.readDB.index(self.table.currentIndex().row(), 2).data()
+            conStart = "계약 시작일: " + self.readDB.index(self.table.currentIndex().row(), 3).data()
+            conEnd = "계약 종료일: " + self.readDB.index(self.table.currentIndex().row(), 4).data()
+            personnel = "1일 실습인원: " + self.readDB.index(self.table.currentIndex().row(), 5).data()
 
             send_string = ID + "\n\n" + name + "\n\n" + categ + "\n\n" + conStart + "\n\n" + conEnd + "\n\n" + personnel
 
         elif self.current_table == "temptraining":
-            self.textInfo.clear()
-
-            clsN = "기수: " + str(self.readDB.index(self.table.currentIndex().row(), 0).data())
-            startD = "시작일: " + str(self.readDB.index(self.table.currentIndex().row(), 1).data())
-            endD = "종료일: " + str(self.readDB.index(self.table.currentIndex().row(), 2).data())
-            awardD = "수여일: " + str(self.readDB.index(self.table.currentIndex().row(), 3).data())
+            clsN = "기수: " + self.readDB.index(self.table.currentIndex().row(), 0).data()
+            startD = "시작일: " + self.readDB.index(self.table.currentIndex().row(), 1).data()
+            endD = "종료일: " + self.readDB.index(self.table.currentIndex().row(), 2).data()
+            awardD = "수여일: " + self.readDB.index(self.table.currentIndex().row(), 3).data()
 
             send_string = clsN + "\n\n" + startD + "\n\n" + endD + "\n\n" + awardD
             
         elif self.current_table == "temptrainingteacher":
-            self.textInfo.clear()
-
-            clsN = "기수: " + str(self.readDB.index(self.table.currentIndex().row(), 0).data())
-            teacher = "반: " + str(self.readDB.index(self.table.currentIndex().row(), 1).data())
+            clsN = "기수: " + self.readDB.index(self.table.currentIndex().row(), 0).data()
+            teacher = "반: " + self.readDB.index(self.table.currentIndex().row(), 1).data()
 
             send_string = clsN + "\n\n" + teacher
 
         elif self.current_table == "exam":
-            self.textInfo.clear()
-
-            examRound = "시험회차: 제" + str(self.readDB.index(self.table.currentIndex().row(), 0).data()) + "회"
-            examDueStart = "응시원서 접수 시작일: " + str(self.readDB.index(self.table.currentIndex().row(), 1).data())
-            examDueEnd = "응시원서 접수 종료일: " + str(self.readDB.index(self.table.currentIndex().row(), 2).data())
-            examTicket = "응시표 출력: " + str(self.readDB.index(self.table.currentIndex().row(), 3).data()) + " 부터"
-            examDay = "시험일: " + str(self.readDB.index(self.table.currentIndex().row(), 4).data())
-            examPass = "합격자 발표 예정일: " + str(self.readDB.index(self.table.currentIndex().row(), 5).data())
-            examSubmit = "서류 준비 일자: " + str(self.readDB.index(self.table.currentIndex().row(), 6).data())
+            examRound = "시험회차: 제" + self.readDB.index(self.table.currentIndex().row(), 0).data() + "회"
+            examDueStart = "응시원서 접수 시작일: " + self.readDB.index(self.table.currentIndex().row(), 1).data()
+            examDueEnd = "응시원서 접수 종료일: " + self.readDB.index(self.table.currentIndex().row(), 2).data()
+            examTicket = "응시표 출력: " + self.readDB.index(self.table.currentIndex().row(), 3).data() + " 부터"
+            examDay = "시험일: " + self.readDB.index(self.table.currentIndex().row(), 4).data()
+            examPass = "합격자 발표 예정일: " + self.readDB.index(self.table.currentIndex().row(), 5).data()
+            examSubmit = "서류 준비 일자: " + self.readDB.index(self.table.currentIndex().row(), 6).data()
 
             send_string = examRound + "\n\n" + examDueStart + "\n\n" + examDueEnd + "\n\n" + examTicket + "\n\n" + examDay + "\n\n" + examPass + "\n\n" + examSubmit
 
@@ -3610,7 +3767,7 @@ class mainLayout(QWidget, DB):
 
     def selectTable(self):
         if self.current_table == "user":
-            self.readDB.setColumnCount(15)
+            self.readDB.setColumnCount(16)
             self.readDB.setHorizontalHeaderLabels(self.select_list_user)
 
         elif self.current_table == "lecture":
@@ -3641,6 +3798,9 @@ class mainLayout(QWidget, DB):
         source = self.sender()
         self.changeCategory(Refresh=Refresh)
         self.readDB.clear()
+        self.textInfo.clear()
+        self.clearCalendar(self.select_train_date)
+        self.select_train_date = ""
 
         if Refresh == False:
             self.R_searchBox.clear()
@@ -3648,9 +3808,9 @@ class mainLayout(QWidget, DB):
 
             if source.text() == "수강생 관리":
                 self.current_table = "user"
-                order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"
+                order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사', '작업치료사', '경력자'), id *1"
 
-                self.readDB.setColumnCount(15)
+                self.readDB.setColumnCount(16)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_user)
 
             elif source.text() == "기수 관리":
@@ -3697,9 +3857,9 @@ class mainLayout(QWidget, DB):
 
         elif Refresh == True:
             if self.current_table == "user":
-                order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"
+                order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사', '작업치료사', '경력자'), id *1"
 
-                self.readDB.setColumnCount(15)
+                self.readDB.setColumnCount(16)
                 self.readDB.setHorizontalHeaderLabels(self.select_list_user)
 
             elif self.current_table == "lecture":
@@ -3743,7 +3903,7 @@ class mainLayout(QWidget, DB):
         else:
             rs = self.dbPrograms.SELECT("*", self.searchInfo['TABLE'], where=f"{self.searchInfo['WHERE']} LIKE {self.searchInfo['LIKE']}", orderBy=self.searchInfo['ORDER BY'])
 
-        if rs == "error":
+        if rs[:6] == "ERROR|":
             QMessageBox.information(self, "SQL query Error", "SQL query returns error!", QMessageBox.Yes, QMessageBox.Yes)
         else:
             cols = self.readDB.columnCount()
@@ -3886,26 +4046,26 @@ class mainLayout(QWidget, DB):
                     keyWord = words[1]
 
             if current_table == "user":
-                order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"
+                order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사', '작업치료사', '경력자'), id *1"
             else:
                 order = "classNumber *1, FIELD(classTime, '주간', '야간')"
 
         elif current_category == "전화번호":
             current_category = "phoneNumber"
-            order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"
+            order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사', '작업치료사', '경력자'), id *1"
 
         elif current_category == "생년월일":
             current_category = "RRN"
-            order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"
+            order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사', '작업치료사', '경력자'), id *1"
 
         elif current_category == "대체실습":
             current_category = "temporaryClassNumber"
-            order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"
+            order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사', '작업치료사', '경력자'), id *1"
 
         elif current_category == "시험회차":
             if current_table == "user":
                 current_category = "exam"
-                order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사'), id *1"
+                order = "classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사', '작업치료사', '경력자'), id *1"
             elif current_table == "exam":
                 current_category = "round"
                 order = "round *1"
@@ -3944,7 +4104,6 @@ class mainLayout(QWidget, DB):
                     QMessageBox.information(self, "SQL query Error", "SQL query returns error!", QMessageBox.Yes, QMessageBox.Yes)
 
                 self.showTable(Refresh=True)
-                self.textInfo.clear()
                 return
             else:
                 return
@@ -3966,7 +4125,7 @@ class mainLayout(QWidget, DB):
                 
             rs = self.dbPrograms.SELECT("*", current_table, where=f"{current_category} LIKE {like}", orderBy=order)
 
-            if rs == "error":
+            if rs[:6] == "ERROR|":
                 QMessageBox.information(self, "SQL query Error", "SQL query returns error!", QMessageBox.Yes, QMessageBox.Yes)
             else:
                 search_result = "{}, \"{}\" 검색 결과\n{}개의 검색 결과가 존재합니다.".format(self.R_category.currentText(), self.R_searchBox.text(), len(rs))
@@ -4112,15 +4271,24 @@ class mainLayout(QWidget, DB):
         ans = QMessageBox.question(self, "데이터 삭제 확인", check, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
             db.logger.info("$UI DELETE Request [TABLE|{}][{}] {} 삭제 요청".format(self.current_table, table, classification))
-            db.main.dbPrograms.DELETE(target_table, query)
-            if path != None and os.path.exists(path):
-                ans_dir_delete = QMessageBox.question(self, "폴더 삭제", "해당 데이터의 폴더도 함께 삭제하시겠습니까?\n(해당 작업은 신중해야 합니다.)", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-                if ans_dir_delete == QMessageBox.Yes:
-                    shutil.rmtree(path)
+            rs = db.main.dbPrograms.DELETE(target_table, query)
+            if rs != None:
+                errorMsg = ""
+                if rs[6:] == "FOREIGN KEY":
+                    errorMsg += "현재 해당 데이터를 참조하는 데이터가 존재하여 삭제할 수 없습니다.\n수강생 중, 해당 기수, 반 혹은 대체실습 기수 값을 가지고 있는 학생이 없는지 확인해주세요."
+                else:
+                    errorMsg += "데이터 삭제 오류입니다.\n\n{}".format(rs)
+                
+                QMessageBox.warning(self, "DELETE ERROR", errorMsg)
+                return
+            else:
+                if path != None and os.path.exists(path):
+                    ans_dir_delete = QMessageBox.question(self, "폴더 삭제", "해당 데이터의 폴더도 함께 삭제하시겠습니까?\n(해당 작업은 신중해야 합니다.)", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                    if ans_dir_delete == QMessageBox.Yes:
+                        shutil.rmtree(path)
 
             QMessageBox.about(self, "완료", "데이터를 성공적으로 삭제했습니다.")
             self.showTable(Refresh=True)
-            self.textInfo.clear()
         else:
             pass
 
@@ -4165,7 +4333,7 @@ class mainLayout(QWidget, DB):
 
         order += " *1"
         rs = self.dbPrograms.SELECT("*", self.current_table, where=query, orderBy=order)
-        if rs == "error":
+        if rs[:6] == "ERROR|":
             QMessageBox.information(self, "SQL query Error", "SQL query returns error!", QMessageBox.Yes, QMessageBox.Yes)
         else:
             cols = self.readDB.columnCount()
@@ -4227,7 +4395,7 @@ class mainLayout(QWidget, DB):
 
         if self.current_table == "user":
             col = self.select_list_user
-            dimension_lst = [9, 10, 20, 20, 15, 73, 63, 10, 10, 10, 5, 5, 5, 10, 9]
+            dimension_lst = [9, 10, 20, 20, 15, 73, 63, 10, 10, 10, 5, 5, 5, 10, 9, 15]
             file_name = "수강생DB"
 
         elif self.current_table == "lecture":
@@ -4572,9 +4740,11 @@ class DBMS(QMainWindow):
 
     def idSort(self):
         cnt = 0
-        ans = QMessageBox.question(self, "Database", "id 정렬을 시작합니다.", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        ans = QMessageBox.question(self, "Database", "id 정렬을 시작합니다.\n(이름, 주민등록번호가 기입된 데이터만 정렬됩니다.)", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
-            res = self.main.dbPrograms.SELECT("name, RRN", "user")
+            res = self.main.dbPrograms.SELECT("name, RRN", "user", orderBy="classNumber *1, FIELD(classTime, '주간', '야간'), FIELD(license, '일반', '사회복지사', '간호조무사', '간호사', '물리치료사', '작업치료사', '경력자'), id *1")
+        else:
+            QMessageBox.information(self, "취소", "id 정렬을 취소하였습니다.", QMessageBox.Yes, QMessageBox.Yes)
 
         for idx, rows in enumerate(res, start=1):
             name = rows[0]
@@ -4585,6 +4755,7 @@ class DBMS(QMainWindow):
             cnt = idx
 
         QMessageBox.information(self, "완료", "{}개의 데이터를 수정하였습니다.".format(cnt), QMessageBox.Yes, QMessageBox.Yes)
+        self.main.showTable(Refresh=True)
 
     def databaseManagement(self):
         source = self.sender()
@@ -4702,9 +4873,56 @@ class DBMS(QMainWindow):
         else:
             QCloseEvent.ignore()
 
+class AppStart(QWidget):
+ 
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+ 
+    def initUI(self):
+        self.setWindowTitle('now starting')
+        self.setStyleSheet("background-color: white;")
+        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.resize(500, 200)
+
+        self.label_logo = QLabel("img", self)
+        self.img_logo = QPixmap(r"D:\Master\PythonWorkspace\NYNOA\Icons\logo.png")
+        self.img_logo.scaledToWidth(150)
+        self.label_logo.setPixmap(self.img_logo)
+        self.label_logo.setAlignment(Qt.AlignCenter)
+
+        self.label = QLabel("NYNOA 데이터베이스 관리 시스템", self)
+        myFont = self.label.font()
+        # myFont.setFamily('HY나무B')
+        myFont.setBold(True)
+        myFont.setPointSize(18)
+        self.label.setFont(myFont)
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setStyleSheet("border-style: solid;"
+        "border-width: 2px;"
+        "border-color: #FA8072;"
+        "border-radius: 3px")
+        self.memory = QLabel("프로그램을 실행하기 위한 메모리를 확보하는 중입니다...")
+
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.label_logo)
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.memory)
+        self.setLayout(self.layout)
+
+        self.center()
+        self.show()
+
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
 
 if __name__ == '__main__':
     # 새 창을 띄우기 위해 서로 global로 연결
+    global appStart
     global db
     global log_in_window
     global insert
@@ -4720,6 +4938,7 @@ if __name__ == '__main__':
     # global scanner
 
     app = QApplication(sys.argv)
+    appStart = AppStart()
     db = DBMS()
     log_in_window = LogIn()
     todo_list = ToDoList()
@@ -4731,6 +4950,8 @@ if __name__ == '__main__':
     kuksiwon = Kuksiwon()
     wi = WorkingInformation()
     calendar = Calendar()
+
+    appStart.close()
 
 
     # scanner = scanFile()
