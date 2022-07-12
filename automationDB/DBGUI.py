@@ -164,11 +164,8 @@ class LogIn(QWidget):
                 QCloseEvent.ignore()
         else:
             pass
-        
 
 class WorkingInformation(QWidget):
-    
-
     def __init__(self):
         super().__init__()
 
@@ -904,6 +901,7 @@ class Calendar(QWidget):
         self.newDate = {}
         self.selectedInfo = {"selectedDate": None, "selectedId": None, "selectedName": None}
         self.query = ""
+        self.caller = ""
 
         self.main_box = QVBoxLayout()
         self.calendar = QCalendarWidget()
@@ -975,6 +973,14 @@ class Calendar(QWidget):
             self.inputData()
 
     def showEvent(self, QShowEvent):
+        source = self.sender()
+        self.caller = source.text()
+        if self.caller == "실습 관리":
+            update.setEnabled(False)
+            # close를 막는 방법을 모르겠다...
+            # update.setWindowFlag(Qt.WindowCloseButtonHint, False)
+        db.setEnabled(False)
+        # db.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.calendar.setSelectedDate(QDate.currentDate())
         self.selectedInfo["selectedDate"] = db.main.select_train_date
         self.selectedInfo["selectedId"] = db.main.readDB.index(db.main.table.currentIndex().row(), 0).data()
@@ -984,12 +990,19 @@ class Calendar(QWidget):
 
     def closeEvent(self, QCloseEvent):
         # 작업이 완료되고 Calendar창이 닫히면 달력 초기화
+        if self.caller == "실습일자 편집":
+            db.setEnabled(True)
+            # db.setWindowFlag(Qt.WindowCloseButtonHint, True)
+        elif self.caller == "실습 관리":
+            update.setEnabled(True)
+            # update.setWindowFlag(Qt.WindowCloseButtonHint, True)
         self.clearCalendar(self.newDate)
         self.query = ""
 
     def inputData(self):
         sendMsg = ""
         if self.newDate:
+            sendStr = self.dict2Str(self.newDate)
             for key in self.newDate.keys():
                 self.query = "trainingDate='{}'".format(sendStr)
                 sendMsg += key + ": "
@@ -1004,7 +1017,6 @@ class Calendar(QWidget):
 
         ans = QMessageBox.question(self, "실습 데이터 삽입 확인", sendMsg, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
-            sendStr = self.dict2Str(self.newDate)
             where = "id={} AND name='{}'".format(self.selectedInfo["selectedId"], self.selectedInfo["selectedName"])
             db.logger.info("$UI UPDATE Request [TABLE|{}][{}] {} 수정 요청".format("user", "수강생", self.query))
             res = db.main.dbPrograms.UPDATE(db.main.current_table, self.query, where)
@@ -1071,7 +1083,7 @@ class Calendar(QWidget):
     def str2Dict(self, fromString):
         if type(fromString) == dict:
             return fromString
-        elif fromString == "NULL" or fromString == "None":
+        elif fromString == "NULL" or fromString == "None" or fromString == "":
             return {}
         newFacilityString, newDateString = fromString.split("$")
         facilityList = newFacilityString.split("|")
@@ -1148,6 +1160,7 @@ class Kuksiwon(QWidget):
         super().__init__()
         self.setWindowTitle("국시원")
         self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.setFixedSize(300, 100)
 
         self.doc_type = ""
@@ -1234,7 +1247,11 @@ class Kuksiwon(QWidget):
         elif e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
             self.createFile()
 
+    def closeEvent(self, QCloseEvent):
+        db.setEnabled(True)
+
     def showEvent(self, QShowEvent):
+        db.setEnabled(False)
         source = self.sender()
         self.setWindowTitle("국시원 : " + source.text())
         self.doc_type = source.text()
@@ -1259,6 +1276,7 @@ class ClassOpening(QWidget):
         super().__init__()
         self.setWindowTitle("요양보호사 기수 opening")
         self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
         self.doc_type = ""
 
@@ -1321,10 +1339,12 @@ class ClassOpening(QWidget):
                     QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n경로: {}".format(path))
 
         self.close()
-        
 
+    def closeEvent(self, QCloseEvent):
+        db.setEnabled(True)
 
     def showEvent(self, QShowEvent):
+        db.setEnabled(False)
         source = self.sender()
         self.doc_type = source.text()
         self.combobox_N.clear()
@@ -1361,6 +1381,7 @@ class Report(QWidget):
         self.initUI()
         self.setWindowTitle("경기도청 보고 데이터")
         self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.doc_type = ""
 
     def initUI(self):
@@ -1419,7 +1440,11 @@ class Report(QWidget):
         elif e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
             self.getData()
 
+    def closeEvent(self, QCloseEvent):
+        db.setEnabled(True)
+
     def showEvent(self, QShowEvent):
+        db.setEnabled(False)
         self.setWindowTitle("경기도청 " + self.doc_type)
         self.combobox_N.clear()
         self.combobox_T.clear()
@@ -1686,6 +1711,7 @@ class BatchUpdate(QWidget):
         super().__init__()
         self.initUI()
         self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
         self.mode = "시험회차"
 
@@ -1806,7 +1832,11 @@ class BatchUpdate(QWidget):
         elif e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
             self.batch()
 
+    def closeEvent(self, QCloseEvent):
+        db.setEnabled(True)
+
     def showEvent(self, QShowEvent):
+        db.setEnabled(False)
         self.setWindowTitle(self.mode)
         self.combobox_N.clear()
         self.combobox_T.clear()
@@ -1863,6 +1893,7 @@ class UPDATE(QWidget):
         self.target_table = ""
         self.base_path = "D:\\남양노아요양보호사교육원\\교육생관리"
         self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
     def initUI(self):
         self.setWindowTitle("데이터 수정")
@@ -2256,7 +2287,11 @@ class UPDATE(QWidget):
         elif e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
             self.dataUpdate()
 
+    def closeEvent(self, QCloseEvent):
+        db.setEnabled(True)
+
     def showEvent(self, QShowEvent):
+        db.setEnabled(False)
         self.key_dict = {}
         cnt_row = 0
         cnt_col = 0
@@ -2764,6 +2799,7 @@ class INSERT(QWidget):
         self.target_table = ""
         self.base_path = "D:\\남양노아요양보호사교육원\\교육생관리"
         self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
     def initUI(self):
         self.setWindowTitle("데이터 삽입")
@@ -3030,7 +3066,6 @@ class INSERT(QWidget):
         ans = QMessageBox.question(self, "데이터 삽입 확인", ask, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
             db.logger.info("$UI INSERT Request [TABLE|{}][{}] {} 삽입 요청".format(self.target_table, table, classification))
-            print(query)
             rs = db.main.dbPrograms.INSERT(self.target_table, query)
             if rs != None:
                 errorMsg = ""
@@ -3070,8 +3105,11 @@ class INSERT(QWidget):
         elif e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
             self.dataInsert()
 
-    def showEvent(self, QShowEvent):
+    def closeEvent(self, QCloseEvent):
+        db.setEnabled(True)
 
+    def showEvent(self, QShowEvent):
+        db.setEnabled(False)
         cnt_row = 0
         cnt_col = 0
         # 1. 기존에 있던 label과 Line Edit 삭제
@@ -3436,9 +3474,9 @@ class INSERT(QWidget):
 
 
 
-class mainLayout(QWidget, DB):
+class MainLayout(QWidget, DB):
     def __init__(self):
-        super(mainLayout, self).__init__()
+        super(MainLayout, self).__init__()
         self.dbPrograms = DB()
 
         self.select_list_user = ["ID", "이름", "주민등록번호", "전화번호", "자격증", "주소", "본적주소", "기수", "반", "총 이수시간", "이론", "실기", "실습", "대체실습", "시험회차", "실습일정"]
@@ -3449,6 +3487,8 @@ class mainLayout(QWidget, DB):
         self.select_list_temptrainingteacher = ["기수", "강사"]
         self.select_list_exam = ["시험 회차", "접수 시작일", "접수 종료일", "응시표 출력", "시험일자", "합격자 발표(예정)", "서류 준비 기한"]
         self.select_train_date = "NULL"
+
+        self.copiedData = {"copiedDataId": "", "copiedDataName": "", "pastedDataId": "", "pastedDataName": "", "data": "NULL"}
 
         self.auto = Automation()
 
@@ -3478,6 +3518,10 @@ class mainLayout(QWidget, DB):
         self.searchInfo = {"TABLE": '', "WHERE": '', "LIKE": '', "ORDER BY": ''}
 
         self.table = QTreeView(self)
+#######################################################################
+        self.table.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self.treeContextMenu)
+#######################################################################
         self.table.setAlternatingRowColors(True)
         self.table.setRootIsDecorated(False)
         # self.table.setFixedSize(800, 700)
@@ -3501,7 +3545,7 @@ class mainLayout(QWidget, DB):
         self.layoutCalendar = QVBoxLayout()
 
         self.labelAll = QLabel("■ 모두보기", self)
-        self.labelAll.mousePressEvent = functools.partial(mainLayout.calendarSelectAll, self.labelAll)
+        self.labelAll.mousePressEvent = functools.partial(MainLayout.calendarSelectAll, self.labelAll)
         self.labelAll.setStyleSheet("color: #000000; border-style: solid; border-width: 2px; border-color: #000000; border-radius: 3px; padding-top: 1px; padding-bottom: 1px;")
         self.calendarLabelList = [QLabel("■ 대체", self)]
         self.labelLayoutList = [QHBoxLayout()]
@@ -3516,7 +3560,7 @@ class mainLayout(QWidget, DB):
             self.calendarLabelList.append(QLabel("■ " + f[0], self))
 
         for i in range(len(self.calendarLabelList)):
-            self.calendarLabelList[i].mousePressEvent = functools.partial(mainLayout.calendarLabelClicked, self.calendarLabelList[i])
+            self.calendarLabelList[i].mousePressEvent = functools.partial(MainLayout.calendarLabelClicked, self.calendarLabelList[i])
             self.calendarLabelList[i].setStyleSheet("color: #{}; border-style: solid; border-width: 2px; border-color: #{}; border-radius: 3px; padding-top: 1px; padding-bottom: 1px;".format(self.calendarLabelBackgroundHexa[i], self.calendarLabelBackgroundHexa[i]))
             self.facilityDict[self.calendarLabelList[i].text()[2:]] = QTextCharFormat()
             self.facilityDict[self.calendarLabelList[i].text()[2:]].setBackground(self.calendarLabelBackgroundRGB[i])
@@ -3588,7 +3632,93 @@ class mainLayout(QWidget, DB):
 
         self.setLayout(vbox)
 
+    def treeContextMenu(self, pos):
+        if self.current_table == "":
+            return
+        self.table.setCurrentIndex(self.readDB.index(self.table.currentIndex().row(), self.table.currentIndex().column()))
+        self.selected()
+        # print(pos)
+        # print(self.table.indexAt(pos).data())
+        # print(self.readDB.index(self.table.currentIndex().row(), 0).data())
+        # print(self.readDB.data(self.table.currentIndex()))
+        cm = QMenu(self)
+        selectedDict = {}
+        if self.current_table == "user":
+            colList = [
+                "id",
+                "name",
+                "RRN",
+                "phoneNumber",
+                "license",
+                "address",
+                "originAddress",
+                "classNumber",
+                "classTime",
+                "totalCreditHour",
+                "theoryCreditHour",
+                "practicalCreditHour",
+                "trainingCreditHour",
+                "temporaryClassNumber",
+                "exam",
+                "trainingDate"
+            ]
+            for i in range(len(colList)):
+                selectedDict[colList[i]] = self.readDB.index(self.table.currentIndex().row(), i).data()
+            cm.addAction("{} {}".format(selectedDict["id"], selectedDict["name"])).setDisabled(True)
+            cm.addAction(QIcon(db.icon_path + "new.png"), "데이터 삽입", db.INSERT_show).setShortcut("Ctrl+N")
+            cm.addAction(QIcon(db.icon_path + "edit.png"), "데이터 수정", db.UPDATE_show).setShortcut("F2")
+            cm.addAction(QIcon(db.icon_path + "delete.png"), "데이터 삭제", self.DELETE).setShortcut("delete")
+            cm.addSeparator()
+            cm.addAction("실습일정 복사", self.copyData).setShortcut("Ctrl+Shift+C")
+            cm.addAction("실습일정 붙여넣기", self.pasteData).setShortcut("Ctrl+Shift+V")
+            cm.exec_(self.table.mapToGlobal(pos))
+
+        else:
+            cm.addAction(QIcon(db.icon_path + "new.png"), "데이터 삽입", db.INSERT_show).setShortcut("Ctrl+N")
+            cm.addAction(QIcon(db.icon_path + "edit.png"), "데이터 수정", db.UPDATE_show).setShortcut("F2")
+            cm.addAction(QIcon(db.icon_path + "delete.png"), "데이터 삭제", self.DELETE).setShortcut("delete")
+            cm.exec_(self.table.mapToGlobal(pos))
+
+    def copyData(self):
+        if self.current_table != "user":
+            QMessageBox.information(self, "테이블 오류", "현재 copy paste 기능은 수강생 테이블에서만 가능합니다.",QMessageBox.Yes, QMessageBox.Yes)
+            return
+        self.copiedData["copiedDataId"] = self.readDB.index(self.table.currentIndex().row(), 0).data()
+        self.copiedData["copiedDataName"] = self.readDB.index(self.table.currentIndex().row(), 1).data()
+        self.copiedData["data"] = self.readDB.index(self.table.currentIndex().row(), 15).data()
+
+    def pasteData(self):
+        if self.current_table != "user":
+            QMessageBox.information(self, "테이블 오류", "현재 copy paste 기능은 수강생 테이블에서만 가능합니다.",QMessageBox.Yes, QMessageBox.Yes)
+            return
+        self.copiedData["pastedDataId"] = self.readDB.index(self.table.currentIndex().row(), 0).data()
+        self.copiedData["pastedDataName"] = self.readDB.index(self.table.currentIndex().row(), 1).data()
+        if (self.copiedData["copiedDataId"] == self.copiedData["pastedDataId"]) and (self.copiedData["copiedDataName"] == self.copiedData["pastedDataName"]):
+            QMessageBox.information(self, "객체 오류", "복사한 객체와 붙여넣을 객체가 서로 같습니다!\n서로 다른 객체에서의 복사 붙여넣기만 가능합니다.",QMessageBox.Yes, QMessageBox.Yes)
+            return
+        
+        if self.copiedData["data"] == "NULL":
+            QMessageBox.information(self, "데이터 오류", "붙여넣을 데이터가 없습니다!",QMessageBox.Yes, QMessageBox.Yes)
+            return
+            
+        self.dbPrograms.UPDATE(
+            self.current_table, "trainingDate='{}'".format(self.copiedData["data"]),
+            "id={} and name='{}'".format(self.copiedData["pastedDataId"], self.copiedData["pastedDataName"])
+        )
+        QMessageBox.about(
+            self, "완료", "복사 붙여넣기가 완료되었습니다.\n실습 정보 복사\nid: {} 이름: {} -> id: {} 이름: {}".format(
+                self.copiedData["copiedDataId"], self.copiedData["copiedDataName"], self.copiedData["pastedDataId"], self.copiedData["pastedDataName"]
+            )
+        )
+        self.showTable(Refresh=True)
+
     def calendar_show(self):
+        if self.current_table != "user":
+            QMessageBox.information(self, "테이블 오류", "실습 일정 관리는 수강생 테이블에서만 진행할 수 있습니다.", QMessageBox.Yes, QMessageBox.Yes)
+            return
+        if self.table.currentIndex().data() == None:
+            QMessageBox.information(self, "객체 오류", "객체를 먼저 선택해주세요.", QMessageBox.Yes, QMessageBox.Yes)
+            return
         if self.select_train_date == "":
             QMessageBox.information(self, "데이터 없음", "실습 데이터를 변경하고자 하는 데이터를 먼저 선택해주세요!")
             return
@@ -3597,7 +3727,7 @@ class mainLayout(QWidget, DB):
     def str2Dict(self, fromString):
         if type(fromString) == dict:
             return fromString
-        elif fromString == "NULL" or fromString == "None":
+        elif fromString == "NULL" or fromString == "None" or fromString == "":
             return {}
         newFacilityString, newDateString = fromString.split("$")
         facilityList = newFacilityString.split("|")
@@ -4510,7 +4640,7 @@ class DBMS(QMainWindow):
         # status Bar
         # self.statusBar()
         self.statusBar().showMessage("상태바")
-        self.main = mainLayout()
+        self.main = MainLayout()
 
         self.setCentralWidget(self.main)
 
@@ -4663,7 +4793,7 @@ class DBMS(QMainWindow):
         edit_batch.addAction(batch_data_temp)
         edit_batch.addAction(batch_data_time)
 
-        mod_train = QAction(QIcon(self.icon_path + "checker.png"), "실습 관리", self)
+        mod_train = QAction(QIcon(self.icon_path + "checker.png"), "실습일자 편집", self)
         mod_train.setShortcut("Ctrl+T")
         mod_train.setStatusTip("수강생의 실습 일정을 관리합니다.")
         mod_train.triggered.connect(self.calendar_show)
@@ -4777,9 +4907,17 @@ class DBMS(QMainWindow):
                 QMessageBox.information(self, "완료", "데이터베이스가 변경되었습니다. 프로그램을 다시 시작해주세요.", QMessageBox.Yes, QMessageBox.Yes)
                 sys.exit()
 
-        QMessageBox.information(self, "완료", "완료되었습니다.", QMessageBox.Yes, QMessageBox.Yes)
+            QMessageBox.information(self, "완료", "완료되었습니다.", QMessageBox.Yes, QMessageBox.Yes)
+        else:
+            QMessageBox.information(self, "취소", "취소되었습니다.", QMessageBox.Yes, QMessageBox.Yes)
             
     def calendar_show(self):
+        if self.main.current_table != "user":
+            QMessageBox.information(self, "테이블 오류", "실습 일정 관리는 수강생 테이블에서만 진행할 수 있습니다.", QMessageBox.Yes, QMessageBox.Yes)
+            return
+        if self.main.table.currentIndex().data() == None:
+            QMessageBox.information(self, "객체 오류", "객체를 먼저 선택해주세요.", QMessageBox.Yes, QMessageBox.Yes)
+            return
         calendar.show()
 
     def workingInformation_show(self):
@@ -4808,10 +4946,8 @@ class DBMS(QMainWindow):
         if self.main.textInfo.toPlainText() == "":
             QMessageBox.information(self, "객체 오류", "객체를 먼저 선택해주세요.",
             QMessageBox.Yes, QMessageBox.Yes)
-
         else:
             update.show()
-
 
     def INSERT_show(self):
         if self.main.current_table == "":
@@ -4830,11 +4966,19 @@ class DBMS(QMainWindow):
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Escape:
             print("ESC is pressed!")
+        # control, shift, alt 키는 아래처럼 해야 동시 입력 취급!
+        if (e.modifiers() and Qt.ControlModifier) and (e.modifiers() and Qt.ShiftModifier) and (e.key() == Qt.Key_C):
+        # 이건 동시 입력 취급이 안됨.
+        # if(e.key() == Qt.Key_Control) and (e.key() == Qt.Key_Shift) and (e.key() == Qt.Key_C):
+            self.main.copyData()
+
+        if (e.modifiers() and Qt.ControlModifier) and (e.modifiers() and Qt.ShiftModifier) and (e.key() == Qt.Key_V):
+            self.main.pasteData()
+            self.main.showTable(Refresh=True)
 
     # context menu. 우클릭 메뉴
     def contextMenuEvent(self, QContextMenuEvent):
         cm = QMenu(self)
-        
         quit = cm.addAction("Quit")
 
         # action: cm의 실행정보를 저장. 전체적인 map의 위치를 넘겨서 우클릭 하는 위치에 따라 다른 이벤트를 적용하도록
