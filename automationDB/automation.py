@@ -35,7 +35,8 @@ class Automation:
         formatter = logging.Formatter('[%(asctime)s][%(levelname)s|%(filename)s:%(lineno)s] in <%(funcName)s> %(name)s >> %(message)s')
         fileHandler.setFormatter(formatter)
 
-        self.logger.addHandler(fileHandler)
+        if not (self.logger.hasHandlers()):
+            self.logger.addHandler(fileHandler)
         self.logger.setLevel(level=logging.DEBUG)
 
     """

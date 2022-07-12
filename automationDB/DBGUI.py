@@ -2880,7 +2880,8 @@ class INSERT(QWidget):
 
             table = "수강생"
             classification = "{}{} {}".format(user_list[1], user_list[7], user_list[8])
-
+            systemId = "{}/{}".format(user_list[0], user_list[1])
+            systemValue = query
                 
         elif self.target_table == "lecture":
             if self.text_clsN_lecture.text().strip() == "" or self.text_clsT_lecture.text().strip() == "":
@@ -2910,6 +2911,8 @@ class INSERT(QWidget):
 
             table = "기수"
             classification = "{}{}".format(lect_list[0], lect_list[1])
+            systemId = "{}/{}".format(lect_list[0], lect_list[1])
+            systemValue = query
 
         elif self.target_table == "teacher":
             if self.text_id_teacher.text().strip() == "" or self.text_name_teacher.text().strip() == "":
@@ -2943,6 +2946,8 @@ class INSERT(QWidget):
 
             table = "강사"
             classification = "{} / {}".format(teach_list[1], teach_list[3])
+            systemId = "{}/{}".format(teach_list[0], teach_list[1])
+            systemValue = query
 
         elif self.target_table == "facility":
             if self.text_id_facility.text().strip() == "" or self.text_name_facility.text().strip() == "":
@@ -2975,6 +2980,8 @@ class INSERT(QWidget):
 
             table = "기관"
             classification = "{} / {}".format(facility_list[0], facility_list[1])
+            systemId = "{}/{}".format(facility_list[0], facility_list[1])
+            systemValue = query
 
         elif self.target_table == "temptraining":
             if self.text_clsN_temp_training.text().strip() == "":
@@ -3004,6 +3011,8 @@ class INSERT(QWidget):
 
             table = "대체실습"
             classification = "{}".format(temp_list[0])
+            systemId = "{}".format(temp_list[0])
+            systemValue = query
 
         elif self.target_table == "temptrainingteacher":
             if self.text_clsN_temp_training_teacher.text().strip() == "" or self.text_teacher.text().strip() == "":
@@ -3031,6 +3040,8 @@ class INSERT(QWidget):
 
             table = "대체실습 강사"
             classification = "{} / {}".format(temp_training_teacher_list[0], temp_training_teacher_list[1])
+            systemId = "{}/{}".format(temp_training_teacher_list[0], temp_training_teacher_list[1])
+            systemValue = query
 
         elif self.target_table == "exam":
             if self.text_exam_round.text().strip() == "":
@@ -3062,10 +3073,13 @@ class INSERT(QWidget):
 
             table = "시험"
             classification = "{}회".format(exam_list[0])
+            systemId = "{}".format(exam_list[0])
+            systemValue = query
 
         ans = QMessageBox.question(self, "데이터 삽입 확인", ask, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
             db.logger.info("$UI INSERT Request [TABLE|{}][{}] {} 삽입 요청".format(self.target_table, table, classification))
+            db.sysLogger.info("{}|{}|{}|{}".format("INSERT", self.target_table, systemId, systemValue))
             rs = db.main.dbPrograms.INSERT(self.target_table, query)
             if rs != None:
                 errorMsg = ""
@@ -4265,21 +4279,43 @@ class MainLayout(QWidget, DB):
         check = ""
         path = None
         if self.current_table == "user":
+            # 이거그냥 다 바꾸자 ...
             target_table = "user"
-            ID = str(self.readDB.index(self.table.currentIndex().row(), 0).data())
-            name = str(self.readDB.index(self.table.currentIndex().row(), 1).data())
-            RRN = str(self.readDB.index(self.table.currentIndex().row(), 2).data())
-            phone = str(self.readDB.index(self.table.currentIndex().row(), 3).data())
-            licen = str(self.readDB.index(self.table.currentIndex().row(), 4).data())
-            adr = str(self.readDB.index(self.table.currentIndex().row(), 5).data())
-            oAdr = str(self.readDB.index(self.table.currentIndex().row(), 6).data())
-            clsN = str(self.readDB.index(self.table.currentIndex().row(), 7).data())
-            clsT =  str(self.readDB.index(self.table.currentIndex().row(), 8).data())
-            totalH = str(self.readDB.index(self.table.currentIndex().row(), 9).data())
-            theH = str(self.readDB.index(self.table.currentIndex().row(), 10).data())
-            pracH = str(self.readDB.index(self.table.currentIndex().row(), 11).data())
-            trainH = str(self.readDB.index(self.table.currentIndex().row(), 12).data())
-            tempC = str(self.readDB.index(self.table.currentIndex().row(), 13).data())
+            ID = self.readDB.index(self.table.currentIndex().row(), 0).data()
+            name = self.readDB.index(self.table.currentIndex().row(), 1).data()
+            RRN = self.readDB.index(self.table.currentIndex().row(), 2).data()
+            phone = self.readDB.index(self.table.currentIndex().row(), 3).data()
+            licen = self.readDB.index(self.table.currentIndex().row(), 4).data()
+            adr = self.readDB.index(self.table.currentIndex().row(), 5).data()
+            oAdr = self.readDB.index(self.table.currentIndex().row(), 6).data()
+            clsN = self.readDB.index(self.table.currentIndex().row(), 7).data()
+            clsT = self.readDB.index(self.table.currentIndex().row(), 8).data()
+            totalH = self.readDB.index(self.table.currentIndex().row(), 9).data()
+            theH = self.readDB.index(self.table.currentIndex().row(), 10).data()
+            pracH = self.readDB.index(self.table.currentIndex().row(), 11).data()
+            trainH = self.readDB.index(self.table.currentIndex().row(), 12).data()
+            tempC = self.readDB.index(self.table.currentIndex().row(), 13).data()
+            exam = self.readDB.index(self.table.currentIndex().row(), 14).data()
+            trainD = self.readDB.index(self.table.currentIndex().row(), 15).data()
+
+            # mysql query를 작성하기 위한 list 작업
+            user_list = []
+            user_list.append(ID)
+            user_list.append(name)
+            user_list.append(RRN)
+            user_list.append(phone)
+            user_list.append(licen)
+            user_list.append(adr)
+            user_list.append(oAdr)
+            user_list.append(clsN)
+            user_list.append(clsT)
+            user_list.append(totalH)
+            user_list.append(theH)
+            user_list.append(pracH)
+            user_list.append(trainH)
+            user_list.append(tempC)
+            user_list.append(exam)
+            user_list.append(trainD)
 
             query = "id = '{}' and name = '{}'".format(ID, name)
 
@@ -4291,6 +4327,19 @@ class MainLayout(QWidget, DB):
 
             table = "수강생"
             classification = "{}{} {}".format(clsN, clsT, name)
+            # systemValue(query문) 생성
+            systemValue = ""
+            for i in range(len(user_list)):
+                if user_list[i] == "" or user_list[i] == NULL:
+                    user_list[i] = NULL
+                    systemValue += user_list[i]
+
+                else:
+                    systemValue += "'" + user_list[i] + "'"
+
+                if i != len(user_list) - 1:
+                    systemValue += ", "
+            systemId = "{}/{}".format(ID, name)
 
         elif self.current_table == "lecture":
             target_table = "lecture"
@@ -4625,8 +4674,20 @@ class DBMS(QMainWindow):
         formatter = logging.Formatter('[%(asctime)s][%(levelname)s|%(filename)s:%(lineno)s] in <%(funcName)s> %(name)s >> %(message)s')
         fileHandler.setFormatter(formatter)
 
-        self.logger.addHandler(fileHandler)
+        if not (self.logger.hasHandlers()):
+            self.logger.addHandler(fileHandler)
         self.logger.setLevel(level=logging.DEBUG)
+
+        # system logger for redo & undo
+        self.sysLogger = logging.getLogger("SYSTEM log")
+        sysFileHandler = logging.FileHandler("D:\\Master\\log\\System log.log")
+
+        sysFormatter = logging.Formatter('%(asctime)s|%(message)s')
+        sysFileHandler.setFormatter(sysFormatter)
+
+        if not (self.sysLogger.hasHandlers()):
+            self.sysLogger.addHandler(sysFileHandler)
+        self.sysLogger.setLevel(level=logging.DEBUG)
 
         self.initUI()
 

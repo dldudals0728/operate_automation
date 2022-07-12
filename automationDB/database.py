@@ -6,9 +6,7 @@ import datetime
 
 import logging
 
-from pymysql import MySQLError
-
-class DB():
+class DB:
     def __init__(self):
         self.host = 'localhost'
         self.user = 'root'
@@ -24,7 +22,8 @@ class DB():
         formatter = logging.Formatter('[%(asctime)s][%(levelname)s|%(filename)s:%(lineno)s] in <%(funcName)s> %(name)s >> %(message)s')
         fileHandler.setFormatter(formatter)
 
-        self.logger.addHandler(fileHandler)
+        if not (self.logger.hasHandlers()):
+            self.logger.addHandler(fileHandler)
         self.logger.setLevel(level=logging.DEBUG)
 
     def SQLExceptionHandler(self, e):
@@ -311,11 +310,11 @@ class DB():
 
 if __name__ == "__main__":
     db = DB()
-    db.INSERT("user", "429, '이영민', '990728-1234567', '010-1234-5678', '일반', '경기도 화성시 향남읍 상신리', '경기도 화성시 장안면 사곡리', '999기', '주간', NULL, NULL, NULL, NULL, '999기', NULL, NULL")
+    # db.INSERT("user", "429, '이영민', '990728-1234567', '010-1234-5678', '일반', '경기도 화성시 향남읍 상신리', '경기도 화성시 장안면 사곡리', '999기', '주간', NULL, NULL, NULL, NULL, '999기', NULL, NULL")
     # db.INSERT("user", "430, '김연흥', '990728-1234567', '010-1234-5678', '일반', '경기도 화성시 향남읍 상신리', '경기도 화성시 장안면 사곡리', '999기', '주간', NULL, NULL, NULL, NULL, '999기', NULL, NULL")
     # db.INSERT("teacher", "8, NULL, '이영민', '2888-10-10', '강사', '3년 이상', '2888-10-10'")
     # db.INSERT("lecture", "'108기', '야간', '2012-01-01', NULL")
     # db.UPDATE("user", "id=428", "id=429")
-    db.DELETE("temptraining", "classNumber='999기'")
+    # db.DELETE("temptraining", "classNumber='999기'")
     # db.UPDATE("user", "id=428", "name='이영민'")
     # db.dumpDatabase()
