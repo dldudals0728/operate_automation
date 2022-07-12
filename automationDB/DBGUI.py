@@ -36,8 +36,6 @@ import shutil
 from automation import Automation
 
 class LogIn(QWidget):
-    
-
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -552,8 +550,6 @@ class WorkingInformation(QWidget):
 
 
 class ToDoList(QWidget):
-    
-
     def __init__(self):
         super().__init__()
 
@@ -867,8 +863,6 @@ class MemberManagement(QWidget):
         self.layoutInfo.addWidget(self.textInfo)
 
 class DocumentChecker(QWidget):
-    
-
     def __init__(self):
         super().__init__()
         self.setWindowTitle("수강생 파일 체크")
@@ -1154,33 +1148,30 @@ class Kuksiwon(QWidget):
         super().__init__()
         self.setWindowTitle("국시원")
         self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
+        self.setFixedSize(300, 100)
 
         self.doc_type = ""
 
-        self.main_box = QVBoxLayout()
-        self.input_box = QHBoxLayout()
-        self.btn_box = QHBoxLayout()
-
-        self.main_box.addLayout(self.input_box)
-        self.main_box.addLayout(self.btn_box)
-
-        self.setLayout(self.main_box)
+        self.grid = QGridLayout()
+        self.setLayout(self.grid)
 
         self.initUI()
 
     def initUI(self):
         self.label_exam = QLabel("시험회차", self)
-        self.input_box.addWidget(self.label_exam)
+        self.label_exam.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.grid.addWidget(self.label_exam, 0, 0, 1, 2)
         self.combobox_exam = QComboBox(self)
-        self.input_box.addWidget(self.combobox_exam)
+        self.grid.addWidget(self.combobox_exam, 0, 2, 1, 2)
+
         self.btn_create = QPushButton("생성", self)
         self.btn_cancel = QPushButton("취소", self)
 
         self.btn_create.clicked.connect(self.createFile)
         self.btn_cancel.clicked.connect(self.close)
 
-        self.btn_box.addWidget(self.btn_create)
-        self.btn_box.addWidget(self.btn_cancel)
+        self.grid.addWidget(self.btn_create, 1, 2)
+        self.grid.addWidget(self.btn_cancel, 1, 3)
 
     def createFile(self):
         exam_round = self.combobox_exam.currentText()
@@ -1226,7 +1217,9 @@ class Kuksiwon(QWidget):
 
                 else:
                     non_input_list = db.main.auto.makeDocument(exam_round, self.doc_type)
-                    if non_input_list[:9] == "Traceback":
+                    if non_input_list[:11] == "VALUE ERROR":
+                        QMessageBox.warning(self, "입력값 오류", "입력값이 NULL이거나 없는 데이터가 있습니다. 확인 후 다시 작업해야 합니다.\n\n{}".format(non_input_list))
+                    elif non_input_list[:9] == "Traceback":
                         QMessageBox.about(self, "Traceback", non_input_list)
                     else:
                         QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n{}".format(non_input_list))
@@ -1243,6 +1236,7 @@ class Kuksiwon(QWidget):
 
     def showEvent(self, QShowEvent):
         source = self.sender()
+        self.setWindowTitle("국시원 : " + source.text())
         self.doc_type = source.text()
         self.combobox_exam.clear()
         self.exam_list = []
@@ -1261,8 +1255,6 @@ class Kuksiwon(QWidget):
 
 
 class ClassOpening(QWidget):
-    
-
     def __init__(self):
         super().__init__()
         self.setWindowTitle("요양보호사 기수 opening")
@@ -1364,8 +1356,6 @@ class ClassOpening(QWidget):
 
 
 class Report(QWidget):
-    
-
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -1477,8 +1467,6 @@ class Report(QWidget):
 
 
 class scanFile(QWidget):
-    
-
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -1694,8 +1682,6 @@ class scanFile(QWidget):
 
 """
 class BatchUpdate(QWidget):
-    
-
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -4874,7 +4860,6 @@ class DBMS(QMainWindow):
             QCloseEvent.ignore()
 
 class AppStart(QWidget):
- 
     def __init__(self):
         super().__init__()
         self.initUI()

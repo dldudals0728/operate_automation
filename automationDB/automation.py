@@ -3,6 +3,7 @@ import logging
 import os
 import random
 import shutil
+from tokenize import String
 import traceback
 from tracemalloc import start
 from openpyxl import Workbook
@@ -10,6 +11,10 @@ from openpyxl import load_workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.drawing.image import Image
 from database import DB
+
+class DataNullError(Exception):
+    def __init__(self, msg):
+        super().__init__("DataNullError: " + msg)
 
 class Automation:
     def __init__(self):
@@ -55,18 +60,28 @@ class Automation:
 
         return tuple(input_list)
 
-    def nullValueChecker(self, res, checker_index):
+    def nullValueChecker(self, res, **kwargs):
         # 없는 값을 반환할 경우 : value: None     type: <class 'NoneType'>
-        null_list = []
+        idxClassNumber = kwargs["idxClassNumber"]
+        idxClassTime = kwargs["idxClassTime"]
+        idxName = kwargs["idxName"]
+        nullDict = {}
         for rows in res:
             null_check_switch = False
             for rs in rows:
                 if rs == None or rs == "":
                     null_check_switch = True
             if null_check_switch == True:
-                null_list.append(rows[checker_index])
+                classNumber = rows[idxClassNumber]
+                classTime = rows[idxClassTime]
+                name = rows[idxName]
+                checkString = "{} {}".format(classNumber, classTime)
+                
+                if checkString not in nullDict:
+                    nullDict[checkString] = []
+                nullDict[checkString].append(name)
 
-        return null_list
+        return "VALUE ERROR\n" + self.dict2String(nullDict)
 
     def funcTest(self):
         # self.DB.UPDATE("user", "exam=NULL", "id=458")
@@ -75,6 +90,22 @@ class Automation:
             print("value:", col, "\ttype:", type(col))
 
         print(self.DB.SELECT("*", "user", "id=458"))
+
+    def dict2String(self, fromDict):
+        if type(fromDict) == str:
+            return fromDict
+        elif not fromDict:
+            return ""
+        else:
+            toString = ""
+            for item in fromDict:
+                toString += item + ": "
+                for name in fromDict[item]:
+                    toString += name + ", "
+                toString = toString[:-2]
+                toString += "\n"
+
+            return toString
 
     def str2Dict(self, fromString):
         if type(fromString) == dict:
@@ -98,12 +129,19 @@ class Automation:
         if doc_type == "교육수료증명서":
             try:
                 where = "exam={}".format(exam)
-                user_rs = self.inputChecker(self.DB.SELECT("*", "user", where))
-                valueErrorList = self.nullValueChecker(user_rs, 1)
-
                 user_query_list = ["id", "name", "RRN", "phoneNumber", "license", "address", "originAddress", "classNumber", "classTime", \
                     "totalCreditHour", "theoryCreditHour", "practicalCreditHour", "trainingCreditHour", "temporaryClassNumber", "exam", "trainingDate"]
+                user_rs = self.DB.SELECT("*", "user", where)
                 item_dict = {}
+
+                valueErrorList = self.nullValueChecker(
+                    user_rs, idxClassNumber=user_query_list.index("classNumber"),
+                    idxClassTime=user_query_list.index("classTime"),
+                    idxName=user_query_list.index("name")
+                )
+                if valueErrorList != "":
+                    return valueErrorList
+                user_rs = self.inputChecker(user_rs)
 
                 facility_rs = self.DB.SELECT("name, category", "facility")
                 facility_dict = {name: categ for name, categ in facility_rs}
@@ -207,12 +245,8 @@ class Automation:
                     self.logger.info("$Automation [Document|교육수료증명서][{}{} {}]작성".format(item_dict["classNumber"], item_dict["classTime"], item_dict["name"]))
                     self.wb.close()
 
-                return_str = "입력 오류: "
-                if valueErrorList == []:
-                    return_str += "모두 정상 처리되었습니다."
-                else:
-                    return_str += ", ".join(valueErrorList)
-                    self.logger.error("!Automation [Document|교육수료증명서] 미처리 항목: {}".format(return_str))
+                return_str = "모두 정상 처리되었습니다."
+                self.logger.error("!Automation [Document|교육수료증명서] 미처리 항목: {}".format(return_str))
 
                 return return_str
 
@@ -223,10 +257,18 @@ class Automation:
         elif doc_type == "대체실습확인서":
             try:
                 where = "exam={}".format(exam)
-                user_rs = self.inputChecker(self.DB.SELECT("id, name, RRN, phoneNumber, classNumber, classTime, trainingCreditHour, temporaryClassNumber, trainingDate", "user", where))
-                valueErrorList = self.nullValueChecker(user_rs, 1)
                 user_query_list = ["id", "name", "RRN", "phoneNumber", "classNumber", "classTime", "trainingCreditHour", "temporaryClassNumber", "trainingDate"]
+                user_rs = self.DB.SELECT(", ".join(user_query_list), "user", where)
                 item_dict = {}
+                
+                valueErrorList = self.nullValueChecker(
+                    user_rs, idxClassNumber=user_query_list.index("classNumber"),
+                    idxClassTime=user_query_list.index("classTime"),
+                    idxName=user_query_list.index("name")
+                )
+                if valueErrorList != "":
+                    return valueErrorList
+                user_rs = self.inputChecker(user_rs)
 
                 for rows in user_rs:
                     item_dict.clear()
@@ -318,12 +360,8 @@ class Automation:
                     self.logger.info("$Automation [Document|대체실습확인서][{}{} {}]작성".format(item_dict["classNumber"], item_dict["classTime"], item_dict["name"]))
                     self.wb.close()
 
-                return_str = "입력 오류: "
-                if valueErrorList == []:
-                    return_str += "모두 정상 처리되었습니다."
-                else:
-                    return_str += ", ".join(valueErrorList)
-                    self.logger.error("!Automation [Document|대체실습확인서] 미처리 항목: {}".format(return_str))
+                return_str = "모두 정상 처리되었습니다."
+                self.logger.error("!Automation [Document|대체실습확인서] 미처리 항목: {}".format(return_str))
 
                 return return_str
 
@@ -344,10 +382,16 @@ class Automation:
                 exam_dict["submitDate"] = exam_rs[6].strftime("     %Y  년     %m  월    %d   일    ")
 
                 where = "exam={}".format(exam)
-                user_rs = self.inputChecker(self.DB.SELECT("id, name, RRN, phoneNumber, address, classNumber, classTime, temporaryClassNumber, trainingDate", "user", where))
-                valueErrorList = self.nullValueChecker(user_rs, 1)
-
                 user_query_list = ["id", "name", "RRN", "phoneNumber", "address", "classNumber", "classTime", "temporaryClassNumber", "trainingDate"]
+                user_rs = self.DB.SELECT(", ".join(user_query_list), "user", where)
+                valueErrorList = self.nullValueChecker(
+                    user_rs, idxClassNumber=user_query_list.index("classNumber"),
+                    idxClassTime=user_query_list.index("classTime"),
+                    idxName=user_query_list.index("name")
+                )
+                if valueErrorList != "":
+                    return valueErrorList
+                user_rs = self.inputChecker(user_rs)
 
                 for rows in user_rs:
                     item_dict.clear()
@@ -470,12 +514,8 @@ class Automation:
                     self.logger.info("$Automation [Document|요양보호사 자격증 발급,재발급 신청서][{}{} {}]작성".format(item_dict["classNumber"], item_dict["classTime"], item_dict["name"]))
                     self.wb.close()
 
-                return_str = "입력 오류: "
-                if valueErrorList == []:
-                    return_str += "모두 정상 처리되었습니다."
-                else:
-                    return_str += ", ".join(valueErrorList)
-                    self.logger.error("!Automation [Document|요양보호사 자격증 발급,재발급 신청서] 미처리 항목: {}".format(return_str))
+                return_str = "모두 정상 처리되었습니다."
+                self.logger.error("!Automation [Document|요양보호사 자격증 발급,재발급 신청서] 미처리 항목: {}".format(return_str))
 
                 return return_str
 
@@ -899,4 +939,4 @@ class Automation:
 
 if __name__ == '__main__':
     a = Automation()
-    # a.makeDocument(38, "대체실습확인서")
+    # print(a.makeDocument(38, "대체실습확인서"))
