@@ -140,7 +140,7 @@ class Automation:
                     idxClassTime=user_query_list.index("classTime"),
                     idxName=user_query_list.index("name")
                 )
-                if valueErrorList != "":
+                if valueErrorList != None:
                     return valueErrorList
                 user_rs = self.inputChecker(user_rs)
 
@@ -267,7 +267,7 @@ class Automation:
                     idxClassTime=user_query_list.index("classTime"),
                     idxName=user_query_list.index("name")
                 )
-                if valueErrorList != "":
+                if valueErrorList != None:
                     return valueErrorList
                 user_rs = self.inputChecker(user_rs)
 
@@ -390,7 +390,7 @@ class Automation:
                     idxClassTime=user_query_list.index("classTime"),
                     idxName=user_query_list.index("name")
                 )
-                if valueErrorList != "":
+                if valueErrorList != None:
                     return valueErrorList
                 user_rs = self.inputChecker(user_rs)
 
@@ -764,10 +764,10 @@ class Automation:
             wb_pass.close()
 
             return_str = "입력 오류: "
-            if valueErrorList == []:
+            if valueErrorList != None:
                 return_str += "모두 정상 처리되었습니다.\n" + save_path
             else:
-                return_str += ", ".join(valueErrorList) + "\n" + save_path
+                return_str = valueErrorList
 
             return return_str
         
