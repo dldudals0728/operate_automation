@@ -891,6 +891,37 @@ class DocumentChecker(QWidget):
             for file in check_list:
                 file_name, file_extension = os.path.splitext(file)
 
+class PersonalFileMaker(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("개인 파일 생성")
+        self.setWindowIcon(QIcon("D:\\Master\\PythonWorkspace\\NYNOA\\Icons\\남양노아요양보호사-배경제거.png"))
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.setFixedSize(300, 100)
+
+        self.doc_type = ""
+
+        self.grid = QGridLayout()
+        self.setLayout(self.grid)
+
+        self.initUI()
+
+    def initUI(self):
+        self.label_exam = QLabel("시험회차", self)
+        self.label_exam.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.grid.addWidget(self.label_exam, 0, 0, 1, 2)
+        self.combobox_exam = QComboBox(self)
+        self.grid.addWidget(self.combobox_exam, 0, 2, 1, 2)
+
+        self.btn_create = QPushButton("생성", self)
+        self.btn_cancel = QPushButton("취소", self)
+
+        self.btn_create.clicked.connect(self.createFile)
+        self.btn_cancel.clicked.connect(self.close)
+
+        self.grid.addWidget(self.btn_create, 1, 2)
+        self.grid.addWidget(self.btn_cancel, 1, 3)
+
 class Calendar(QWidget):
     def __init__(self):
         super().__init__()
