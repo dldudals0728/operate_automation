@@ -1223,7 +1223,9 @@ class Kuksiwon(QWidget):
 
                 elif self.doc_type == "합격자 명단":
                     non_input_list = db.main.auto.examPassList(exam_round)
-                    if non_input_list[:9] == "Traceback":
+                    if non_input_list[:11] == "VALUE ERROR":
+                        QMessageBox.about(self, "VALUE ERROR", non_input_list)
+                    elif non_input_list[:9] == "Traceback":
                         QMessageBox.about(self, "Traceback", non_input_list)
                     else:
                         QMessageBox.about(self, "완료", "파일이 생성되었습니다.\n{}".format(non_input_list))

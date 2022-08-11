@@ -82,7 +82,11 @@ class Automation:
                     nullDict[checkString] = []
                 nullDict[checkString].append(name)
 
-        return "VALUE ERROR\n" + self.dict2String(nullDict)
+        valueErrorList = self.dict2String(nullDict)
+        if valueErrorList:
+            return "VALUE ERROR\n" + valueErrorList
+        else:
+            return None
 
     def funcTest(self):
         # self.DB.UPDATE("user", "exam=NULL", "id=458")
@@ -689,11 +693,18 @@ class Automation:
             exam_dict["passDate"] = str(exam_rs[5]).replace("-", "")
 
             where = "exam={}".format(exam)
-            user_rs = self.inputChecker(self.DB.SELECT("name, RRN, phoneNumber, license, address, originAddress, classNumber, classTime, totalCreditHour, theoryCreditHour, practicalCreditHour, trainingCreditHour, temporaryClassNumber, exam", "user", where))
-            valueErrorList = self.nullValueChecker(user_rs, 0)
-
             user_query_list = ["name", "RRN", "phoneNumber", "license", "address", "originAddress", "classNumber", "classTime", "totalCreditHour", "theoryCreditHour", "practicalCreditHour", "trainingCreditHour", "temporaryClassNumber", "exam"]
             member_dict = {}
+            user_rs = self.DB.SELECT("name, RRN, phoneNumber, license, address, originAddress, classNumber, classTime, totalCreditHour, theoryCreditHour, practicalCreditHour, trainingCreditHour, temporaryClassNumber, exam", "user", where)
+            valueErrorList = self.nullValueChecker(
+                user_rs, idxClassNumber=user_query_list.index("classNumber"),
+                idxClassTime=user_query_list.index("classTime"),
+                idxName=user_query_list.index("name")
+            )
+            if valueErrorList != None:
+                return valueErrorList
+
+            user_rs = self.inputChecker(user_rs)
 
             for idx, rows in enumerate(user_rs, start=1):
                 member_dict.clear()
