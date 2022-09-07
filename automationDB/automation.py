@@ -359,7 +359,7 @@ class Automation:
 
                     # 수여일
                     string = "                                      {}".format(item_dict["awardDate"])
-                    self.ws.cell(row=27, column=1).value = string
+                    self.ws.cell(row=28, column=1).value = string
 
                     self.wb.save(save_path + "\\{}_{}.xlsx".format(item_dict["name"], doc_type))
                     self.logger.info("$Automation [Document|대체실습확인서][{}{} {}]작성".format(item_dict["classNumber"], item_dict["classTime"], item_dict["name"]))
