@@ -1980,8 +1980,38 @@ class UPDATE(QWidget):
             os.rename(before_files[file], after_files[file])
 
     def changeClass(self, name, b_number, b_time, a_number, a_time):
+        if a_number == "" or a_time == "":
+            # 특정 폴더 ==> None
+            print("폴더 삭제")
+            if os.path.exists(self.base_path + "\\{}\\{}{}\\{}".format(b_number, b_number, b_time, name)):
+                ans_dir_delete = QMessageBox.question(self, "폴더 삭제", "학생의 기수 또는 반이 입력되지 않아 폴더가 삭제됩니다. 계속하시겠습니까?\n(해당 작업은 신중해야 합니다.)", QMessageBox.Yes, QMessageBox.Yes)
+                if ans_dir_delete == QMessageBox.Yes:
+                    shutil.rmtree(self.base_path + "\\{}\\{}{}\\{}".format(b_number, b_number, b_time, name))
+                    QMessageBox.information(self, "폴더 삭제", "수강생의 정보가 [{}{}]에서 [반 없음.]으로 변동됨에 따라\n{}{}\\{} 폴더를 삭제하였습니다.".format(b_number, b_time, b_number, b_time, name),QMessageBox.Yes, QMessageBox.Yes)
+                    return
+        elif b_number == "" or b_time == "":
+            # None ==> 특정 폴더로
+            if not os.path.exists(self.base_path + "\\{}\\{}{}\\{}".format(a_number, a_number, a_time, name)):
+                path = self.base_path + "\\{}\\{}{}".format(a_number, a_number, a_time)
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                
+                path = path + "\\{}".format(name)
+
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                    QMessageBox.information(self, "폴더 생성", "수강생의 정보가 [반 없음.]에서 [{}{}]으로 변동됨에 따라\n{}{} 폴더에 {} 폴더를 생성하였습니다.".format(a_number, a_time, a_number, a_time, name),QMessageBox.Yes, QMessageBox.Yes)
+                    return
+
+            else:
+                QMessageBox.information(self, "폴더 존재", "{}{}\\{}폴더가 이미 존재합니다!".format(a_number, a_time, name),QMessageBox.Yes, QMessageBox.Yes)
+
         before_class = self.base_path + "\\{}\\{}{}\\{}".format(b_number, b_number, b_time, name)
+        if not os.path.exists(before_class):
+            QMessageBox.warning(self, "오류", "{}{} {} 수강생의 폴더가 존재하지 않습니다!".format(b_number, b_time, name))
+            return
         after_class = self.base_path + "\\{}\\{}{}".format(a_number, a_number, a_time)
+        print("move")
         shutil.move(before_class, after_class)
 
         # 사진 존재 여부 확인
@@ -2297,17 +2327,14 @@ class UPDATE(QWidget):
                 number = self.text_clsN_user.text().strip()
                 time = self.text_clsT_user.text().strip()
 
-                if name != '' and number != '' and time !='':
-                    if name != '':
-                        if name != self.key_dict["name"]:
-                            self.changeName(self.key_dict["기수"], self.key_dict["반"], self.key_dict["name"], name)
-                            self.key_dict["name"] = name
+                if name != self.key_dict["name"]:
+                    self.changeName(self.key_dict["기수"], self.key_dict["반"], self.key_dict["name"], name)
+                    self.key_dict["name"] = name
 
-                    if number != '' and time != '':
-                        if number != self.key_dict["기수"] or time != self.key_dict["반"]:
-                            self.changeClass(self.key_dict["name"], self.key_dict["기수"], self.key_dict["반"], number, time)
-                            self.key_dict["기수"] = number
-                            self.key_dict["반"] = time
+                if number != self.key_dict["기수"] or time != self.key_dict["반"]:
+                    self.changeClass(self.key_dict["name"], self.key_dict["기수"], self.key_dict["반"], number, time)
+                    self.key_dict["기수"] = number
+                    self.key_dict["반"] = time
 
             self.close()
         else:
