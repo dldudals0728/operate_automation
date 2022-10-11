@@ -2076,8 +2076,7 @@ class UPDATE(QWidget):
                 if i != len(user_list) - 1:
                     query += ", "
             
-            ask = "ID: {}\t이름: {}\t주민등록번호: {}\n전화번호: {}\t자격증: {}\n주소: {}\n본적주소: {}\n기수: {}\t반: {}\t 대체실습: {}\n총 이수시간: {}\t이론이수: {}\t실습이수: {}\t실기이수: {}\n시험회차: {}회"\
-                .format(user_list[0], user_list[1], user_list[2], user_list[3], user_list[4], user_list[5], user_list[6], user_list[7], user_list[8], user_list[13], user_list[9], user_list[10], user_list[11], user_list[12], user_list[14])
+            ask = f"ID: {user_list[0]}\t이름: {user_list[1]}\t주민등록번호: {user_list[2]}\n전화번호: {user_list[3]}\t자격증: {user_list[4]}\n주소: {user_list[5]}\n본적주소: {user_list[6]}\n기수: {user_list[7]}\t반: {user_list[8]}\t 대체실습: {user_list[13]}\n총 이수시간: {user_list[9]}\t이론이수: {user_list[10]}\t실기이수: {user_list[11]}\t실습이수: {user_list[12]}\n시험회차: {user_list[14]}회"
             ask += "\n해당 정보로 업데이트합니다."
 
             table = "수강생"
