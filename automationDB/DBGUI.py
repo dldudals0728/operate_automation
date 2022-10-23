@@ -3858,7 +3858,11 @@ class MainLayout(QWidget, DB):
                 sendStr += facility + ": " + ", ".join(drawDates[facility])
                 for dates in drawDates[facility]:
                     year, month, day = dates.split("/")
-                    self.calendarInfo.setDateTextFormat(QDate(int(year), int(month), int(day)), self.facilityDict[facility])
+                    try:
+                        self.calendarInfo.setDateTextFormat(QDate(int(year), int(month), int(day)), self.facilityDict[facility])
+
+                    except:
+                        QMessageBox.information(self, "실습기관 DB Error", "실습기관 DB에 존재하지 않는 값이 있습니다.\n선택된 수강생의 날짜 정보를 표시할 수 없습니다.\n\n{}".format(facility), QMessageBox.Yes, QMessageBox.Yes)
                 sendStr += "\n"
 
         sendStr = sendStr[:-1]
