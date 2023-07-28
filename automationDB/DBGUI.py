@@ -954,14 +954,14 @@ class Calendar(QWidget):
                                             QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), 
                                             QColor(51, 25, 0), QColor(0, 204, 204), QColor(204, 0, 102), 
                                             QColor(118, 12, 12), QColor(25, 135, 84), QColor(255, 193, 7), 
-                                            QColor(99, 102, 241), QColor(14, 165, 233)]
+                                            QColor(99, 102, 241), QColor(14, 165, 233), QColor(0, 153, 0)]
         self.calendarLabelBackgroundHexa = ["FF0000", "FF8000", "00CC00", 
                                             "0000FF", "000066", "6600CC", 
                                             "331900", "00CCCC", "CC0066", 
                                             "760C0C", "198754", "FFC107", 
-                                            "6366F1", "0EA5E9"]
+                                            "6366F1", "0EA5E9", "009900"]
         self.facilityDict = {}
-        self.foregroundWhite = [QColor(255, 0, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(204, 0, 102), QColor(118, 12, 12)]
+        self.foregroundWhite = [QColor(255, 0, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(204, 0, 102), QColor(118, 12, 12), QColor(0, 153, 0)]
         # self.calendarLabelBackground = [Qt.violet, ]
         for f in db.main.dbPrograms.SELECT("name", "facility"):
             ##### 오류 급하게 수정해야 할 때 해당 코드 주석 해제!! #####
@@ -3638,14 +3638,14 @@ class MainLayout(QWidget, DB):
                                             QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), 
                                             QColor(51, 25, 0), QColor(0, 204, 204), QColor(204, 0, 102), 
                                             QColor(118, 12, 12), QColor(25, 135, 84), QColor(255, 193, 7), 
-                                            QColor(99, 102, 241), QColor(14, 165, 233)]
+                                            QColor(99, 102, 241), QColor(14, 165, 233), QColor(0, 153, 0)]
         self.calendarLabelBackgroundHexa = ["FF0000", "FF8000", "00CC00", 
                                             "0000FF", "000066", "6600CC", 
                                             "331900", "00CCCC", "CC0066", 
                                             "760C0C", "198754", "FFC107", 
-                                            "6366F1", "0EA5E9"]
+                                            "6366F1", "0EA5E9", "009900"]
         self.facilityDict = {}
-        self.foregroundWhite = [QColor(255, 0, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(204, 0, 102), QColor(118, 12, 12)]
+        self.foregroundWhite = [QColor(255, 0, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(204, 0, 102), QColor(118, 12, 12), QColor(0, 153, 0)]
         # self.calendarLabelBackground = [Qt.violet, ]
         for f in self.dbPrograms.SELECT("name", "facility"):
             ##### 오류 급하게 수정해야 할 때 해당 코드 주석 해제!! #####
