@@ -959,7 +959,7 @@ class Calendar(QWidget):
                                             "0000FF", "000066", "6600CC", 
                                             "331900", "00CCCC", "CC0066", 
                                             "760C0C", "198754", "FFC107", 
-                                            "#6366F1", "#0EA5E9"]
+                                            "6366F1", "0EA5E9"]
         self.facilityDict = {}
         self.foregroundWhite = [QColor(255, 0, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(204, 0, 102), QColor(118, 12, 12)]
         # self.calendarLabelBackground = [Qt.violet, ]
@@ -3643,7 +3643,7 @@ class MainLayout(QWidget, DB):
                                             "0000FF", "000066", "6600CC", 
                                             "331900", "00CCCC", "CC0066", 
                                             "760C0C", "198754", "FFC107", 
-                                            "#6366F1", "#0EA5E9"]
+                                            "6366F1", "0EA5E9"]
         self.facilityDict = {}
         self.foregroundWhite = [QColor(255, 0, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(204, 0, 102), QColor(118, 12, 12)]
         # self.calendarLabelBackground = [Qt.violet, ]
