@@ -950,8 +950,16 @@ class Calendar(QWidget):
         self.calendarLabelList = [QLabel("■ 대체", self)]
         self.labelLayoutList = [QHBoxLayout()]
         # red, orange, green, blue, navy, purple, brown, cyan, violet
-        self.calendarLabelBackgroundRGB = [QColor(255, 0, 0), QColor(255, 128, 0), QColor(0, 204, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(0, 204, 204), QColor(204, 0, 102), QColor(118, 12, 12)]
-        self.calendarLabelBackgroundHexa = ["FF0000", "FF8000", "00CC00", "0000FF", "000066", "6600CC", "331900", "00CCCC", "CC0066", "760C0C"]
+        self.calendarLabelBackgroundRGB = [QColor(255, 0, 0), QColor(255, 128, 0), QColor(0, 204, 0), 
+                                            QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), 
+                                            QColor(51, 25, 0), QColor(0, 204, 204), QColor(204, 0, 102), 
+                                            QColor(118, 12, 12), QColor(25, 135, 84), QColor(255, 193, 7), 
+                                            QColor(99, 102, 241), QColor(14, 165, 233)]
+        self.calendarLabelBackgroundHexa = ["FF0000", "FF8000", "00CC00", 
+                                            "0000FF", "000066", "6600CC", 
+                                            "331900", "00CCCC", "CC0066", 
+                                            "760C0C", "198754", "FFC107", 
+                                            "#6366F1", "#0EA5E9"]
         self.facilityDict = {}
         self.foregroundWhite = [QColor(255, 0, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(204, 0, 102), QColor(118, 12, 12)]
         # self.calendarLabelBackground = [Qt.violet, ]
@@ -3626,8 +3634,16 @@ class MainLayout(QWidget, DB):
         self.calendarLabelList = [QLabel("■ 대체", self)]
         self.labelLayoutList = [QHBoxLayout()]
         # red, orange, green, blue, navy, purple, brown, cyan, violet
-        self.calendarLabelBackgroundRGB = [QColor(255, 0, 0), QColor(255, 128, 0), QColor(0, 204, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(0, 204, 204), QColor(204, 0, 102), QColor(118, 12, 12)]
-        self.calendarLabelBackgroundHexa = ["FF0000", "FF8000", "00CC00", "0000FF", "000066", "6600CC", "331900", "00CCCC", "CC0066", "760C0C"]
+        self.calendarLabelBackgroundRGB = [QColor(255, 0, 0), QColor(255, 128, 0), QColor(0, 204, 0), 
+                                            QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), 
+                                            QColor(51, 25, 0), QColor(0, 204, 204), QColor(204, 0, 102), 
+                                            QColor(118, 12, 12), QColor(25, 135, 84), QColor(255, 193, 7), 
+                                            QColor(99, 102, 241), QColor(14, 165, 233)]
+        self.calendarLabelBackgroundHexa = ["FF0000", "FF8000", "00CC00", 
+                                            "0000FF", "000066", "6600CC", 
+                                            "331900", "00CCCC", "CC0066", 
+                                            "760C0C", "198754", "FFC107", 
+                                            "#6366F1", "#0EA5E9"]
         self.facilityDict = {}
         self.foregroundWhite = [QColor(255, 0, 0), QColor(0, 0, 255), QColor(0, 0, 102), QColor(102, 0, 204), QColor(51, 25, 0), QColor(204, 0, 102), QColor(118, 12, 12)]
         # self.calendarLabelBackground = [Qt.violet, ]
